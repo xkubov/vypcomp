@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "vypcomp/parser/parser.h"
 
 using namespace vypcomp;

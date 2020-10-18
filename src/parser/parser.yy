@@ -4,7 +4,7 @@
 %defines 
 
 %define api.namespace {vypcomp}
-%define api.parser.class {Parser}
+%define parser_class_name {Parser}
 
 %code requires {
 	namespace vypcomp {
