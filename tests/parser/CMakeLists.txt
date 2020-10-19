@@ -3,7 +3,7 @@ add_executable(tests-parser
 )
 target_link_libraries(tests-parser
     Vypcomp::Parser
-    GTest::GTest GTest::Main
+    gtest gtest_main
 )
 install(TARGETS tests-parser
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
