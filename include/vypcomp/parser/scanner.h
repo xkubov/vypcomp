@@ -11,7 +11,7 @@ namespace vypcomp {
 
 class Scanner : public yyFlexLexer{
 public:
-	Scanner(std::istream *in) : yyFlexLexer(in) {};
+	Scanner(std::istream &in) : yyFlexLexer(&in) {};
 	virtual ~Scanner() {};
 
 	virtual int yylex(
@@ -21,6 +21,15 @@ public:
 
 private:
 	Parser::semantic_type *yylval = nullptr;
+};
+
+class LexicalError: public std::exception {
+public:
+	LexicalError(const std::string& msg);
+	const char * what() const throw() override;
+
+private:
+	std::string msg;
 };
 
 }

@@ -1,7 +1,7 @@
 %{
 #include <string>
 
-#include "flex_scanner.hpp"
+#include "vypcomp/parser/scanner.h"
 
 #undef  YY_DECL
 #define YY_DECL int vypcomp::Scanner::yylex(vypcomp::Parser::semantic_type * const lval, vypcomp::Parser::location_type *loc)
@@ -25,4 +25,36 @@ using token = vypcomp::Parser::token;
 
 %%
 
+%{
+            yylval = lval;
+%}
+
+[[:space:]]	;
+class	{ return token::CLASS; }
+else	{ return token::ELSE; }
+if	{ return token::IF; }
+int	{ return token::INT; }
+new	{ return token::NEW; }
+return	{ return token::RETURN; }
+string	{ return token::STRING; }
+super	{ return token::SUPER; }
+this	{ return token::THIS; }
+void	{ return token::VOID; }
+while	{ return token::WHILE; }
+.	{ throw LexicalError("unknown type name '"+std::string(yytext)+"'"); }
+
 %%
+
+namespace vypcomp {
+
+vypcomp::LexicalError::LexicalError(const std::string& msg):
+	msg(msg)
+{
+};
+
+const char * vypcomp::LexicalError::what() const throw()
+{
+	return msg.c_str();
+};
+
+}

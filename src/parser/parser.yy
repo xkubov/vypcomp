@@ -7,6 +7,9 @@
 %define parser_class_name {Parser}
 
 %code requires {
+
+	#include <variant>
+
 	namespace vypcomp {
 		class Scanner;
 		class LangParser;
@@ -23,6 +26,8 @@
 
 %code {
 
+#include <sstream>
+
 #include "vypcomp/parser/parser.h"
 #include "vypcomp/parser/scanner.h"
 
@@ -31,10 +36,23 @@
 
 }
 
-%define api.value.type variant
+%define api.value.type {std::variant<std::string, int>}
 %define parse.assert
 
-%token END 0 "end of file"
+%token END 0 "The End"
+%token ERROR
+%token <std::string> WORD
+%token CLASS
+%token ELSE
+%token IF
+%token INT
+%token NEW
+%token RETURN
+%token STRING
+%token SUPER
+%token THIS
+%token VOID
+%token WHILE
 
 %locations
 
@@ -47,5 +65,7 @@ start : END
 
 void vypcomp::Parser::error(const location_type &l, const std::string &err_message)
 {
-	std::cerr << "error: " << err_message << " (" << l << ")" << std::endl;
+	std::ostringstream err;
+	err << err_message << " (" << l << ")";
+	throw ParserError(err.str());
 }
