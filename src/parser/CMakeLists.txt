@@ -12,7 +12,7 @@ FLEX_TARGET(FlexScanner
 
 ADD_FLEX_BISON_DEPENDENCY(FlexScanner BisonParser)
 
-add_library(Parser 
+add_library(Parser
     parser.cpp
     ${FLEX_FlexScanner_OUTPUTS}
     ${BISON_BisonParser_OUTPUTS}

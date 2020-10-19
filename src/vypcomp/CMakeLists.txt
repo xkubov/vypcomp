@@ -7,10 +7,10 @@ set_property(
     PROPERTY CXX_STANDARD 17
 )
 target_link_libraries(vypcomp
-	Vypcomp::Parser
+    Vypcomp::Parser
 )
 target_include_directories(vypcomp
-	PRIVATE
+    PRIVATE
         ${PROJECT_SOURCE_DIR}/include
 )
 install(TARGETS vypcomp

@@ -1,7 +1,7 @@
 %skeleton "lalr1.cc"
 %require  "3.0"
-%debug 
-%defines 
+%debug
+%defines
 
 %define api.namespace {vypcomp}
 %define parser_class_name {Parser}
