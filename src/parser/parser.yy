@@ -40,7 +40,6 @@
 %define parse.assert
 
 %token END 0 "The End"
-%token ERROR
 %token <std::string> WORD
 %token CLASS
 %token ELSE
@@ -58,7 +57,20 @@
 
 %%
 
-start : END
+start : keyword start
+      | END
+
+keyword : CLASS
+	| ELSE
+	| IF
+	| INT
+	| NEW
+	| RETURN
+	| STRING
+	| SUPER
+	| THIS
+	| VOID
+	| WHILE
 
 %%
 
