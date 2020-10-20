@@ -24,7 +24,7 @@ void LangParser::parse(std::istream &file)
 	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, *this));
 
 	if (int err = _parser->parse()) {
-		throw ParserError("parser returned: "+std::to_string(err));
+		throw SyntaxError("parser returned: "+std::to_string(err));
 	}
 }
 
@@ -42,12 +42,12 @@ void LangParser::generateOutput(std::ostream &output) const
 	throw std::runtime_error("Not implemented.");
 }
 
-ParserError::ParserError(const std::string& msg):
+SyntaxError::SyntaxError(const std::string& msg):
 	msg(msg)
 {
 }
 
-const char* ParserError::what() const throw()
+const char* SyntaxError::what() const throw()
 {
 	return msg.c_str();
 }

@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 		std::cerr << "lexical error: " << le.what() << std::endl;
 		return 11;
 	}
-	catch (const ParserError& pe) {
+	catch (const SyntaxError& pe) {
 		std::cerr << "syntax error: " << pe.what() << std::endl;
 		return 12;
 	}

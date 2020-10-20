@@ -94,5 +94,5 @@ void vypcomp::Parser::error(const location_type &l, const std::string &err_messa
 {
 	std::ostringstream err;
 	err << err_message << " (" << l << ")";
-	throw ParserError(err.str());
+	throw SyntaxError(err.str());
 }

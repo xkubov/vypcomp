@@ -33,9 +33,9 @@ private:
 	std::unique_ptr<vypcomp::Scanner> _scanner;
 };
 
-class ParserError: public std::exception {
+class SyntaxError: public std::exception {
 public:
-	ParserError(const std::string& msg);
+	SyntaxError(const std::string& msg);
 	const char * what() const throw() override;
 
 private:
