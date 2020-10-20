@@ -42,4 +42,13 @@ private:
 	std::string msg;
 };
 
+class SemanticError: public std::exception {
+public:
+	SemanticError(const std::string& msg);
+	const char * what() const throw() override;
+
+private:
+	std::string msg;
+};
+
 }
