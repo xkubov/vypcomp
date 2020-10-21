@@ -1,5 +1,6 @@
 %{
 #include <string>
+#include <sstream>
 
 #include "vypcomp/parser/scanner.h"
 
@@ -16,6 +17,8 @@ using token = vypcomp::Parser::token;
 /* update location on matching */
 #define YY_USER_ACTION loc->step(); loc->columns(yyleng);
 
+std::ostringstream buffer;
+
 %}
 
 %option debug
@@ -25,6 +28,7 @@ using token = vypcomp::Parser::token;
 %option c++
 
 %x BLOCK_COMMENT
+%x STRING_PARSE
 
 %%
 
@@ -40,6 +44,27 @@ using token = vypcomp::Parser::token;
 <BLOCK_COMMENT>.     { }
 \/\/.*$   ;
 
+\"                      { buffer.str(""); buffer.clear(); BEGIN(STRING_PARSE); }
+<STRING_PARSE>\\n       { buffer << "\n"; }
+<STRING_PARSE>\\t       { buffer << "\t"; }
+<STRING_PARSE>\\\"      { buffer << "\""; }
+<STRING_PARSE>\\\\      { buffer << "\\"; }
+<STRING_PARSE>\\.       { throw LexicalError("Invalid escape: "+std::string(yytext)); }
+<STRING_PARSE>\"        {
+	BEGIN(INITIAL);
+	*yylval = buffer.str();
+	buffer.str(""); buffer.clear();
+	return token::LITERAL;
+}
+<STRING_PARSE>.         {
+	if (*yytext < ' ')
+		throw LexicalError(
+			"Invalid string character: \'"
+			+ std::string(yytext)+"\'"
+		);
+	buffer << *yytext;
+}
+
 class   { return token::CLASS; }
 else    { return token::ELSE; }
 float   { return token::FLOAT; }
@@ -54,6 +79,12 @@ void    { return token::VOID; }
 while   { return token::WHILE; }
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
+
+[0-9]+(?:[ \t\n])  {
+	// string validation should not be necessary.
+	*yylval = strtoull(yytext, nullptr, 10);
+	return token::LITERAL;
+}
 
 .  {
 	// TODO: parse word and print it.

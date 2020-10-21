@@ -47,7 +47,7 @@
 }
 
 // Define token type
-%define api.value.type {std::variant<std::string, int>}
+%define api.value.type {std::variant<std::string, unsigned long long>}
 
 // To correctly destroy symbols.
 %define parse.assert

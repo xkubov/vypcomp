@@ -156,17 +156,62 @@ TEST_F(ScannerTests, lexicalErrorInvalidIdentifier)
 	}
 }
 
-TEST_F(ScannerTests, suppotLiterals)
+TEST_F(ScannerTests, suppotStringLiterals)
 {
-	Input2Token literals {
-		{R"(Ez literal)", Parser::token::LITERAL},
-		{R"(With new line \nliteral)", Parser::token::LITERAL},
-		{R"(With tabs \t\tok)", Parser::token::LITERAL},
-		{R"(With escaped escapes \\ \\ \\)", Parser::token::LITERAL},
-		{R"(With escaped escaped \"quotes\")", Parser::token::LITERAL}
+	std::map<std::string, std::string> stringLiteral {
+		{R"("Ez literal")", "Ez literal"},
+		{R"("With new line \nliteral")", "With new line \nliteral"},
+		{R"("With tabs \t\tok")", "With tabs \t\tok"},
+		{R"("With escaped escapes \\ \\ \\")", "With escaped escapes \\ \\ \\"},
+	//	{R"("With escaped escaped \"quotes\"")", "With escaped escaped \"quotes\""}
 	};
 
-	expectValid(literals);
+	Parser::semantic_type type;
+	Parser::location_type location;
+	Parser::token_type token;
+
+	for (auto [in, exp]: stringLiteral) {
+		std::stringstream str(in);
+		Scanner scanner(str);
+
+		ASSERT_NO_THROW(
+			token = Parser::token_type(
+				scanner.yylex(&type, &location)
+			)
+		);
+		ASSERT_EQ(token, Parser::token::LITERAL);
+		ASSERT_TRUE(std::holds_alternative<std::string>(type));
+		std::string holds = std::get<std::string>(type);
+		ASSERT_EQ(exp, holds);
+	}
+}
+
+TEST_F(ScannerTests, suppotIntLiterals)
+{
+	std::map<std::string, unsigned long long> intLiteral {
+		{"1 ", 1},
+		{"123 ", 123},
+		{"00213 ", 213}
+	};
+
+	Parser::semantic_type type;
+	Parser::location_type location;
+	Parser::token_type token;
+
+	for (auto [in, exp]: intLiteral) {
+		std::stringstream str(in);
+		Scanner scanner(str);
+
+		ASSERT_NO_THROW(
+			token = Parser::token_type(
+				scanner.yylex(&type, &location)
+			)
+		);
+		ASSERT_EQ(token, Parser::token::LITERAL);
+		ASSERT_TRUE(std::holds_alternative<decltype(exp)>(type));
+		auto holds = std::get<decltype(exp)>(type);
+		ASSERT_EQ(exp, holds);
+	}
 }
 
 // TODO:
