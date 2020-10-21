@@ -24,25 +24,35 @@ using token = vypcomp::Parser::token;
 %option noyywrap
 %option c++
 
+%x BLOCK_COMMENT
+
 %%
 
 %{
             yylval = lval;
 %}
 
-[[:space:]]	;
-class	{ return token::CLASS; }
-else	{ return token::ELSE; }
-if	{ return token::IF; }
-int	{ return token::INT; }
-new	{ return token::NEW; }
-return	{ return token::RETURN; }
-string	{ return token::STRING; }
-super	{ return token::SUPER; }
-this	{ return token::THIS; }
-void	{ return token::VOID; }
-while	{ return token::WHILE; }
-.	{ throw LexicalError("unknown type name '"+std::string(yytext)+"'"); }
+[[:space:]]  ;
+
+"/*"                 { BEGIN(BLOCK_COMMENT); }
+<BLOCK_COMMENT>"*/"  { BEGIN(INITIAL); }
+<BLOCK_COMMENT>\n    { }
+<BLOCK_COMMENT>.     { }
+\/\/.*$   ;
+
+class   { return token::CLASS; }
+else    { return token::ELSE; }
+float   { return token::FLOAT; }
+if      { return token::IF; }
+int     { return token::INT; }
+new     { return token::NEW; }
+return  { return token::RETURN; }
+string  { return token::STRING; }
+super   { return token::SUPER; }
+this    { return token::THIS; }
+void    { return token::VOID; }
+while   { return token::WHILE; }
+.       { throw LexicalError("unknown type name '"+std::string(yytext)+"'"); }
 
 %%
 
