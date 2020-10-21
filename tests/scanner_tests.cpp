@@ -163,7 +163,7 @@ TEST_F(ScannerTests, suppotStringLiterals)
 		{R"("With new line \nliteral")", "With new line \nliteral"},
 		{R"("With tabs \t\tok")", "With tabs \t\tok"},
 		{R"("With escaped escapes \\ \\ \\")", "With escaped escapes \\ \\ \\"},
-	//	{R"("With escaped escaped \"quotes\"")", "With escaped escaped \"quotes\""}
+		{R"("With escaped escaped \"quotes\"")", "With escaped escaped \"quotes\""}
 	};
 
 	Parser::semantic_type type;
