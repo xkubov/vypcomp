@@ -9,11 +9,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(GNUInstallDirs)
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Set build type (Debug|Release): default Relase." FORCE)
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL Release)
+    set(CMAKE_CXX_FLAGS "-O3")
+else()
+    set(CMAKE_CXX_FLAGS "-O0 -Wall -Werror -pedantic")
+endif()
+
 if(APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
 elseif(UNIX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 add_subdirectory(deps)
 add_subdirectory(src)
