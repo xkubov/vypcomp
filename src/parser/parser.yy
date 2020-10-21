@@ -71,7 +71,7 @@
 %%
 
 start : keyword start
-      | END
+      | END {(void) parser;}
 
 keyword : CLASS
 	| ELSE

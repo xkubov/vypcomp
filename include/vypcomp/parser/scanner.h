@@ -14,8 +14,10 @@ public:
 	Scanner(std::istream &in) : yyFlexLexer(&in) {};
 	virtual ~Scanner() {};
 
+	// We want to use differeny yylex with yacc.
+	using yyFlexLexer::yylex;
 	virtual int yylex(
-		Parser::semantic_type *const lval,
+		Parser::semantic_type *lval,
 		Parser::location_type *location
 	);
 
