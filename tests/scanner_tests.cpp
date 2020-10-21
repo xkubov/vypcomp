@@ -117,29 +117,31 @@ TEST_F(ScannerTests, suppotDatatypes)
 
 TEST_F(ScannerTests, suppotIdentifiers)
 {
-	Input2Token identifiers {
-		{"peto", Parser::token::IDENTIFIER},
-		{"je", Parser::token::IDENTIFIER},
-		{"borec", Parser::token::IDENTIFIER},
-		{"_", Parser::token::IDENTIFIER},
-		{"____", Parser::token::IDENTIFIER},
-		{"_0", Parser::token::IDENTIFIER},
-		{"_OkK", Parser::token::IDENTIFIER},
-		{"Class", Parser::token::IDENTIFIER},
-		{"Else", Parser::token::IDENTIFIER},
-		{"If", Parser::token::IDENTIFIER},
-		{"Int", Parser::token::IDENTIFIER},
-		{"New", Parser::token::IDENTIFIER},
-		{"Return", Parser::token::IDENTIFIER},
-		{"String", Parser::token::IDENTIFIER},
-		{"Super", Parser::token::IDENTIFIER},
-		{"This", Parser::token::IDENTIFIER},
-		{"Void", Parser::token::IDENTIFIER},
-		{"While", Parser::token::IDENTIFIER},
-		{"zjedolSomJedlo32123412okk", Parser::token::IDENTIFIER}
+	std::vector<std::string> identifiers {
+		"peto" ,"je" ,"borec" ,"_" ,"____" ,"_0"
+		,"_OkK" ,"Class" ,"Else" ,"If" ,"Int" ,"New"
+		,"Return" ,"String" ,"Super" ,"This" ,"Void"
+		,"While" ,"zjedolSomJedlo32123412okk"
 	};
 
-	expectValid(identifiers);
+	Parser::semantic_type type;
+	Parser::location_type location;
+	Parser::token_type token;
+
+	for (auto id: identifiers) {
+		std::stringstream str(id);
+		Scanner scanner(str);
+
+		ASSERT_NO_THROW(
+			token = Parser::token_type(
+				scanner.yylex(&type, &location)
+			)
+		);
+		ASSERT_EQ(token, Parser::token::IDENTIFIER);
+		ASSERT_TRUE(std::holds_alternative<std::string>(type));
+		std::string holds = std::get<std::string>(type);
+		ASSERT_EQ(id, holds);
+	}
 }
 
 TEST_F(ScannerTests, lexicalErrorInvalidIdentifier)

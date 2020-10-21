@@ -52,7 +52,15 @@ super   { return token::SUPER; }
 this    { return token::THIS; }
 void    { return token::VOID; }
 while   { return token::WHILE; }
-.       { throw LexicalError("unknown type name '"+std::string(yytext)+"'"); }
+
+[_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
+
+.  {
+	// TODO: parse word and print it.
+	std::ostringstream err;
+	err << "unexpected lexeme: " << yytext << " (" << *loc << ")";
+	throw LexicalError(err.str());
+}
 
 %%
 
