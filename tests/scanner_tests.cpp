@@ -214,6 +214,31 @@ TEST_F(ScannerTests, suppotIntLiterals)
 	}
 }
 
+TEST_F(ScannerTests, lexicalErrorInvalidLiterals)
+{
+	std::map<std::string, unsigned long long> intLiteral {
+		{"1a", 1},
+		{"123q", 123},
+		{"00213u ", 213}
+	};
+
+	Parser::semantic_type type;
+	Parser::location_type location;
+	Parser::token_type token;
+
+	for (auto [in, exp]: intLiteral) {
+		std::stringstream str(in);
+		Scanner scanner(str);
+
+		ASSERT_THROW(
+			token = Parser::token_type(
+				scanner.yylex(&type, &location)
+			),
+			LexicalError
+		);
+	}
+}
+
 // TODO:
 //  - expressions (operators)
 //  - brackets

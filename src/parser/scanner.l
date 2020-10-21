@@ -80,16 +80,19 @@ while   { return token::WHILE; }
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
 
-[0-9]+(?:[ \t\n])  {
+[0-9]+(?:[^a-zA-Z])  {
 	// string validation should not be necessary.
 	*yylval = strtoull(yytext, nullptr, 10);
 	return token::LITERAL;
+}
+[0-9]+(?:[a-zA-Z])  {
+	throw LexicalError("invalid number: "+std::string(yytext));
 }
 
 .  {
 	// TODO: parse word and print it.
 	std::ostringstream err;
-	err << "unexpected lexeme: " << yytext << " (" << *loc << ")";
+	err << "invalid lexeme: " << yytext << " (" << *loc << ")";
 	throw LexicalError(err.str());
 }
 
