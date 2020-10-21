@@ -57,33 +57,42 @@
 %token CLASS
 %token ELSE
 %token IF
-%token INT
 %token NEW
 %token RETURN
-%token STRING
 %token SUPER
 %token THIS
 %token VOID
 %token WHILE
+
+%token INT
+%token STRING
+%token FLOAT
+
+%token IDENTIFIER
+
+%token LITERAL
 
 %locations
 
 %%
 
 start : keyword start
+      | data_type start
       | END {(void) parser;}
 
 keyword : CLASS
 	| ELSE
 	| IF
-	| INT
 	| NEW
 	| RETURN
-	| STRING
 	| SUPER
 	| THIS
 	| VOID
 	| WHILE
+
+data_type : INT
+	  | STRING
+	  | FLOAT
 
 %%
 
