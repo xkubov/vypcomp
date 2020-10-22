@@ -20,6 +20,10 @@ add_library(Parser
 
 add_library(Vypcomp::Parser ALIAS Parser)
 
+if (MSVC)
+    target_compile_definitions(Parser PRIVATE YY_NO_UNISTD_H)
+endif()
+
 target_include_directories(Parser
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
