@@ -189,9 +189,9 @@ TEST_F(ScannerTests, suppotStringLiterals)
 TEST_F(ScannerTests, suppotIntLiterals)
 {
 	std::map<std::string, unsigned long long> intLiteral {
-		{"1 ", 1},
-		{"123 ", 123},
-		{"00213 ", 213}
+		{"1", 1},
+		{"123", 123},
+		{"00213", 213}
 	};
 
 	Parser::semantic_type type;

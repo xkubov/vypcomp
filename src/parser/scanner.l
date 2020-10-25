@@ -80,13 +80,14 @@ while   { return token::WHILE; }
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
 
-[0-9]+(?:[^a-zA-Z])  {
+[0-9]+([a-zA-Z])  {
+	throw LexicalError("invalid number: "+std::string(yytext));
+}
+
+[0-9]+  {
 	// string validation should not be necessary.
 	*yylval = strtoull(yytext, nullptr, 10);
 	return token::LITERAL;
-}
-[0-9]+(?:[a-zA-Z])  {
-	throw LexicalError("invalid number: "+std::string(yytext));
 }
 
 .  {
