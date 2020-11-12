@@ -24,7 +24,7 @@ endif()
 if (MSVC)
     add_compile_options(/W4)
     # link CRT statically to allow gtest compatibility
-    set(variables 
+    set(variables
         CMAKE_CXX_FLAGS_DEBUG
         CMAKE_CXX_FLAGS_RELEASE
         CMAKE_CXX_FLAGS_RELWITHDEBINFO

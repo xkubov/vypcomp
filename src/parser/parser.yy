@@ -56,13 +56,13 @@
 			value = t;
 			return *this;
 		}
-		
+
 		template<typename T>
 		T& nonterminal() {
 			if (!std::holds_alternative<T>(value)) {
 				value = T{};
 			}
-			
+
 			return std::get<T>(value);
 		}
 
@@ -71,7 +71,7 @@
 			if (!std::holds_alternative<T>(value)) {
 				throw std::runtime_error("Expected different type of token.");
 			}
-			
+
 			return std::get<T>(value);
 		}
 	};
