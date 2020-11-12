@@ -107,9 +107,9 @@ TEST_F(ScannerTests, supportKeywordSequences)
 TEST_F(ScannerTests, suppotDatatypes)
 {
 	Input2Token dataTypes {
-		{"int", Parser::token::INT},
-		{"string", Parser::token::STRING},
-		{"float", Parser::token::FLOAT}
+		{"int", Parser::token::DATA_TYPE},
+		{"string", Parser::token::DATA_TYPE},
+		{"float", Parser::token::DATA_TYPE}
 	};
 
 	expectValid(dataTypes);
@@ -138,8 +138,8 @@ TEST_F(ScannerTests, suppotIdentifiers)
 			)
 		);
 		ASSERT_EQ(token, Parser::token::IDENTIFIER);
-		ASSERT_TRUE(std::holds_alternative<std::string>(type));
-		std::string holds = std::get<std::string>(type);
+		ASSERT_TRUE(std::holds_alternative<std::string>(type.value));
+		std::string holds = std::get<std::string>(type.value);
 		ASSERT_EQ(id, holds);
 	}
 }
@@ -180,8 +180,8 @@ TEST_F(ScannerTests, suppotStringLiterals)
 			)
 		);
 		ASSERT_EQ(token, Parser::token::LITERAL);
-		ASSERT_TRUE(std::holds_alternative<std::string>(type));
-		std::string holds = std::get<std::string>(type);
+		ASSERT_TRUE(std::holds_alternative<std::string>(type.value));
+		std::string holds = std::get<std::string>(type.value);
 		ASSERT_EQ(exp, holds);
 	}
 }
@@ -208,8 +208,8 @@ TEST_F(ScannerTests, suppotIntLiterals)
 			)
 		);
 		ASSERT_EQ(token, Parser::token::LITERAL);
-		ASSERT_TRUE(std::holds_alternative<decltype(exp)>(type));
-		auto holds = std::get<decltype(exp)>(type);
+		ASSERT_TRUE(std::holds_alternative<decltype(exp)>(type.value));
+		auto holds = std::get<decltype(exp)>(type.value);
 		ASSERT_EQ(exp, holds);
 	}
 }

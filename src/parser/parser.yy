@@ -15,6 +15,10 @@
 %code requires {
 	// For our plymorfous token.
 	#include <variant>
+	#include <vector>
+	#include <optional>
+	#include <tuple>
+	#include <string>
 
 	// We want to use these classes during parsing.
 	namespace vypcomp {
@@ -22,6 +26,55 @@
 		class LangParser;
 	}
 
+	/**
+	 * Provides datatype options.
+	 */
+	enum class Datatype : int {
+		String,
+		Float,
+		Int
+	};
+	using Declaration = std::pair<Datatype, std::string>;
+	using Arglist = std::vector<Declaration>;
+	using PossibleDatatype = std::optional<Datatype>;
+
+	using TokenImpl = std::variant<
+		std::string,
+		unsigned long long,
+		Datatype,
+		Arglist,
+		Declaration,
+		PossibleDatatype
+	>;
+
+	struct Token
+	{
+		TokenImpl value;
+
+		template<typename T>
+		Token& operator=(const T& t) {
+			value = t;
+			return *this;
+		}
+		
+		template<typename T>
+		T& nonterminal() {
+			if (!std::holds_alternative<T>(value)) {
+				value = T{};
+			}
+			
+			return std::get<T>(value);
+		}
+
+		template<typename T>
+		T& terminal() {
+			if (!std::holds_alternative<T>(value)) {
+				throw std::runtime_error("Expected different type of token.");
+			}
+			
+			return std::get<T>(value);
+		}
+	};
 }
 
 // First constructor parameter.
@@ -47,7 +100,7 @@
 }
 
 // Define token type
-%define api.value.type {std::variant<std::string, unsigned long long>}
+%define api.value.type {Token}
 
 // To correctly destroy symbols.
 %define parse.assert
@@ -64,35 +117,69 @@
 %token VOID
 %token WHILE
 
-%token INT
-%token STRING
-%token FLOAT
+%token <terminal<Datatype>()> DATA_TYPE
 
-%token IDENTIFIER
+%token <terminal<std::string>()>IDENTIFIER
 
 %token LITERAL
 
+%token LPAR
+%token RPAR
+%token RBRA
+%token LBRA
+%token COMMA
+
 %locations
+
+%nterm <nonterminal<PossibleDatatype>()> decl_type
+%nterm <nonterminal<Declaration>()> decl
+%nterm <nonterminal<Arglist>()> args
+%nterm <nonterminal<Arglist>()> more_args
+%nterm <nonterminal<Arglist>()> arg_list
 
 %%
 
-start : keyword start
-      | data_type start
-      | END {(void) parser;}
+start : function_definition start
+      | class_declaration start
+      | eof
+      ;
 
-keyword : CLASS
-	| ELSE
-	| IF
-	| NEW
-	| RETURN
-	| SUPER
-	| THIS
-	| VOID
-	| WHILE
+eof : END { /*TODO: check defined main*/ (void)parser;}
+    ;
 
-data_type : INT
-	  | STRING
-	  | FLOAT
+function_definition : function_declaration LBRA function_body
+		    ;
+
+function_declaration : decl_type IDENTIFIER LPAR arg_list { }
+		     ;
+
+function_body : statement function_body
+	      | RBRA
+	      ;
+
+statement : {}
+	  ;
+
+arg_list : VOID RPAR { $$ = {}; }
+	 | args { $$ = $1; }
+	 ;
+
+args : decl more_args { $2.insert($2.begin(), $1); $$ = $2; }
+     ;
+
+more_args: COMMA decl more_args { $3.insert($3.begin(), $2); $$ = std::move($3); }
+	 | RPAR {$$ = {};}
+	 ;
+
+decl : DATA_TYPE IDENTIFIER { $$ = {$1, $2}; }
+     ;
+
+class_declaration : CLASS
+		  ;
+
+decl_type : DATA_TYPE { $$ = $1; }
+	  | VOID { $$ = PossibleDatatype(); }
+	  ;
 
 %%
 

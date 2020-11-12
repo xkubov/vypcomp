@@ -66,17 +66,18 @@ std::ostringstream buffer;
 }
 
 class   { return token::CLASS; }
+void    { return token::VOID; }
 else    { return token::ELSE; }
-float   { return token::FLOAT; }
 if      { return token::IF; }
-int     { return token::INT; }
 new     { return token::NEW; }
 return  { return token::RETURN; }
-string  { return token::STRING; }
 super   { return token::SUPER; }
 this    { return token::THIS; }
-void    { return token::VOID; }
 while   { return token::WHILE; }
+
+int     { *yylval = Datatype::Int; return token::DATA_TYPE; }
+float   { *yylval = Datatype::Float; return token::DATA_TYPE; }
+string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
 
@@ -89,6 +90,12 @@ while   { return token::WHILE; }
 	*yylval = strtoull(yytext, nullptr, 10);
 	return token::LITERAL;
 }
+
+[(]  {return token::LPAR;}
+[)]  {return token::RPAR;}
+[,]  {return token::COMMA;}
+[{]  {return token::LBRA;}
+[}]  {return token::RBRA;}
 
 .  {
 	// TODO: parse word and print it.
