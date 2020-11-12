@@ -38,6 +38,9 @@
 	using Arglist = std::vector<Declaration>;
 	using PossibleDatatype = std::optional<Datatype>;
 
+	/**
+	 * Token holds one of the following types:
+	 */
 	using TokenImpl = std::variant<
 		std::string,
 		unsigned long long,
@@ -47,6 +50,17 @@
 		PossibleDatatype
 	>;
 
+	/**
+	 * Provides wrapper around token for eazy intergration
+	 * with bison. As type of tokens/nonterminals
+	 * you must specify function call (either nonterminal/terminal).
+	 *
+	 * Example:
+	 * To create a nonterminal with type string:
+	 * ```
+	 *     %nterm <nonterminal<std::string>()> example
+	 * ```
+	 */
 	struct Token
 	{
 		TokenImpl value;
