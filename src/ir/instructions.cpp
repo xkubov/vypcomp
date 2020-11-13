@@ -22,10 +22,10 @@ Instruction::Ptr Instruction::next() const
 }
 
 // ------------------------------
-// InstructionBlock
+// BasicBlock
 // ------------------------------
 
-InstructionBlock::InstructionBlock(const std::string& name, const std::string& suf)
+BasicBlock::BasicBlock(const std::string& name, const std::string& suf)
 {
 	static uint64_t ID = 0;
 
@@ -35,25 +35,39 @@ InstructionBlock::InstructionBlock(const std::string& name, const std::string& s
 		ID++;
 	}
 
-	name = name+suffix;
+	_name = name+suffix;
 }
 
-void InstructionBlock::setNext(InstructionBlock::Ptr instr)
+BasicBlock::Ptr BasicBlock::create()
 {
-	_next = next;
+	return BasicBlock::Ptr(new BasicBlock("label", ""));
 }
 
-InstructionBlock::Ptr InstructionBlock::next() const
+void BasicBlock::setNext(BasicBlock::Ptr instr)
+{
+	_next = instr;
+}
+
+void BasicBlock::addFirst(Instruction::Ptr first)
+{
+	if (_first) {
+		first->setNext(first);
+	}
+
+	_first = first;
+}
+
+BasicBlock::Ptr BasicBlock::next() const
 {
 	return _next;
 }
 
-Instruction::Ptr InstructionBlock::first() const
+Instruction::Ptr BasicBlock::first() const
 {
 	return _first;
 }
 
-Instruction::Ptr InstructionBlock::last() const
+Instruction::Ptr BasicBlock::last() const
 {
 	Instruction::Ptr prev = nullptr;
 	for (auto it = _first; it != nullptr; it = it->next()) {
@@ -61,6 +75,11 @@ Instruction::Ptr InstructionBlock::last() const
 	}
 
 	return prev;
+}
+
+std::string BasicBlock::name() const
+{
+	return _name;
 }
 
 // ------------------------------
@@ -72,20 +91,20 @@ Function::Function(const Function::Signature& sig)
 	std::tie(_type, _name, _args) = sig;
 }
 
-void Function::setFirst(const InstructionBlock::Ptr body)
+void Function::setFirst(const BasicBlock::Ptr body)
 {
 	_first = body;
 }
 
-InstructionBlock::Ptr Function::first() const
+BasicBlock::Ptr Function::first() const
 {
 	return _first;
 }
 
-InstructionBlock::Ptr Function::last() const
+BasicBlock::Ptr Function::last() const
 {
 	auto prev = _first;
-	for (auto it = _first; it != nullptr; it+=it->next()) {
+	for (auto it = _first; it != nullptr; it = it->next()) {
 		prev = it;
 	}
 
@@ -94,7 +113,7 @@ InstructionBlock::Ptr Function::last() const
 
 bool Function::isVoid() const
 {
-	return _type;
+	return _type.has_value();
 }
 
 // ------------------------------
@@ -102,8 +121,8 @@ bool Function::isVoid() const
 // ------------------------------
 
 BranchInstruction::BranchInstruction(
-		InstructionBlock::Ptr ifBlock,
-		InstructionBlock::Ptr elseBlock):
+		BasicBlock::Ptr ifBlock,
+		BasicBlock::Ptr elseBlock):
 	_if(ifBlock),
 	_else(elseBlock)
 {
@@ -113,7 +132,7 @@ BranchInstruction::BranchInstruction(
 // LoopInstruction
 // ------------------------------
 
-LoopInstruction::LoopInstruction(InstructionBlock::Ptr body):
+LoopInstruction::LoopInstruction(BasicBlock::Ptr body):
 	_body(body)
 {
 }

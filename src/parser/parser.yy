@@ -20,11 +20,11 @@
 
 	#include "vypcomp/ir/instructions.h"
 
-	// We want to use these classes during parsing.
 	namespace vypcomp {
 
 	using namespace ir;
 
+	// We want to use these classes during parsing.
 	class Scanner;
 	class LangParser;
 
@@ -39,6 +39,7 @@
 		Declaration,
 		PossibleDatatype,
 		Instruction::Ptr,
+		BasicBlock::Ptr,
 		Function::Ptr
 	>;
 
@@ -63,6 +64,17 @@
 			return *this;
 		}
 
+		/**
+		 * Provides "datatype" to be declared for nonterminals.
+		 * Nonterminals are spectial in form that we do not want
+		 * to exception happen if it does not holds correct type.
+		 * Nonterminals are initialized in this module and only
+		 * in this module.
+		 * Each semantic rule recursively goes through derivation tree
+		 * and at the leaf level constructs new nonterminal's value.
+		 * During descending the nonterminal has initial - not initialized
+		 * value.
+		 */
 		template<typename T>
 		T& nonterminal() {
 			if (!std::holds_alternative<T>(value)) {
@@ -72,6 +84,10 @@
 			return std::get<T>(value);
 		}
 
+		/**
+		 * Terminals are initialized by scanner. This means that if they do not hold
+		 * required value it is really bad - scanner is malfunctioning.
+		 */
 		template<typename T>
 		T& terminal() {
 			if (!std::holds_alternative<T>(value)) {
@@ -123,6 +139,7 @@
 %token THIS
 %token VOID
 %token WHILE
+%token FOR
 
 %token <terminal<Datatype>()> DATA_TYPE
 
@@ -135,6 +152,9 @@
 %token RBRA
 %token LBRA
 %token COMMA
+%token ASSIGNMENT
+
+%token SEMICOLON
 
 %locations
 
@@ -143,9 +163,11 @@
 %nterm <nonterminal<Arglist>()> args
 %nterm <nonterminal<Arglist>()> more_args
 %nterm <nonterminal<Arglist>()> arg_list
-%nterm <nonterminal<Instruction::Ptr>()> function_body
-%nterm <nonterminal<Instruction::Ptr>()> statement
 %nterm <nonterminal<Function::Ptr>()> function_declaration
+%nterm <nonterminal<BasicBlock::Ptr>()> function_body
+%nterm <nonterminal<BasicBlock::Ptr>()> basic_block
+%nterm <nonterminal<BasicBlock::Ptr>()> new_block
+%nterm <nonterminal<Instruction::Ptr>()> statement
 
 %%
 
@@ -159,7 +181,11 @@ eof : END {
 };
 
 function_definition : function_declaration LBRA function_body {
-	$1->setBody($3);
+	$1->setFirst($3);
+
+	for (auto it = $1->first(); it != nullptr; it = it->next()) {
+		std::cout << "basic block: " << it->name() << std::endl;
+	}
 };
 
 function_declaration : decl_type IDENTIFIER LPAR arg_list {
@@ -168,11 +194,31 @@ function_declaration : decl_type IDENTIFIER LPAR arg_list {
 	$$ = fun;
 };
 
-function_body : statement function_body { $1->setNext($2); $$ = $1; }
+function_body : basic_block function_body { $1->setNext($2); $$ = $1; }
 	  | RBRA { $$ = nullptr; }
 	  ;
-statement : RETURN { $$ = nullptr; }
+
+basic_block : statement basic_block { $2->addFirst($1) ; $$ = $2; }
+	    | new_block { auto bb = BasicBlock::create(); bb->setNext($1); $$ = bb;}
+	    ;
+
+new_block : RBRA { $$ = nullptr; }
+	  | IF  { $$ = BasicBlock::create(); }
 	  ;
+
+statement : RETURN { $$ = nullptr; }
+	  | assignment_or_function_call { $$ = nullptr; }
+	  | declaration {$$ = nullptr; }
+	  ;
+
+assignment_or_function_call : IDENTIFIER
+			    ;
+
+declaration : decl IDENTIFIER optional_assignment
+	    ;
+
+optional_assignment : SEMICOLON
+		    ;
 
 arg_list : VOID RPAR { $$ = {}; }
 	 | args { $$ = $1; }

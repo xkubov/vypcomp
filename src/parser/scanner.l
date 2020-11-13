@@ -74,6 +74,7 @@ return  { return token::RETURN; }
 super   { return token::SUPER; }
 this    { return token::THIS; }
 while   { return token::WHILE; }
+for     { return token::FOR; }
 
 int     { *yylval = Datatype::Int; return token::DATA_TYPE; }
 float   { *yylval = Datatype::Float; return token::DATA_TYPE; }
@@ -96,6 +97,8 @@ string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 [,]  {return token::COMMA;}
 [{]  {return token::LBRA;}
 [}]  {return token::RBRA;}
+[;]  {return token::SEMICOLON;}
+[=]  {return token::ASSIGNMENT;}
 
 .  {
 	// TODO: parse word and print it.

@@ -39,10 +39,42 @@ public:
 
 	Instruction();
 
-	void setNext(Instruction::Ptr);
+	void setNext(Instruction::Ptr next);
+	Instruction::Ptr next() const;
 
 protected:
 	Instruction::Ptr _next = nullptr;
+};
+
+
+/**
+ * Represents instruction block that can be named.
+ */
+class BasicBlock {
+public:
+	using Ptr = std::shared_ptr<BasicBlock>;
+
+	/// Name if not specified set randomly.
+	BasicBlock(
+		const std::string& name = {},
+		const std::string& suffix = {}
+	);
+
+	static BasicBlock::Ptr create();
+
+	void setNext(BasicBlock::Ptr instr);
+	BasicBlock::Ptr next() const;
+
+	void addFirst(Instruction::Ptr first);
+	Instruction::Ptr first() const;
+	Instruction::Ptr last() const;
+
+	std::string name() const;
+
+private:
+	BasicBlock::Ptr _next;
+	Instruction::Ptr _first = nullptr;
+	std::string _name = "";
 };
 
 class Function: public Instruction {
@@ -52,14 +84,44 @@ public:
 
 	Function(const Signature& sig);
 
-	void setBody(Instruction::Ptr body);
+	void setFirst(const BasicBlock::Ptr body);
+	BasicBlock::Ptr first() const;
+	BasicBlock::Ptr last() const;
+
+	bool isVoid() const;
 
 private:
 	PossibleDatatype _type;
 	std::string _name;
 	Arglist _args;
 
-	Instruction::Ptr _body;
+	BasicBlock::Ptr _first = nullptr;
+};
+
+class BranchInstruction: public Instruction {
+public:
+	using Ptr = std::shared_ptr<BranchInstruction>;
+
+	BranchInstruction(
+		BasicBlock::Ptr ifBlock,
+		BasicBlock::Ptr elseBlock
+	);
+
+private:
+	BasicBlock::Ptr _if = nullptr;
+	BasicBlock::Ptr _else = nullptr;
+};
+
+class LoopInstruction: public Instruction {
+public:
+	using Ptr = std::shared_ptr<LoopInstruction>;
+
+	LoopInstruction(
+		BasicBlock::Ptr loop
+	);
+
+private:
+	BasicBlock::Ptr _body = nullptr;
 };
 
 }
