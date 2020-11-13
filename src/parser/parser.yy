@@ -166,7 +166,7 @@
 %nterm <nonterminal<Function::Ptr>()> function_declaration
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
-%nterm <nonterminal<BasicBlock::Ptr>()> new_block
+%nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<Instruction::Ptr>()> statement
 
 %%
@@ -180,8 +180,8 @@ eof : END {
 	parser.ensureMainDefined();
 };
 
-function_definition : function_declaration LBRA function_body {
-	$1->setFirst($3);
+function_definition : function_declaration function_body {
+	$1->setFirst($2);
 
 	for (auto it = $1->first(); it != nullptr; it = it->next()) {
 		std::cout << "basic block: " << it->name() << std::endl;
@@ -194,24 +194,23 @@ function_declaration : decl_type IDENTIFIER LPAR arg_list {
 	$$ = fun;
 };
 
-function_body : basic_block function_body { $1->setNext($2); $$ = $1; }
-	  | RBRA { $$ = nullptr; }
-	  ;
+function_body : LBRA basic_block { $$ = $2; }
+	      ;
 
-basic_block : statement basic_block { $2->addFirst($1) ; $$ = $2; }
-	    | new_block { auto bb = BasicBlock::create(); bb->setNext($1); $$ = bb;}
+basic_block : statement basic_block { $2->addFirst($1); $$ = $2; }
+	    | end_of_block { auto bb = BasicBlock::create(); bb->setNext($1); $$ = bb; }
 	    ;
 
-new_block : RBRA { $$ = nullptr; }
-	  | IF  { $$ = BasicBlock::create(); }
-	  ;
+end_of_block : RBRA { $$ = nullptr; }
+	     | IF basic_block { $$ = $2; /*TODO: Generate two blocks and new instruction*/ }
+	     ;
 
 statement : RETURN { $$ = nullptr; }
 	  | assignment_or_function_call { $$ = nullptr; }
 	  | declaration {$$ = nullptr; }
 	  ;
 
-assignment_or_function_call : IDENTIFIER
+assignment_or_function_call : IDENTIFIER {}
 			    ;
 
 declaration : decl IDENTIFIER optional_assignment
