@@ -18,6 +18,8 @@ add_library(Parser
     ${BISON_BisonParser_OUTPUTS}
 )
 
+target_link_libraries(Parser Vypcomp::Ir)
+
 add_library(Vypcomp::Parser ALIAS Parser)
 
 if (MSVC)

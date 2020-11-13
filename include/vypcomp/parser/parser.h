@@ -4,6 +4,7 @@
 #include <string>
 
 #include "vypcomp/parser/scanner.h"
+#include "location.hh"
 #include "bison_parser.tab.hpp"
 
 namespace vypcomp {
@@ -27,6 +28,10 @@ public:
 
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
+
+	void addFunction(ir::Function::Ptr fun);
+
+	void ensureMainDefined() const;
 
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;

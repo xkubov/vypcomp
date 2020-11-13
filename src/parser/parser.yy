@@ -14,29 +14,19 @@
 
 %code requires {
 	// For our plymorfous token.
+	#include <iostream>
 	#include <variant>
-	#include <vector>
-	#include <optional>
-	#include <tuple>
 	#include <string>
+
+	#include "vypcomp/ir/instructions.h"
 
 	// We want to use these classes during parsing.
 	namespace vypcomp {
-		class Scanner;
-		class LangParser;
-	}
 
-	/**
-	 * Provides datatype options.
-	 */
-	enum class Datatype : int {
-		String,
-		Float,
-		Int
-	};
-	using Declaration = std::pair<Datatype, std::string>;
-	using Arglist = std::vector<Declaration>;
-	using PossibleDatatype = std::optional<Datatype>;
+	using namespace ir;
+
+	class Scanner;
+	class LangParser;
 
 	/**
 	 * Token holds one of the following types:
@@ -47,7 +37,9 @@
 		Datatype,
 		Arglist,
 		Declaration,
-		PossibleDatatype
+		PossibleDatatype,
+		Instruction::Ptr,
+		Function::Ptr
 	>;
 
 	/**
@@ -89,6 +81,7 @@
 			return std::get<T>(value);
 		}
 	};
+	}
 }
 
 // First constructor parameter.
@@ -150,6 +143,9 @@
 %nterm <nonterminal<Arglist>()> args
 %nterm <nonterminal<Arglist>()> more_args
 %nterm <nonterminal<Arglist>()> arg_list
+%nterm <nonterminal<Instruction::Ptr>()> function_body
+%nterm <nonterminal<Instruction::Ptr>()> statement
+%nterm <nonterminal<Function::Ptr>()> function_declaration
 
 %%
 
@@ -158,27 +154,31 @@ start : function_definition start
       | eof
       ;
 
-eof : END { /*TODO: check defined main*/ (void)parser;}
-    ;
+eof : END {
+	parser.ensureMainDefined();
+};
 
-function_definition : function_declaration LBRA function_body
-		    ;
+function_definition : function_declaration LBRA function_body {
+	$1->setBody($3);
+};
 
-function_declaration : decl_type IDENTIFIER LPAR arg_list { }
-		     ;
+function_declaration : decl_type IDENTIFIER LPAR arg_list {
+	Function::Ptr fun(new Function({ $1, $2, $4 }));
+	parser.addFunction(fun);
+	$$ = fun;
+};
 
-function_body : statement function_body
-	      | RBRA
-	      ;
-
-statement : {}
+function_body : statement function_body { $1->setNext($2); $$ = $1; }
+	  | RBRA { $$ = nullptr; }
+	  ;
+statement : RETURN { $$ = nullptr; }
 	  ;
 
 arg_list : VOID RPAR { $$ = {}; }
 	 | args { $$ = $1; }
 	 ;
 
-args : decl more_args { $2.insert($2.begin(), $1); $$ = $2; }
+args : decl more_args { $2.insert($2.begin(), $1); $$ = std::move($2); }
      ;
 
 more_args: COMMA decl more_args { $3.insert($3.begin(), $2); $$ = std::move($3); }

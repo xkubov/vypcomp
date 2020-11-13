@@ -42,6 +42,14 @@ void LangParser::generateOutput(std::ostream &output) const
 	throw std::runtime_error("Not implemented.");
 }
 
+void LangParser::addFunction(ir::Function::Ptr fun)
+{
+}
+
+void LangParser::ensureMainDefined() const
+{
+}
+
 SyntaxError::SyntaxError(const std::string& msg):
 	msg(msg)
 {
