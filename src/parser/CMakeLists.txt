@@ -14,6 +14,7 @@ ADD_FLEX_BISON_DEPENDENCY(FlexScanner BisonParser)
 
 add_library(Parser
     parser.cpp
+    symbol_table.cpp
     ${FLEX_FlexScanner_OUTPUTS}
     ${BISON_BisonParser_OUTPUTS}
 )

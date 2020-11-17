@@ -124,5 +124,27 @@ private:
 	BasicBlock::Ptr _body = nullptr;
 };
 
+class AllocaInstruction: public Instruction {
+public:
+	using Ptr = std::shared_ptr<AllocaInstruction>;
+
+	/**
+	 * Initial value is stored in form of string.
+	 */
+	AllocaInstruction(
+		const Declaration& decl,
+		const std::string& init = {}
+	);
+
+	Datatype type() const;
+	std::string name() const;
+	std::string init() const;
+
+private:
+	std::string _varName;
+	Datatype _type;
+	std::string _init;
+};
+
 }
 }

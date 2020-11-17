@@ -136,3 +136,28 @@ LoopInstruction::LoopInstruction(BasicBlock::Ptr body):
 	_body(body)
 {
 }
+
+// ------------------------------
+// AllocaInstruction
+// ------------------------------
+
+AllocaInstruction::AllocaInstruction(const Declaration& decl, const std::string& init):
+	_init(init)
+{
+	std::tie(_type, _varName) = decl;
+}
+
+Datatype AllocaInstruction::type() const
+{
+	return _type;
+}
+
+std::string AllocaInstruction::name() const
+{
+	return _varName;
+}
+
+std::string AllocaInstruction::init() const
+{
+	return _init;
+}
