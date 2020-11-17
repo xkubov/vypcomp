@@ -9,18 +9,14 @@ SymbolTable::SymbolTable(bool storesFunctions):
 
 bool SymbolTable::insert(const std::pair<Key, Symbol>& element)
 {
-	auto [k, v] = element;
-	if (has(k)) {
-		return false;
-	}
-
+	auto [k,v] = element;
 	if (_storesFunctions) {
 		if (std::holds_alternative<ir::Function::Ptr>(v)) {
 			return false;
 		}
 	}
 
-	_table.emplace(element);
+	_table[k] = v;
 	return true;
 }
 
@@ -29,10 +25,10 @@ bool SymbolTable::has(const Key& symb) const
 	return _table.count(symb);
 }
 
-std::optional<SymbolTable::Symbol> SymbolTable::get(const Key& key) const
+SymbolTable::Symbol SymbolTable::get(const Key& key) const
 {
 	if (!has(key))
-		return {};
+		throw std::runtime_error("Symbol table does not contain value: "+key);
 
 	return _table.at(key);
 }

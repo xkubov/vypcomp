@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <optional>
 #include <variant>
 
 #include "vypcomp/ir/instructions.h"
@@ -21,7 +20,7 @@ public:
 	bool insert(const std::pair<Key, Symbol>& element);
 
 	bool has(const Key& symb) const;
-	std::optional<Symbol> get(const Key& symb) const;
+	Symbol get(const Key& symb) const;
 
 private:
 	std::map<Key, Symbol> _table;
