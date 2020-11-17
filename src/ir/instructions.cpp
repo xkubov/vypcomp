@@ -88,7 +88,13 @@ std::string BasicBlock::name() const
 
 Function::Function(const Function::Signature& sig)
 {
-	std::tie(_type, _name, _args) = sig;
+	Arglist args;
+	std::tie(_type, _name, args) = sig;
+	for (auto decl: args) {
+		_args.push_back(
+			AllocaInstruction::Ptr(new AllocaInstruction(decl))
+		);
+	}
 }
 
 void Function::setFirst(const BasicBlock::Ptr body)
@@ -114,6 +120,21 @@ BasicBlock::Ptr Function::last() const
 bool Function::isVoid() const
 {
 	return _type.has_value();
+}
+
+std::string Function::name() const
+{
+	return _name;
+}
+
+PossibleDatatype Function::type() const
+{
+	return _type;
+}
+
+const std::vector<AllocaInstruction::Ptr> Function::args() const
+{
+	return _args;
 }
 
 // ------------------------------

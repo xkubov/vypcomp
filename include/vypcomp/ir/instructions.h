@@ -77,6 +77,28 @@ private:
 	std::string _name = "";
 };
 
+class AllocaInstruction: public Instruction {
+public:
+	using Ptr = std::shared_ptr<AllocaInstruction>;
+
+	/**
+	 * Initial value is stored in form of string.
+	 */
+	AllocaInstruction(
+		const Declaration& decl,
+		const std::string& init = {}
+	);
+
+	Datatype type() const;
+	std::string name() const;
+	std::string init() const;
+
+private:
+	std::string _varName;
+	Datatype _type;
+	std::string _init;
+};
+
 class Function: public Instruction {
 public:
 	using Ptr = std::shared_ptr<Function>;
@@ -90,10 +112,14 @@ public:
 
 	bool isVoid() const;
 
+	std::string name() const;
+	PossibleDatatype type() const;
+	const std::vector<AllocaInstruction::Ptr> args() const;
+
 private:
 	PossibleDatatype _type;
 	std::string _name;
-	Arglist _args;
+	std::vector<AllocaInstruction::Ptr> _args;
 
 	BasicBlock::Ptr _first = nullptr;
 };
@@ -122,28 +148,6 @@ public:
 
 private:
 	BasicBlock::Ptr _body = nullptr;
-};
-
-class AllocaInstruction: public Instruction {
-public:
-	using Ptr = std::shared_ptr<AllocaInstruction>;
-
-	/**
-	 * Initial value is stored in form of string.
-	 */
-	AllocaInstruction(
-		const Declaration& decl,
-		const std::string& init = {}
-	);
-
-	Datatype type() const;
-	std::string name() const;
-	std::string init() const;
-
-private:
-	std::string _varName;
-	Datatype _type;
-	std::string _init;
 };
 
 }
