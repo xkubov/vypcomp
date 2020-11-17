@@ -4,6 +4,8 @@
 #include <string>
 
 #include "vypcomp/parser/scanner.h"
+#include "vypcomp/parser/symbol_table.h"
+
 #include "location.hh"
 #include "bison_parser.tab.hpp"
 
@@ -15,7 +17,8 @@ namespace vypcomp {
  */
 class LangParser {
 public:
-	LangParser() = default;
+	LangParser();
+	LangParser(const SymbolTable& global);
 
 	virtual ~LangParser();
 
@@ -31,15 +34,23 @@ public:
 
 	void addFunction(ir::Function::Ptr fun);
 
+	void verify(const ir::AllocaInstruction::Ptr& decl);
+
 	void ensureMainDefined() const;
 
 	void pushSymbolTable();
 	void popSymbolTable();
 	void leaveFunction();
 
+	std::optional<SymbolTable::Symbol> searchTables(const SymbolTable::Key& key) const;
+
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;
 	std::unique_ptr<vypcomp::Scanner> _scanner;
+
+	bool _indexRun = false;
+
+	std::vector<vypcomp::SymbolTable> _tables;
 };
 
 class SyntaxError: public std::exception {
