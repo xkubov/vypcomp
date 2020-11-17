@@ -33,6 +33,10 @@ public:
 
 	void ensureMainDefined() const;
 
+	void pushSymbolTable();
+	void popSymbolTable();
+	void leaveFunction();
+
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;
 	std::unique_ptr<vypcomp::Scanner> _scanner;

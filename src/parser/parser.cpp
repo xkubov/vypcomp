@@ -44,10 +44,27 @@ void LangParser::generateOutput(std::ostream &output) const
 
 void LangParser::addFunction(ir::Function::Ptr fun)
 {
+	throw std::runtime_error("Not implemented.");
 }
 
 void LangParser::ensureMainDefined() const
 {
+	throw std::runtime_error("Not implemented.");
+}
+
+void LangParser::pushSymbolTable()
+{
+	throw std::runtime_error("Not implemented.");
+}
+
+void LangParser::popSymbolTable()
+{
+	throw std::runtime_error("Not implemented.");
+}
+
+void LangParser::leaveFunction()
+{
+	throw std::runtime_error("Not implemented.");
 }
 
 SyntaxError::SyntaxError(const std::string& msg):

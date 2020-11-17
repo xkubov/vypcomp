@@ -182,15 +182,14 @@ eof : END {
 
 function_definition : function_declaration function_body {
 	$1->setFirst($2);
-
-	for (auto it = $1->first(); it != nullptr; it = it->next()) {
-		std::cout << "basic block: " << it->name() << std::endl;
-	}
+	parser.leaveFunction();
 };
 
 function_declaration : decl_type IDENTIFIER LPAR arg_list {
 	Function::Ptr fun(new Function({ $1, $2, $4 }));
+
 	parser.addFunction(fun);
+
 	$$ = fun;
 };
 
