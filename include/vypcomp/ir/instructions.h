@@ -120,6 +120,7 @@ public:
 	std::string name() const;
 	PossibleDatatype type() const;
 	const std::vector<AllocaInstruction::Ptr> args() const;
+	std::vector<Datatype> argTypes() const;
 
 private:
 	PossibleDatatype _type;
@@ -164,7 +165,9 @@ public:
 	void add(Function::Ptr methods, bool isPublic = true);
 	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
 
-	Function::Ptr getPublicMethod(const std::string& name) const;
+	Function::Ptr getPublicMethod(
+		const std::string& name,
+		const std::vector<Datatype>& argtypes) const;
 	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
 
 	const std::vector<Function::Ptr> publicMethods() const;

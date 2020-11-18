@@ -142,6 +142,16 @@ const std::vector<AllocaInstruction::Ptr> Function::args() const
 	return _args;
 }
 
+std::vector<Datatype> Function::argTypes() const
+{
+	std::vector<Datatype> types;
+	for (auto arg: _args) {
+		types.push_back(arg->type());
+	}
+
+	return types;
+}
+
 // ------------------------------
 // BranchInstruction
 // ------------------------------
@@ -223,22 +233,22 @@ void Class::add(AllocaInstruction::Ptr attr, bool isPublic)
 		_privateAttrs.push_back(attr);
 }
 
-Function::Ptr Class::getPublicMethod(const std::string &name) const
+Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<Datatype>& argtypes) const
 {
-	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
-		return method->name() == name;
+	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name, argtypes](const auto& method) {
+		return method->name() == name && method->argTypes() == argtypes;
 	});
 
 	if (it != _publicMethods.end())
 		return *it;
 
 	if (_parent)
-		return _parent->getPublicMethod(name);
+		return _parent->getPublicMethod(name, argtypes);
 
 	return nullptr;
 }
 
-AllocaInstruction::Ptr Class::getPublicAttribute(const std::string &name) const
+AllocaInstruction::Ptr Class::getPublicAttribute(const std::string& name) const
 {
 	auto it = std::find_if(_publicAttrs.begin(), _publicAttrs.end(), [name](const auto& attr) {
 		return attr->name() == name;
