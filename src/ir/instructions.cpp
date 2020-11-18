@@ -262,3 +262,8 @@ AllocaInstruction::Ptr Class::getPublicAttribute(const std::string& name) const
 
 	return nullptr;
 }
+
+std::string Class::name() const
+{
+	return _name;
+}

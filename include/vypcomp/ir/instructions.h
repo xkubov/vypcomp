@@ -176,6 +176,8 @@ public:
 	const std::vector<AllocaInstruction::Ptr> publicAttributes() const;
 	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
 
+	std::string name() const;
+
 private:
 	const std::string _name;
 	Class::Ptr _parent;

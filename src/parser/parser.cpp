@@ -1,5 +1,6 @@
 #include <fstream>
 #include <stdexcept>
+#include <variant>
 
 #include "vypcomp/parser/parser.h"
 
@@ -20,6 +21,27 @@ LangParser::LangParser(const SymbolTable& global):
 
 LangParser::~LangParser()
 {
+}
+
+Class::Ptr LangParser::getBaseClass(const std::string &name)
+{
+	if (auto symbol = searchTables(name)) {
+		if (!std::holds_alternative<Class::Ptr>(*symbol)) {
+			std::string msg = std::holds_alternative<Function::Ptr>(*symbol) ?
+					"cannot derive from function" :
+					"invalid derivation of class";
+
+			throw SemanticError(msg);
+		}
+
+		return std::get<Class::Ptr>(*symbol);
+	}
+
+	if (_indexRun) {
+	}
+	throw std::runtime_error("Not implemented");
+
+	return nullptr;
 }
 
 void LangParser::parse(const std::string &filename)
@@ -55,7 +77,7 @@ void LangParser::generateOutput(std::ostream &output) const
 	throw std::runtime_error("Not implemented.");
 }
 
-void LangParser::addFunction(ir::Function::Ptr fun)
+void LangParser::parseStart(ir::Function::Ptr fun)
 {
 	if (searchTables(fun->name())) {
 		// All redefinitions will be sorted out after index run.
@@ -73,6 +95,21 @@ void LangParser::addFunction(ir::Function::Ptr fun)
 	}
 }
 
+void LangParser::parseStart(ir::Class::Ptr cl)
+{
+	if (searchTables(cl->name())) {
+		// All redefinitions will be sorted out after index run.
+		// In non-indexRun we must ignore "redefinitions" as we are slowly
+		// replacing each function.
+		if (_indexRun)
+			throw SemanticError("Symbol "+cl->name()+" already defined.");
+	}
+
+	_tables.back().insert({cl->name(), cl});
+	pushSymbolTable(true);
+	_currClass = cl;
+}
+
 void LangParser::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (_indexRun) {
@@ -84,12 +121,15 @@ void LangParser::verify(const ir::AllocaInstruction::Ptr& decl)
 
 void LangParser::ensureMainDefined() const
 {
-	throw std::runtime_error("Not implemented.");
+	if (searchTables("main"))
+		return;
+
+	throw SemanticError("Main not defined.");
 }
 
-void LangParser::pushSymbolTable()
+void LangParser::pushSymbolTable(bool storeFunctions)
 {
-	throw std::runtime_error("Not implemented.");
+	_tables.push_back(SymbolTable(storeFunctions));
 }
 
 void LangParser::popSymbolTable()
@@ -98,12 +138,13 @@ void LangParser::popSymbolTable()
 	if (_tables.size() <= 1)
 		return;
 
-	throw std::runtime_error("Not implemented.");
+	_tables.erase(_tables.end());
 }
 
-void LangParser::leaveFunction()
+void LangParser::parseEnd()
 {
-	throw std::runtime_error("Not implemented.");
+	popSymbolTable();
+	_currClass = nullptr;
 }
 
 std::optional<SymbolTable::Symbol> LangParser::searchTables(const SymbolTable::Key& key) const

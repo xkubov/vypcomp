@@ -11,12 +11,13 @@ class SymbolTable {
 public:
 	using Symbol = std::variant<
 			ir::Function::Ptr,
+			ir::Class::Ptr,
 			ir::AllocaInstruction::Ptr>;
 
 	using Key = std::string;
 
 	SymbolTable(bool storesFunctions = false);
-	
+
 	bool insert(const std::pair<Key, Symbol>& element);
 
 	bool has(const Key& symb) const;

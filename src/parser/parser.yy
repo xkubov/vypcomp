@@ -40,7 +40,8 @@
 		PossibleDatatype,
 		Instruction::Ptr,
 		BasicBlock::Ptr,
-		Function::Ptr
+		Function::Ptr,
+		Class::Ptr
 	>;
 
 	/**
@@ -155,6 +156,7 @@
 %token ASSIGNMENT
 
 %token SEMICOLON
+%token COLON
 
 %locations
 
@@ -168,11 +170,13 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<Instruction::Ptr>()> statement
+%nterm <nonterminal<Class::Ptr>()> class_declaration
+%nterm <nonterminal<Class::Ptr>()> parent_class
 
 %%
 
 start : function_definition start
-      | class_declaration start
+      | class_definition start
       | eof
       ;
 
@@ -182,13 +186,13 @@ eof : END {
 
 function_definition : function_declaration function_body {
 	$1->setFirst($2);
-	parser.leaveFunction();
+	parser.parseEnd();
 };
 
 function_declaration : decl_type IDENTIFIER LPAR arg_list {
 	Function::Ptr fun(new Function({ $1, $2, $4 }));
 
-	parser.addFunction(fun);
+	parser.parseStart(fun);
 
 	$$ = fun;
 };
@@ -232,8 +236,21 @@ more_args: COMMA decl more_args { $3.insert($3.begin(), $2); $$ = std::move($3);
 decl : DATA_TYPE IDENTIFIER { $$ = {$1, $2}; }
      ;
 
-class_declaration : CLASS
-		  ;
+class_definition : class_declaration class_body {
+	parser.parseEnd();
+};
+
+class_declaration : CLASS IDENTIFIER parent_class {
+	Class::Ptr cl(new Class($2, $3));
+	parser.parseStart(cl);
+	$$ = cl;
+};
+
+class_body : LBRA;
+
+parent_class: COLON IDENTIFIER LBRA { $$ = parser.getBaseClass($2); }
+	    | LBRA { $$ = nullptr; }
+	    ;
 
 decl_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }

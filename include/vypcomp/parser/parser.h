@@ -32,15 +32,19 @@ public:
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
 
-	void addFunction(ir::Function::Ptr fun);
+	Class::Ptr getBaseClass(const std::string& name);
+
+	void parseStart(ir::Function::Ptr fun);
+	void parseStart(ir::Class::Ptr fun);
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 
 	void ensureMainDefined() const;
 
-	void pushSymbolTable();
+	void pushSymbolTable(bool storeFunctions=false);
 	void popSymbolTable();
-	void leaveFunction();
+
+	void parseEnd();
 
 	std::optional<SymbolTable::Symbol> searchTables(const SymbolTable::Key& key) const;
 
@@ -51,6 +55,7 @@ private:
 	bool _indexRun = false;
 
 	std::vector<vypcomp::SymbolTable> _tables;
+	Class::Ptr _currClass = nullptr;
 };
 
 class SyntaxError: public std::exception {
