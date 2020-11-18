@@ -89,12 +89,15 @@ public:
 		const std::string& init = {}
 	);
 
+	void addPrefix(const std::string& prefix);
+
 	Datatype type() const;
 	std::string name() const;
 	std::string init() const;
 
 private:
 	std::string _varName;
+	std::string _prefix;
 	Datatype _type;
 	std::string _init;
 };
@@ -106,7 +109,9 @@ public:
 
 	Function(const Signature& sig);
 
+	void addPrefix(const std::string& prefix);
 	void setFirst(const BasicBlock::Ptr body);
+
 	BasicBlock::Ptr first() const;
 	BasicBlock::Ptr last() const;
 
@@ -119,6 +124,7 @@ public:
 private:
 	PossibleDatatype _type;
 	std::string _name;
+	std::string _prefix;
 	std::vector<AllocaInstruction::Ptr> _args;
 
 	BasicBlock::Ptr _first = nullptr;
@@ -148,6 +154,32 @@ public:
 
 private:
 	BasicBlock::Ptr _body = nullptr;
+};
+
+class Class: public Instruction {
+public:
+	using Ptr = std::shared_ptr<Class>;
+	Class(const std::string& name, Class::Ptr parent);
+
+	void add(Function::Ptr methods, bool isPublic = true);
+	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
+
+	Function::Ptr getPublicMethod(const std::string& name) const;
+	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
+
+	const std::vector<Function::Ptr> publicMethods() const;
+	const std::vector<Function::Ptr> privateMethods() const;
+
+	const std::vector<AllocaInstruction::Ptr> publicAttributes() const;
+	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
+
+private:
+	const std::string _name;
+	Class::Ptr _parent;
+	std::vector<Function::Ptr> _publicMethods;
+	std::vector<Function::Ptr> _privateMethods;
+	std::vector<AllocaInstruction::Ptr> _publicAttrs;
+	std::vector<AllocaInstruction::Ptr> _privateAttrs;
 };
 
 }

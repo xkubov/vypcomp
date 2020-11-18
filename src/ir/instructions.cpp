@@ -97,6 +97,11 @@ Function::Function(const Function::Signature& sig)
 	}
 }
 
+void Function::addPrefix(const std::string& prefix)
+{
+	_prefix += prefix;
+}
+
 void Function::setFirst(const BasicBlock::Ptr body)
 {
 	_first = body;
@@ -168,6 +173,11 @@ AllocaInstruction::AllocaInstruction(const Declaration& decl, const std::string&
 	std::tie(_type, _varName) = decl;
 }
 
+void AllocaInstruction::addPrefix(const std::string& prefix)
+{
+	_prefix += prefix;
+}
+
 Datatype AllocaInstruction::type() const
 {
 	return _type;
@@ -181,4 +191,64 @@ std::string AllocaInstruction::name() const
 std::string AllocaInstruction::init() const
 {
 	return _init;
+}
+
+// ------------------------------
+// Class
+// ------------------------------
+
+Class::Class(const std::string& name, Class::Ptr parent):
+	_name(name),
+	_parent(parent)
+{
+}
+
+void Class::add(Function::Ptr method, bool isPublic)
+{
+	method->addPrefix(_name);
+
+	if (isPublic)
+		_publicMethods.push_back(method);
+	else
+		_privateMethods.push_back(method);
+}
+
+void Class::add(AllocaInstruction::Ptr attr, bool isPublic)
+{
+	attr->addPrefix(_name);
+
+	if (isPublic)
+		_publicAttrs.push_back(attr);
+	else
+		_privateAttrs.push_back(attr);
+}
+
+Function::Ptr Class::getPublicMethod(const std::string &name) const
+{
+	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
+		return method->name() == name;
+	});
+
+	if (it != _publicMethods.end())
+		return *it;
+
+	if (_parent)
+		return _parent->getPublicMethod(name);
+
+	return nullptr;
+}
+
+AllocaInstruction::Ptr Class::getPublicAttribute(const std::string &name) const
+{
+	auto it = std::find_if(_publicAttrs.begin(), _publicAttrs.end(), [name](const auto& attr) {
+		return attr->name() == name;
+	});
+
+	if (it != _publicAttrs.end())
+		return *it;
+
+	if (_parent)
+		return _parent->getPublicAttribute(name);
+
+	return nullptr;
 }
