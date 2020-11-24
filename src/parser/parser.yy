@@ -170,6 +170,7 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<Instruction::Ptr>()> statement
+%nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<Class::Ptr>()> parent_class
 
@@ -208,10 +209,13 @@ end_of_block : RBRA { $$ = nullptr; }
 	     | IF basic_block { $$ = $2; /*TODO: Generate two blocks and new instruction*/ }
 	     ;
 
-statement : RETURN { $$ = nullptr; }
+statement : return { $$ = $1; }
 	  | assignment_or_function_call { $$ = nullptr; }
 	  | declaration {$$ = nullptr; }
 	  ;
+
+return : RETURN SEMICOLON { $$ = nullptr; }
+       ;
 
 assignment_or_function_call : IDENTIFIER {}
 			    ;
