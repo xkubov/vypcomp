@@ -138,7 +138,7 @@ void LangParser::popSymbolTable()
 	if (_tables.size() <= 1)
 		return;
 
-	_tables.erase(_tables.end());
+	_tables.pop_back();
 }
 
 void LangParser::parseEnd()
