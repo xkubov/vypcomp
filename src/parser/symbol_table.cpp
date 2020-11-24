@@ -10,7 +10,7 @@ SymbolTable::SymbolTable(bool storesFunctions):
 bool SymbolTable::insert(const std::pair<Key, Symbol>& element)
 {
 	auto [k,v] = element;
-	if (_storesFunctions) {
+	if (!_storesFunctions) {
 		if (std::holds_alternative<ir::Function::Ptr>(v)) {
 			return false;
 		}
