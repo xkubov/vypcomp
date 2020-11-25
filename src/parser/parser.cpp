@@ -117,6 +117,15 @@ void LangParser::verify(const ir::AllocaInstruction::Ptr& decl)
 	}
 
 	//TODO: if not index run we have all info needed in global table.
+	if (searchTables(decl->name())) {
+		throw SyntaxError("Redefinition of "+decl->name());
+	}
+}
+
+void LangParser::add(const ir::AllocaInstruction::Ptr &decl)
+{
+	verify(decl);
+	_tables.front().insert({decl->name(), decl});
 }
 
 void LangParser::ensureMainDefined() const

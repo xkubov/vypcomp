@@ -39,6 +39,8 @@
 		Declaration,
 		PossibleDatatype,
 		Instruction::Ptr,
+		std::vector<Instruction::Ptr>,
+		std::vector<std::pair<std::string, std::string>>,
 		BasicBlock::Ptr,
 		Function::Ptr,
 		Class::Ptr
@@ -160,7 +162,7 @@
 
 %locations
 
-%nterm <nonterminal<PossibleDatatype>()> decl_type
+%nterm <nonterminal<PossibleDatatype>()> optional_type
 %nterm <nonterminal<Declaration>()> decl
 %nterm <nonterminal<Arglist>()> args
 %nterm <nonterminal<Arglist>()> more_args
@@ -169,63 +171,204 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
-%nterm <nonterminal<Instruction::Ptr>()> statement
+%nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
+%nterm <nonterminal<std::string>()> optional_assignment
+%nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<Class::Ptr>()> parent_class
+%nterm <nonterminal<std::vector<std::pair<std::string, std::string>>>()> id2init
+%nterm <nonterminal<std::vector<std::pair<std::string, std::string>>>()> at_least_one_id
 
 %%
 
+/**
+ * @brief Parse start.
+ * 
+ * On global scale module consists of function and classes.
+ * Optionaly we can support global variables.
+ */
 start : function_definition start
       | class_definition start
       | eof
       ;
 
+/**
+ * Flex is programmed to return END token at the end of the
+ * input.
+ */
 eof : END {
 	parser.ensureMainDefined();
 };
 
+/**
+ * @brief Parses function definition.
+
+ * Function definition consists of function declaration (see below)
+ * and function body. Function body is stream of basic blocks.
+ * At the execution of the code of the function definition we
+ * have function declaratino parsed and we can assign the body
+ * to the function.
+ */
 function_definition : function_declaration function_body {
+	// Sets body of the function. Body is just a pointer
+	// To the first basic block.
 	$1->setFirst($2);
+	// Ends parsing of the function. This is needed because
+	// The way parser works. We create new symbol table for
+	// function scope and we need to get rid of it. We
+	// might have as well delete the symbol table in this place
+	// but I found it to be dubious and all the logic is in parseEnd.
 	parser.parseEnd();
 };
 
-function_declaration : decl_type IDENTIFIER LPAR arg_list {
+/**
+ * @brief Function declaration.
+
+ * Function has a type or is void, identifier and argument list.
+ * Argument list is returned as array of declarations. We want
+ * to transforme these declaration in instructions. This is done in
+ * parseStart as well as other stuff that is needed on the start of the function.
+ * -> like pushing new symbol table for local scope.
+ */
+function_declaration : optional_type IDENTIFIER LPAR arg_list {
+	// Creates new funcion.
 	Function::Ptr fun(new Function({ $1, $2, $4 }));
 
+	// Starts parsing of the functon, allocates resources, creates alloca instructions
+	// for arguments (should not this be done in constructor of function?).
 	parser.parseStart(fun);
 
 	$$ = fun;
 };
 
+/**
+ * function body is defined as:
+ * ```
+ * {
+ *     basic_block0,
+ *     basic_block1,
+ *     ...
+ *     end_basic_bock
+ * ```
+
+ * All basic blocks are connected. You can see that there is not ending bracket.
+ * That is parsed as end of basic block -> last one.
+ */
 function_body : LBRA basic_block { $$ = $2; }
 	      ;
 
-basic_block : statement basic_block { $2->addFirst($1); $$ = $2; }
-	    | end_of_block { auto bb = BasicBlock::create(); bb->setNext($1); $$ = bb; }
-	    ;
+/**
+ * @brief Parses basic block.
+ * 
+ * Basic block consists of statements. As some statemetns might be translated into
+ * more instructions we want to represetn statment as vector. That is why we must
+ * iterate through statemetns and add them to block one by one. It might not be
+ * clear at the first glance but parser firstly travels to the last statement. Then
+ * it creates new basic block and all correct statements appends to the beginning. That
+ * is why we append each statemetn to the beginning (in reverse).
 
-end_of_block : RBRA { $$ = nullptr; }
-	     | IF basic_block { $$ = $2; /*TODO: Generate two blocks and new instruction*/ }
-	     ;
+ * On block end we create block and assign pointer to the next block.
+ */
+basic_block : statement basic_block {
+	for (auto it = $1.rbegin(); it != $1.rend(); it++) {
+		$2->addFirst(*it);
+	}
 
-statement : return { $$ = $1; }
-	  | assignment_or_function_call { $$ = nullptr; }
-	  | declaration {$$ = nullptr; }
-	  ;
+	$$ = $2;
+}
+| end_of_block {
+	$$ = BasicBlock::create();
+	$$->setNext($1);
+};
 
+
+/**
+ * Definition of end of the block.
+ */
+end_of_block : RBRA {
+	$$ = nullptr;
+}
+| IF basic_block {
+	$$ = $2; /*TODO: Generate two blocks and new instruction*/
+}; 
+
+/**
+ * Statemetn definition.
+ */
+statement : return {
+	$$ = {$1};
+}
+| assignment_or_function_call {
+	throw std::runtime_error("Assignments and function calls not implemente.");
+}
+| declaration {
+	$$ = $1;
+};
+
+/**
+ * Parses return statement. If there is return statement without value we must ensure
+ * that we are in void function.
+ */
 return : RETURN SEMICOLON { $$ = nullptr; }
        ;
 
+/**
+ * Parses assignment or function call.
+ * TODO: this will be replaced by using subset of expressions as statement.
+ */
 assignment_or_function_call : IDENTIFIER {}
 			    ;
 
-declaration : decl IDENTIFIER optional_assignment
-	    ;
+/**
+ * Parses declaration statement.
+ * Declaration might be one or more declarations ( int a; int a,b,c;) and assignment
+ * might be initialized (int a = 42;)
+ */
+declaration : DATA_TYPE at_least_one_id {
+	std::vector<Instruction::Ptr> result;
+	
+	for (auto [id, init]: $2) {
+		// TODO: remove init from alloca instruction. Check init with parser.
+		// TODO: make init as method of declaration.
+		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({$1, id}, init));
+		parser.add(decl);
+		result.push_back(decl);
+	}
 
-optional_assignment : SEMICOLON
-		    ;
+	$$ = result;
+}
 
+/**
+ * Parses at least one identifier.
+ */
+at_least_one_id : IDENTIFIER optional_assignment id2init {
+	$3.insert($3.begin(), {$1, $2});
+	$$ = $3;
+};
+
+/**
+ * Parses identifier with optional assignment.
+ */
+id2init : SEMICOLON {
+	// Init vector.
+	$$ = {};
+}
+| COMMA IDENTIFIER optional_assignment id2init {
+	$4.insert($4.begin(), {$2, $3});
+	$$ = $4;
+};
+
+optional_assignment : {
+	$$ = "";
+}
+| ASSIGNMENT {
+	throw std::runtime_error("Not implemented.");
+};
+
+/**
+ * Parses list of arguments.
+ */
 arg_list : VOID RPAR { $$ = {}; }
 	 | args { $$ = $1; }
 	 ;
@@ -256,7 +399,7 @@ parent_class: COLON IDENTIFIER LBRA { $$ = parser.getBaseClass($2); }
 	    | LBRA { $$ = nullptr; }
 	    ;
 
-decl_type : DATA_TYPE { $$ = $1; }
+optional_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }
 	  ;
 

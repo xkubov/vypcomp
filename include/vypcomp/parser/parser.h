@@ -38,6 +38,7 @@ public:
 	void parseStart(ir::Class::Ptr fun);
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
+	void add(const ir::AllocaInstruction::Ptr& decl);
 
 	void ensureMainDefined() const;
 
