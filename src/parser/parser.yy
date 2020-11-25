@@ -304,12 +304,17 @@ end_of_block : RBRA {
 statement : return {
 	$$ = {$1};
 }
-| assignment_or_function_call {
-	throw std::runtime_error("Assignments and function calls not implemente.");
+| IDENTIFIER ASSIGNMENT expr SEMICOLON {
+	throw std::runtime_error("Assignment not implemented.");
+}
+| IDENTIFIER LPAR expr RPAR SEMICOLON {
+	throw std::runtime_error("Function calls not implemented.");
 }
 | declaration {
 	$$ = $1;
 };
+
+expr : {throw std::runtime_error("Expressions not implemented!");}
 
 /**
  * Parses return statement. If there is return statement without value we must ensure
@@ -317,13 +322,6 @@ statement : return {
  */
 return : RETURN SEMICOLON { $$ = nullptr; }
        ;
-
-/**
- * Parses assignment or function call.
- * TODO: this will be replaced by using subset of expressions as statement.
- */
-assignment_or_function_call : IDENTIFIER {}
-			    ;
 
 /**
  * Parses declaration statement.
