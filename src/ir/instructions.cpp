@@ -51,7 +51,7 @@ void BasicBlock::setNext(BasicBlock::Ptr instr)
 void BasicBlock::addFirst(Instruction::Ptr first)
 {
 	if (_first) {
-		first->setNext(first);
+		first->setNext(_first);
 	}
 
 	_first = first;
