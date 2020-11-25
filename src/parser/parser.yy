@@ -184,7 +184,7 @@
 
 /**
  * @brief Parse start.
- * 
+ *
  * On global scale module consists of function and classes.
  * Optionaly we can support global variables.
  */
@@ -260,7 +260,7 @@ function_body : LBRA basic_block { $$ = $2; }
 
 /**
  * @brief Parses basic block.
- * 
+ *
  * Basic block consists of statements. As some statemetns might be translated into
  * more instructions we want to represetn statment as vector. That is why we must
  * iterate through statemetns and add them to block one by one. It might not be
@@ -291,7 +291,7 @@ end_of_block : RBRA {
 }
 | IF basic_block {
 	$$ = $2; /*TODO: Generate two blocks and new instruction*/
-}; 
+};
 
 /**
  * Statemetn definition.
@@ -327,7 +327,7 @@ assignment_or_function_call : IDENTIFIER {}
  */
 declaration : DATA_TYPE at_least_one_id {
 	std::vector<Instruction::Ptr> result;
-	
+
 	for (auto [id, init]: $2) {
 		// TODO: remove init from alloca instruction. Check init with parser.
 		// TODO: make init as method of declaration.
