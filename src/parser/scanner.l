@@ -54,7 +54,7 @@ std::ostringstream buffer;
 	BEGIN(INITIAL);
 	*yylval = buffer.str();
 	buffer.str(""); buffer.clear();
-	return token::LITERAL;
+	return token::STRING_LITERAL;
 }
 <STRING_PARSE>.         {
 	if (*yytext < ' ')
@@ -89,7 +89,7 @@ string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 [0-9]+  {
 	// string validation should not be necessary.
 	*yylval = strtoull(yytext, nullptr, 10);
-	return token::LITERAL;
+	return token::INT_LITERAL;
 }
 
 [(]  {return token::LPAR;}

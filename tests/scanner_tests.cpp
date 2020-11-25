@@ -179,7 +179,7 @@ TEST_F(ScannerTests, suppotStringLiterals)
 				scanner.yylex(&type, &location)
 			)
 		);
-		ASSERT_EQ(token, Parser::token::LITERAL);
+		ASSERT_EQ(token, Parser::token::STRING_LITERAL);
 		ASSERT_TRUE(std::holds_alternative<std::string>(type.value));
 		std::string holds = std::get<std::string>(type.value);
 		ASSERT_EQ(exp, holds);
@@ -207,7 +207,7 @@ TEST_F(ScannerTests, suppotIntLiterals)
 				scanner.yylex(&type, &location)
 			)
 		);
-		ASSERT_EQ(token, Parser::token::LITERAL);
+		ASSERT_EQ(token, Parser::token::INT_LITERAL);
 		ASSERT_TRUE(std::holds_alternative<decltype(exp)>(type.value));
 		auto holds = std::get<decltype(exp)>(type.value);
 		ASSERT_EQ(exp, holds);

@@ -92,6 +92,20 @@ TEST_F(ParserTests, syntaxErrorMissingEitherColon)
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
+TEST_F(ParserTests, supportDeclarationWithAssignment)
+{
+        std::stringstream input(R"(
+                void main(void) {
+			int a = 0, b = 32;
+			string q = "Nice!";
+                        return;
+                }
+        )");
+
+        LangParser parser;
+	ASSERT_THROW(parser.parse(input), SyntaxError);
+}
+
 TEST_F(ParserTests, supportAssignmentOfLiterals)
 {
         std::stringstream input(R"(

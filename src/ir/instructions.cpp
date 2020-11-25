@@ -3,6 +3,11 @@
 using namespace vypcomp;
 using namespace vypcomp::ir;
 
+Literal::Literal(const Literal::Impl &val):
+	_val(val)
+{
+}
+
 // ------------------------------
 // Instruction
 // ------------------------------
@@ -177,7 +182,7 @@ LoopInstruction::LoopInstruction(BasicBlock::Ptr body):
 // AllocaInstruction
 // ------------------------------
 
-AllocaInstruction::AllocaInstruction(const Declaration& decl, const std::string& init):
+AllocaInstruction::AllocaInstruction(const Declaration& decl, const OptLiteral& init):
 	_init(init)
 {
 	std::tie(_type, _varName) = decl;
@@ -198,7 +203,7 @@ std::string AllocaInstruction::name() const
 	return _varName;
 }
 
-std::string AllocaInstruction::init() const
+OptLiteral AllocaInstruction::init() const
 {
 	return _init;
 }

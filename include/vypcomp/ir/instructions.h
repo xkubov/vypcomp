@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <variant>
 #include <vector>
 
 namespace vypcomp {
@@ -22,6 +23,27 @@ enum class Datatype : int {
 using Declaration = std::pair<Datatype, std::string>;
 using Arglist = std::vector<Declaration>;
 using PossibleDatatype = std::optional<Datatype>;
+
+
+struct Literal {
+public:
+	using Impl = std::variant<std::string, unsigned long long, float>;
+	Literal(const Impl& val);
+
+	template<Datatype = Datatype::String>
+	std::string get() const;
+
+	template<Datatype = Datatype::Int>
+	int get() const;
+
+	template<Datatype = Datatype::Float>
+	float get() const;
+
+private:
+	Impl _val;
+};
+
+using OptLiteral = std::optional<Literal>;
 
 /**
  * Represents abstraction over instruction.
@@ -45,7 +67,6 @@ public:
 protected:
 	Instruction::Ptr _next = nullptr;
 };
-
 
 /**
  * Represents instruction block that can be named.
@@ -86,20 +107,20 @@ public:
 	 */
 	AllocaInstruction(
 		const Declaration& decl,
-		const std::string& init = {}
+		const OptLiteral& init = {}
 	);
 
 	void addPrefix(const std::string& prefix);
 
 	Datatype type() const;
 	std::string name() const;
-	std::string init() const;
+	OptLiteral init() const;
 
 private:
 	std::string _varName;
 	std::string _prefix;
 	Datatype _type;
-	std::string _init;
+	OptLiteral _init;
 };
 
 class Function: public Instruction {

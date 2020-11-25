@@ -34,13 +34,15 @@
 	using TokenImpl = std::variant<
 		std::string,
 		unsigned long long,
+		float,
 		Datatype,
 		Arglist,
 		Declaration,
 		PossibleDatatype,
 		Instruction::Ptr,
+		OptLiteral,
 		std::vector<Instruction::Ptr>,
-		std::vector<std::pair<std::string, std::string>>,
+		std::vector<std::pair<std::string, OptLiteral>>,
 		BasicBlock::Ptr,
 		Function::Ptr,
 		Class::Ptr
@@ -148,7 +150,9 @@
 
 %token <terminal<std::string>()>IDENTIFIER
 
-%token LITERAL
+%token <terminal<std::string>()>STRING_LITERAL
+%token <terminal<unsigned long long>()>INT_LITERAL
+%token <terminal<float>()>FLOAT_LITERAL
 
 %token LPAR
 %token RPAR
@@ -172,13 +176,14 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
-%nterm <nonterminal<std::string>()> optional_assignment
+%nterm <nonterminal<OptLiteral>()> optional_assignment
+%nterm <nonterminal<OptLiteral>()> literal
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<Class::Ptr>()> parent_class
-%nterm <nonterminal<std::vector<std::pair<std::string, std::string>>>()> id2init
-%nterm <nonterminal<std::vector<std::pair<std::string, std::string>>>()> at_least_one_id
+%nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
+%nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
 
 %%
 
@@ -360,11 +365,16 @@ id2init : SEMICOLON {
 };
 
 optional_assignment : {
-	$$ = "";
+	$$ = {};
 }
-| ASSIGNMENT {
-	throw std::runtime_error("Not implemented.");
+| ASSIGNMENT literal {
+	$$ = $2;
 };
+
+literal : STRING_LITERAL { $$ = Literal($1); }
+	| INT_LITERAL { $$ = Literal($1); }
+	| FLOAT_LITERAL { $$ = Literal($1); }
+	;
 
 /**
  * Parses list of arguments.
