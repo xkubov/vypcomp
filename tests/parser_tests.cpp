@@ -103,7 +103,7 @@ TEST_F(ParserTests, supportDeclarationWithAssignment)
         )");
 
         LangParser parser;
-	ASSERT_THROW(parser.parse(input), SyntaxError);
+	ASSERT_NO_THROW(parser.parse(input));
 }
 
 TEST_F(ParserTests, supportAssignmentOfLiterals)
