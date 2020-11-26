@@ -15,12 +15,12 @@ namespace vypcomp {
  * Provides wrapper around Bison Parser that implements interface
  * for pasing.
  */
-class LangParser {
+class ParserDriver {
 public:
-	LangParser();
-	LangParser(const SymbolTable& global);
+	ParserDriver();
+	ParserDriver(const SymbolTable& global);
 
-	virtual ~LangParser();
+	virtual ~ParserDriver();
 
 public:
 	/**
@@ -32,7 +32,7 @@ public:
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
 
-	Class::Ptr getBaseClass(const std::string& name);
+	Class::Ptr getClass(const std::string& name);
 
 	void parseStart(ir::Function::Ptr fun);
 	void parseStart(ir::Class::Ptr fun);

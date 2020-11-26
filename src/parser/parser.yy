@@ -26,7 +26,7 @@
 
 	// We want to use these classes during parsing.
 	class Scanner;
-	class LangParser;
+	class ParserDriver;
 
 	/**
 	 * Token holds one of the following types:
@@ -111,7 +111,7 @@
 }
 // Second constructor parameter.
 %parse-param {
-	LangParser  &parser
+	ParserDriver  &parser
 }
 
 %code {
@@ -181,7 +181,6 @@
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
-%nterm <nonterminal<Class::Ptr>()> parent_class
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
 
@@ -395,17 +394,14 @@ class_definition : class_declaration class_body {
 	parser.parseEnd();
 };
 
-class_declaration : CLASS IDENTIFIER parent_class {
-	Class::Ptr cl(new Class($2, $3));
+class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
+	auto parent = parser.getClass($4);
+	Class::Ptr cl(new Class($2, parent));
 	parser.parseStart(cl);
 	$$ = cl;
 };
 
 class_body : LBRA;
-
-parent_class: COLON IDENTIFIER LBRA { $$ = parser.getBaseClass($2); }
-	    | LBRA { $$ = nullptr; }
-	    ;
 
 optional_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }

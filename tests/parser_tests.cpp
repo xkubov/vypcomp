@@ -15,13 +15,13 @@ TEST_F(ParserTests, emptyInput)
 	std::stringstream input;
 	std::ostringstream output;
 
-	LangParser parser;
+	ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
 TEST_F(ParserTests, invalidFile)
 {
-	LangParser parser;
+	ParserDriver parser;
 	ASSERT_THROW(parser.parse("pls_dont_create_file_with_this_name"), std::runtime_error);
 }
 
@@ -33,7 +33,7 @@ TEST_F(ParserTests, supportSimpleMain)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -46,7 +46,7 @@ TEST_F(ParserTests, supportLocalVariablesSimple)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -62,7 +62,7 @@ TEST_F(ParserTests, supportLocalVariablesFloat)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -75,7 +75,7 @@ TEST_F(ParserTests, supportLocalVariablesComma)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -88,7 +88,7 @@ TEST_F(ParserTests, syntaxErrorMissingEitherColon)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
@@ -102,7 +102,7 @@ TEST_F(ParserTests, supportDeclarationWithAssignment)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -119,7 +119,7 @@ TEST_F(ParserTests, supportAssignmentOfLiterals)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -133,7 +133,7 @@ TEST_F(ParserTests, semanticErrorInAssignment)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -149,7 +149,7 @@ TEST_F(ParserTests, supportAssignmentInitialization)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -165,7 +165,7 @@ TEST_F(ParserTests, supportAssignmentInitialization2)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -184,7 +184,7 @@ TEST_F(ParserTests, supportFloat)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -214,7 +214,7 @@ TEST_F(ParserTests, supportFunctions)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -236,7 +236,7 @@ TEST_F(ParserTests, supportFunctionParameters)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -253,7 +253,7 @@ TEST_F(ParserTests, supportIgnoreReturnAndParams)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -273,7 +273,7 @@ TEST_F(ParserTests, semanticErrorParameters)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -289,7 +289,7 @@ TEST_F(ParserTests, supportDefinedAfterCall)
 		}
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -308,7 +308,7 @@ TEST_F(ParserTests, semanticErrorRedefinition)
 		}
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -324,7 +324,7 @@ TEST_F(ParserTests, semanticErrorRedefinitionParameeter)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -341,7 +341,7 @@ TEST_F(ParserTests, semanticErrorRedefinitionLocalVar)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -358,7 +358,7 @@ TEST_F(ParserTests, semanticErrorRedefinitionLocalVar2)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -373,7 +373,7 @@ TEST_F(ParserTests, supportCaseSensitiveFunctionNames)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -388,7 +388,7 @@ TEST_F(ParserTests, semanticErrorFunctionReturn)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -405,7 +405,7 @@ TEST_F(ParserTests, semanticErrorFunctionAssignment)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -423,7 +423,7 @@ TEST_F(ParserTests, supportComments)
 		/*int a = 3*/
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -437,7 +437,7 @@ TEST_F(ParserTests, supportCommentsInStrings)
 		}
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -457,7 +457,7 @@ TEST_F(ParserTests, dontSupportNestedComments)
 		/*int a = 3*/
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -470,7 +470,7 @@ TEST_F(ParserTests, semicolonIsNotSeparator)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
@@ -482,7 +482,7 @@ TEST_F(ParserTests, semicolonIsMissing)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
@@ -494,7 +494,7 @@ TEST_F(ParserTests, semanticErrorMissingMain)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -506,7 +506,7 @@ TEST_F(ParserTests, semanticErrorInvalidMain)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -521,7 +521,7 @@ TEST_F(ParserTests, supportIfStatement)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -539,7 +539,7 @@ TEST_F(ParserTests, supportStatementsInIfStatement)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -559,7 +559,7 @@ TEST_F(ParserTests, supportScopeInIf)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -573,7 +573,7 @@ TEST_F(ParserTests, supportWhile)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -590,7 +590,7 @@ TEST_F(ParserTests, supportStatmenetsInWhile)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -605,7 +605,7 @@ TEST_F(ParserTests, syntaxErrorExpectedExpression)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
@@ -620,7 +620,7 @@ TEST_F(ParserTests, syntaxErrorExpectedExpression2)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
@@ -636,7 +636,7 @@ TEST_F(ParserTests, supportFunctionCallExpression)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -658,7 +658,7 @@ TEST_F(ParserTests, supportExpressions)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -672,7 +672,7 @@ TEST_F(ParserTests, invalidOperands)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -687,7 +687,7 @@ TEST_F(ParserTests, supportChaoticalExpressions)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -705,7 +705,7 @@ TEST_F(ParserTests, supportEmbededFunctions)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -718,7 +718,7 @@ TEST_F(ParserTests, supportClasses)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -733,7 +733,7 @@ TEST_F(ParserTests, supportInheritance)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -754,7 +754,7 @@ TEST_F(ParserTests, supportMethods)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -770,7 +770,7 @@ TEST_F(ParserTests, supportInstanceVars)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -791,7 +791,7 @@ TEST_F(ParserTests, supportSameNameMethods)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -812,7 +812,7 @@ TEST_F(ParserTests, supportSuperAccess)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -837,7 +837,7 @@ TEST_F(ParserTests, supportConstructor)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -854,7 +854,7 @@ TEST_F(ParserTests, supportThisAccess)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -871,7 +871,7 @@ TEST_F(ParserTests, supportRegularAccess)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -890,7 +890,7 @@ TEST_F(ParserTests, supportInstantiation)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -912,7 +912,7 @@ TEST_F(ParserTests, supportOverride)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -934,7 +934,7 @@ TEST_F(ParserTests, semanticErrorRedefinitionMethod)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
@@ -958,7 +958,7 @@ TEST_F(ParserTests, supportCallParentConstructor)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -978,7 +978,7 @@ TEST_F(ParserTests, supportSuperInstanceVarAccess)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -998,7 +998,7 @@ TEST_F(ParserTests, supportSuperInstanceVarAccess2)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -1019,7 +1019,7 @@ TEST_F(ParserTests, supportPolymorphism)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -1040,7 +1040,7 @@ TEST_F(ParserTests, semanticErrorNonPolymorphism)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -1071,7 +1071,7 @@ TEST_F(ParserTests, testSubsumptionAndIndirectness)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
@@ -1091,6 +1091,6 @@ TEST_F(ParserTests, testEmbededMethods)
                 }
         )");
 
-        LangParser parser;
+        ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }

@@ -6,24 +6,24 @@
 
 using namespace vypcomp;
 
-LangParser::LangParser():
+ParserDriver::ParserDriver():
 	_indexRun(false)
 {
 	// Global symbol table.
 	_tables.push_back(SymbolTable(true));
 }
 
-LangParser::LangParser(const SymbolTable& global):
+ParserDriver::ParserDriver(const SymbolTable& global):
 	_indexRun(true)
 {
 	_tables.push_back(global);
 }
 
-LangParser::~LangParser()
+ParserDriver::~ParserDriver()
 {
 }
 
-Class::Ptr LangParser::getBaseClass(const std::string &name)
+Class::Ptr ParserDriver::getClass(const std::string &name)
 {
 	if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<Class::Ptr>(*symbol)) {
@@ -44,7 +44,7 @@ Class::Ptr LangParser::getBaseClass(const std::string &name)
 	return nullptr;
 }
 
-void LangParser::parse(const std::string &filename)
+void ParserDriver::parse(const std::string &filename)
 {
 	std::ifstream input(filename);
 	if (!input.good())
@@ -53,7 +53,7 @@ void LangParser::parse(const std::string &filename)
 	parse(input);
 }
 
-void LangParser::parse(std::istream &file)
+void ParserDriver::parse(std::istream &file)
 {
 	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file) );
 	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, *this));
@@ -63,7 +63,7 @@ void LangParser::parse(std::istream &file)
 	}
 }
 
-void LangParser::generateOutput(const std::string &filename) const
+void ParserDriver::generateOutput(const std::string &filename) const
 {
 	std::ofstream output(filename);
 	if (!output.good())
@@ -72,12 +72,12 @@ void LangParser::generateOutput(const std::string &filename) const
 	generateOutput(filename);
 }
 
-void LangParser::generateOutput(std::ostream &output) const
+void ParserDriver::generateOutput(std::ostream &output) const
 {
 	throw std::runtime_error("Not implemented.");
 }
 
-void LangParser::parseStart(ir::Function::Ptr fun)
+void ParserDriver::parseStart(ir::Function::Ptr fun)
 {
 	if (searchTables(fun->name())) {
 		// All redefinitions will be sorted out after index run.
@@ -95,7 +95,7 @@ void LangParser::parseStart(ir::Function::Ptr fun)
 	}
 }
 
-void LangParser::parseStart(ir::Class::Ptr cl)
+void ParserDriver::parseStart(ir::Class::Ptr cl)
 {
 	if (searchTables(cl->name())) {
 		// All redefinitions will be sorted out after index run.
@@ -110,7 +110,7 @@ void LangParser::parseStart(ir::Class::Ptr cl)
 	_currClass = cl;
 }
 
-void LangParser::verify(const ir::AllocaInstruction::Ptr& decl)
+void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (_indexRun) {
 		return;
@@ -122,13 +122,13 @@ void LangParser::verify(const ir::AllocaInstruction::Ptr& decl)
 	}
 }
 
-void LangParser::add(const ir::AllocaInstruction::Ptr &decl)
+void ParserDriver::add(const ir::AllocaInstruction::Ptr &decl)
 {
 	verify(decl);
 	_tables.front().insert({decl->name(), decl});
 }
 
-void LangParser::ensureMainDefined() const
+void ParserDriver::ensureMainDefined() const
 {
 	if (searchTables("main"))
 		return;
@@ -136,12 +136,12 @@ void LangParser::ensureMainDefined() const
 	throw SemanticError("Main not defined.");
 }
 
-void LangParser::pushSymbolTable(bool storeFunctions)
+void ParserDriver::pushSymbolTable(bool storeFunctions)
 {
 	_tables.push_back(SymbolTable(storeFunctions));
 }
 
-void LangParser::popSymbolTable()
+void ParserDriver::popSymbolTable()
 {
 	// We must preserve global table.
 	if (_tables.size() <= 1)
@@ -150,13 +150,13 @@ void LangParser::popSymbolTable()
 	_tables.pop_back();
 }
 
-void LangParser::parseEnd()
+void ParserDriver::parseEnd()
 {
 	popSymbolTable();
 	_currClass = nullptr;
 }
 
-std::optional<SymbolTable::Symbol> LangParser::searchTables(const SymbolTable::Key& key) const
+std::optional<SymbolTable::Symbol> ParserDriver::searchTables(const SymbolTable::Key& key) const
 {
 	for (auto it = _tables.rbegin(); it != _tables.rend(); ++it) {
 		if (it->has(key))

@@ -7,7 +7,7 @@ using namespace vypcomp;
 int main(int argc, char *argv[])
 {
 	try {
-		LangParser parser;
+		ParserDriver parser;
 		parser.parse(std::cin);
 	}
 	catch (const LexicalError& le) {

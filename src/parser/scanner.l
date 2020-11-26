@@ -97,6 +97,7 @@ string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 [,]  {return token::COMMA;}
 [{]  {return token::LBRA;}
 [}]  {return token::RBRA;}
+[:]  {return token::COLON;}
 [;]  {return token::SEMICOLON;}
 [=]  {return token::ASSIGNMENT;}
 
