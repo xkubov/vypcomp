@@ -6,21 +6,33 @@
 
 using namespace vypcomp;
 
-ParserDriver::ParserDriver():
-	_indexRun(false)
+SymbolTable initSymbolTable()
 {
-	// Global symbol table.
-	_tables.push_back(SymbolTable(true));
+	auto table = SymbolTable(true);
+	auto object = ir::Class::Ptr(new ir::Class("Object", nullptr));
+
+	table.insert({"Object", object});
+	return table;
 }
 
-ParserDriver::ParserDriver(const SymbolTable& global):
-	_indexRun(true)
+ParserDriver::ParserDriver()
+{
+	_tables.push_back(initSymbolTable());
+}
+
+ParserDriver::ParserDriver(const SymbolTable& global)
 {
 	_tables.push_back(global);
 }
 
 ParserDriver::~ParserDriver()
 {
+}
+
+const SymbolTable& ParserDriver::table() const
+{
+	// First table is global.
+	return _tables[0];
 }
 
 Class::Ptr ParserDriver::getClass(const std::string &name)
@@ -37,11 +49,7 @@ Class::Ptr ParserDriver::getClass(const std::string &name)
 		return std::get<Class::Ptr>(*symbol);
 	}
 
-	if (_indexRun) {
-	}
-	throw std::runtime_error("Not implemented");
-
-	return nullptr;
+	throw SemanticError("class not defined: "+name);
 }
 
 void ParserDriver::parse(const std::string &filename)
@@ -56,7 +64,7 @@ void ParserDriver::parse(const std::string &filename)
 void ParserDriver::parse(std::istream &file)
 {
 	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file) );
-	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, *this));
+	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, this));
 
 	if (int err = _parser->parse()) {
 		throw SyntaxError("parser returned: "+std::to_string(err));
@@ -79,14 +87,6 @@ void ParserDriver::generateOutput(std::ostream &output) const
 
 void ParserDriver::parseStart(ir::Function::Ptr fun)
 {
-	if (searchTables(fun->name())) {
-		// All redefinitions will be sorted out after index run.
-		// In non-indexRun we must ignore "redefinitions" as we are slowly
-		// replacing each function.
-		if (_indexRun)
-			throw SemanticError("Symbol "+fun->name()+" already defined.");
-	}
-
 	_tables.back().insert({fun->name(), fun});
 
 	pushSymbolTable();
@@ -97,14 +97,6 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 
 void ParserDriver::parseStart(ir::Class::Ptr cl)
 {
-	if (searchTables(cl->name())) {
-		// All redefinitions will be sorted out after index run.
-		// In non-indexRun we must ignore "redefinitions" as we are slowly
-		// replacing each function.
-		if (_indexRun)
-			throw SemanticError("Symbol "+cl->name()+" already defined.");
-	}
-
 	_tables.back().insert({cl->name(), cl});
 	pushSymbolTable(true);
 	_currClass = cl;
@@ -112,11 +104,6 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
-	if (_indexRun) {
-		return;
-	}
-
-	//TODO: if not index run we have all info needed in global table.
 	if (searchTables(decl->name())) {
 		throw SyntaxError("Redefinition of "+decl->name());
 	}

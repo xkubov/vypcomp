@@ -111,7 +111,7 @@
 }
 // Second constructor parameter.
 %parse-param {
-	ParserDriver  &parser
+	ParserDriver* parser
 }
 
 %code {
@@ -202,7 +202,7 @@ start : function_definition start
  * input.
  */
 eof : END {
-	parser.ensureMainDefined();
+	parser->ensureMainDefined();
 };
 
 /**
@@ -223,7 +223,7 @@ function_definition : function_declaration function_body {
 	// function scope and we need to get rid of it. We
 	// might have as well delete the symbol table in this place
 	// but I found it to be dubious and all the logic is in parseEnd.
-	parser.parseEnd();
+	parser->parseEnd();
 };
 
 /**
@@ -241,7 +241,7 @@ function_declaration : optional_type IDENTIFIER LPAR arg_list {
 
 	// Starts parsing of the functon, allocates resources, creates alloca instructions
 	// for arguments (should not this be done in constructor of function?).
-	parser.parseStart(fun);
+	parser->parseStart(fun);
 
 	$$ = fun;
 };
@@ -334,7 +334,7 @@ declaration : DATA_TYPE at_least_one_id {
 		// TODO: remove init from alloca instruction. Check init with parser.
 		// TODO: make init as method of declaration.
 		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({$1, id}, init));
-		parser.add(decl);
+		parser->add(decl);
 		result.push_back(decl);
 	}
 
@@ -390,18 +390,18 @@ more_args: COMMA decl more_args { $3.insert($3.begin(), $2); $$ = std::move($3);
 decl : DATA_TYPE IDENTIFIER { $$ = {$1, $2}; }
      ;
 
-class_definition : class_declaration class_body {
-	parser.parseEnd();
+class_definition : class_declaration LBRA class_body {
+	parser->parseEnd();
 };
 
 class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
-	auto parent = parser.getClass($4);
+	auto parent = parser->getClass($4);
 	Class::Ptr cl(new Class($2, parent));
-	parser.parseStart(cl);
+	parser->parseStart(cl);
 	$$ = cl;
 };
 
-class_body : LBRA;
+class_body : RBRA;
 
 optional_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }

@@ -17,12 +17,16 @@ namespace vypcomp {
  */
 class ParserDriver {
 public:
-	ParserDriver();
+	using Ptr = std::unique_ptr<ParserDriver>;
+
 	ParserDriver(const SymbolTable& global);
+	ParserDriver();
 
 	virtual ~ParserDriver();
 
 public:
+	const SymbolTable& table() const;
+
 	/**
 	 * @brief Parse file provided by path as argument.
 	 */
@@ -32,10 +36,10 @@ public:
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
 
-	Class::Ptr getClass(const std::string& name);
+	virtual Class::Ptr getClass(const std::string& name);
 
-	void parseStart(ir::Function::Ptr fun);
-	void parseStart(ir::Class::Ptr fun);
+	virtual void parseStart(ir::Function::Ptr fun);
+	virtual void parseStart(ir::Class::Ptr fun);
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);
@@ -53,13 +57,11 @@ private:
 	std::unique_ptr<vypcomp::Parser> _parser;
 	std::unique_ptr<vypcomp::Scanner> _scanner;
 
-	bool _indexRun = false;
-
 	std::vector<vypcomp::SymbolTable> _tables;
 	Class::Ptr _currClass = nullptr;
 };
 
-class SyntaxError: public std::exception {
+class SyntaxError : public std::exception {
 public:
 	SyntaxError(const std::string& msg);
 	const char * what() const throw() override;
