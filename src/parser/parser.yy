@@ -174,8 +174,10 @@
 %nterm <nonterminal<Function::Ptr>()> function_declaration
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
+%nterm <nonterminal<BasicBlock::Ptr>()> else
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
+%nterm <nonterminal<std::vector<Instruction::Ptr>>()> expr
 %nterm <nonterminal<OptLiteral>()> optional_assignment
 %nterm <nonterminal<OptLiteral>()> literal
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
@@ -288,8 +290,14 @@ basic_block : statement basic_block {
 end_of_block : RBRA {
 	$$ = nullptr;
 }
-| IF basic_block {
-	$$ = $2; /*TODO: Generate two blocks and new instruction*/
+| IF LPAR expr RPAR LBRA basic_block else basic_block {
+	// TODO: process condition.
+	auto br = BranchInstruction::Ptr(new BranchInstruction($6, $8));
+	$8->addFirst(br);
+	$$ = $8;
+};
+
+else : ELSE LBRA basic_block {
 };
 
 /**
@@ -308,7 +316,7 @@ statement : return {
 	$$ = $1;
 };
 
-expr : {throw std::runtime_error("Expressions not implemented!");}
+expr : IDENTIFIER {std::cerr << "Expressions not implemented." << std::endl; };
 
 /**
  * Parses return statement. If there is return statement without value we must ensure
