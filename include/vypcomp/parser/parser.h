@@ -36,10 +36,13 @@ public:
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
 
-	virtual Class::Ptr getClass(const std::string& name);
+	Class::Ptr getClass(const std::string& name) const;
 
 	virtual void parseStart(ir::Function::Ptr fun);
 	virtual void parseStart(ir::Class::Ptr fun);
+
+	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const;
+	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const;
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);

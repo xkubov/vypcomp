@@ -17,7 +17,8 @@ bool SymbolTable::insert(const std::pair<Key, Symbol>& element)
 	}
 
 	_table[k] = v;
-	return true;
+
+        return true;
 }
 
 bool SymbolTable::has(const Key& symb) const

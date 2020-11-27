@@ -395,10 +395,8 @@ class_definition : class_declaration LBRA class_body {
 };
 
 class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
-	auto parent = parser->getClass($4);
-	Class::Ptr cl(new Class($2, parent));
-	parser->parseStart(cl);
-	$$ = cl;
+	$$ = parser->newClass($2, $4);
+	parser->parseStart($$);
 };
 
 class_body : RBRA;

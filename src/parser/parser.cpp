@@ -35,7 +35,7 @@ const SymbolTable& ParserDriver::table() const
 	return _tables[0];
 }
 
-Class::Ptr ParserDriver::getClass(const std::string &name)
+Class::Ptr ParserDriver::getClass(const std::string &name) const
 {
 	if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<Class::Ptr>(*symbol)) {
@@ -100,6 +100,31 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 	_tables.back().insert({cl->name(), cl});
 	pushSymbolTable(true);
 	_currClass = cl;
+}
+
+Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& base) const
+{
+        if (auto symbol = searchTables(name)) {
+		if (!std::holds_alternative<Class::Ptr>(*symbol))
+			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
+
+		return std::get<Class::Ptr>(*symbol);
+        }
+
+	return Class::Ptr(new Class(name, getClass(base)));
+}
+
+Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) const
+{
+	auto [type, name, args] = sig;
+        if (auto symbol = searchTables(name)) {
+		if (!std::holds_alternative<Function::Ptr>(*symbol))
+			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
+
+		return std::get<Function::Ptr>(*symbol);
+        }
+
+        return Function::Ptr(new Function({type, name, args}));
 }
 
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
