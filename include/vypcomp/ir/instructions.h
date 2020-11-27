@@ -182,6 +182,7 @@ public:
 	using Ptr = std::shared_ptr<Class>;
 	Class(const std::string& name, Class::Ptr base);
 
+	void setBase(Class::Ptr base);
 	void add(Function::Ptr methods, bool isPublic = true);
 	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
 

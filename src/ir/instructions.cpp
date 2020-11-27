@@ -218,6 +218,11 @@ Class::Class(const std::string& name, Class::Ptr parent):
 {
 }
 
+void Class::setBase(Class::Ptr base)
+{
+	_parent = base;
+}
+
 void Class::add(Function::Ptr method, bool isPublic)
 {
 	method->addPrefix(_name);
