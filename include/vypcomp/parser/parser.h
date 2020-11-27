@@ -41,7 +41,18 @@ public:
 	virtual void parseStart(ir::Function::Ptr fun);
 	virtual void parseStart(ir::Class::Ptr fun);
 
+	/**
+	 * Creates new class. This parser does not perform redefinition check. This is left
+	 * for index run. When class exists returns referecne to this class. This is solution
+	 * for not modifying global sybol table after first run and referencing same symbols.
+	 */
 	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const;
+
+	/**
+	 * Creates new function based on provided signature. This function does not perform
+	 * redefinition check. This is left for index run and expects that all names are behaving
+	 * well.
+	 */
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const;
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
