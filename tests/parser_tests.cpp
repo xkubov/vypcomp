@@ -1094,3 +1094,43 @@ TEST_F(ParserTests, testEmbededMethods)
         ParserDriver parser;
 	ASSERT_NO_THROW(parser.parse(input));
 }
+
+TEST_F(ParserTests, testExpressionBinaryOp)
+{
+	bool DEBUG = 0;
+	std::stringstream input("12 + 34");
+
+	ParserDriver parser;
+	parser.parse(input, DEBUG);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionPrecedence)
+{
+	bool DEBUG = 0;
+	std::stringstream input("669 / 12 + 34 * 45");
+
+	ParserDriver parser;
+	parser.parse(input, DEBUG);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionPrecedence1)
+{
+	bool DEBUG = 0;
+	std::stringstream input("74 * 12 * 34 + 45");
+
+	ParserDriver parser;
+	parser.parse(input, DEBUG);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionPrecedenceParentheses)
+{
+	bool DEBUG = 0;
+	std::stringstream input("74 * ( 21 + 12 ) * 34 + 45");
+
+	ParserDriver parser;
+	parser.parse(input, DEBUG);
+	printf("finished");
+}

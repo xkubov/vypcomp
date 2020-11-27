@@ -5,6 +5,7 @@
 // Enable tracing
 // https://www.gnu.org/software/bison/manual/html_node/Tracing.html
 %define parse.trace
+%define parse.error detailed
 
 // Define namespace for our parser.
 %define api.namespace {vypcomp}
@@ -161,6 +162,9 @@
 %token COMMA
 %token ASSIGNMENT
 
+%left '+' '-'
+%left '*' '/'
+
 %token SEMICOLON
 %token COLON
 
@@ -183,6 +187,8 @@
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
+%nterm <nonterminal<std::string>()> expr
+%nterm <nonterminal<std::string>()> bin_op
 
 %%
 
@@ -192,10 +198,13 @@
  * On global scale module consists of function and classes.
  * Optionaly we can support global variables.
  */
+/*
 start : function_definition start
       | class_definition start
       | eof
       ;
+*/
+start : expr END;
 
 /**
  * Flex is programmed to return END token at the end of the
@@ -313,7 +322,45 @@ statement : return {
 	$$ = $1;
 };
 
-expr : {throw std::runtime_error("Expressions not implemented!");}
+expr : 
+expr '+' expr {
+    std::ostringstream oss;
+    oss << "(" << $1 << " + " << $3 << ")";
+    $$ = oss.str();
+    std::cout << oss.str() << std::endl;
+}
+| expr '-' expr {
+    std::ostringstream oss;
+    oss << "(" << $1 << " - " << $3 << ")";
+    $$ = oss.str();
+    std::cout << oss.str() << std::endl;
+}
+| expr '*' expr {
+    std::ostringstream oss;
+    oss << "(" << $1 << " * " << $3 << ")";
+    $$ = oss.str();
+    std::cout << oss.str() << std::endl;
+}
+| expr '/' expr {
+    std::ostringstream oss;
+    oss << "(" << $1 << " / " << $3 << ")";
+    $$ = oss.str();
+    std::cout << oss.str() << std::endl;
+}
+| LPAR expr RPAR {
+    $$ = $2;
+}
+| INT_LITERAL {
+    $$ = std::to_string($1);
+}
+| STRING_LITERAL {
+    $$ = $1;
+};
+
+bin_op : '+' { $$ = "+"; }
+       | '-' { $$ = "-"; }
+       | '*' { $$ = "*"; }
+       | '/' { $$ = "/"; };
 
 /**
  * Parses return statement. If there is return statement without value we must ensure

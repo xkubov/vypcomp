@@ -100,6 +100,10 @@ string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 [:]  {return token::COLON;}
 [;]  {return token::SEMICOLON;}
 [=]  {return token::ASSIGNMENT;}
+"+"  { return '+'; }
+"-"  { return '-'; }
+"*"  { return '*'; }
+"/"  { return '/'; }
 
 .  {
 	// TODO: parse word and print it.

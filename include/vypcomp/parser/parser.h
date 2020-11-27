@@ -31,7 +31,7 @@ public:
 	 * @brief Parse file provided by path as argument.
 	 */
 	void parse(const std::string &filename);
-	void parse(std::istream &file);
+	void parse(std::istream &file, bool debug_on=false);
 
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
