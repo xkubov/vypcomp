@@ -1,4 +1,5 @@
 #include "vypcomp/parser/symbol_table.h"
+#include <stdexcept>
 
 using namespace vypcomp;
 
