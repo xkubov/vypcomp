@@ -38,8 +38,8 @@ public:
 
 	Class::Ptr getClass(const std::string& name) const;
 
-	virtual void parseStart(ir::Function::Ptr fun);
-	virtual void parseStart(ir::Class::Ptr fun);
+	void parseStart(ir::Function::Ptr fun);
+	void parseStart(ir::Class::Ptr cl);
 
 	/**
 	 * Creates new class. This parser does not perform redefinition check. This is left
@@ -66,6 +66,8 @@ public:
 	void parseEnd();
 
 	std::optional<SymbolTable::Symbol> searchTables(const SymbolTable::Key& key) const;
+	std::optional<SymbolTable::Symbol> searchGlobal(const SymbolTable::Key& key) const;
+	std::optional<SymbolTable::Symbol> searchCurrent(const SymbolTable::Key& key) const;
 
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;

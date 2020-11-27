@@ -104,7 +104,7 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 
 Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& base) const
 {
-        if (auto symbol = searchTables(name)) {
+        if (auto symbol = searchGlobal(name)) {
 		if (!std::holds_alternative<Class::Ptr>(*symbol))
 			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
 
@@ -119,7 +119,7 @@ Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& ba
 Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) const
 {
 	auto [type, name, args] = sig;
-        if (auto symbol = searchTables(name)) {
+        if (auto symbol = searchCurrent(name)) {
 		if (!std::holds_alternative<Function::Ptr>(*symbol))
 			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
 
@@ -131,7 +131,7 @@ Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) cons
 
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
-	if (searchTables(decl->name())) {
+	if (searchCurrent(decl->name())) {
 		throw SyntaxError("Redefinition of "+decl->name());
 	}
 }
@@ -147,7 +147,7 @@ void ParserDriver::ensureMainDefined() const
 	if (searchTables("main"))
 		return;
 
-	throw SemanticError("Main not defined.");
+	throw SemanticError("main not defined.");
 }
 
 void ParserDriver::pushSymbolTable(bool storeFunctions)
@@ -176,6 +176,22 @@ std::optional<SymbolTable::Symbol> ParserDriver::searchTables(const SymbolTable:
 		if (it->has(key))
 			return it->get(key);
 	}
+
+	return {};
+}
+
+std::optional<SymbolTable::Symbol> ParserDriver::searchGlobal(const SymbolTable::Key& key) const
+{
+	if (_tables[0].has(key))
+		return _tables[0].get(key);
+
+	return {};
+}
+
+std::optional<SymbolTable::Symbol> ParserDriver::searchCurrent(const SymbolTable::Key& key) const
+{
+	if (_tables[_tables.size()-1].has(key))
+		return _tables[0].get(key);
 
 	return {};
 }

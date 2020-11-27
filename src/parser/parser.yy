@@ -237,13 +237,8 @@ function_definition : function_declaration function_body {
  */
 function_declaration : optional_type IDENTIFIER LPAR arg_list {
 	// Creates new funcion.
-	Function::Ptr fun(new Function({ $1, $2, $4 }));
-
-	// Starts parsing of the functon, allocates resources, creates alloca instructions
-	// for arguments (should not this be done in constructor of function?).
-	parser->parseStart(fun);
-
-	$$ = fun;
+	$$ = parser->newFunction({ $1, $2, $4 });
+	parser->parseStart($$);
 };
 
 /**
@@ -399,7 +394,8 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 	parser->parseStart($$);
 };
 
-class_body : RBRA;
+class_body : function_definition class_body
+	   | RBRA;
 
 optional_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }

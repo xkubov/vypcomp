@@ -14,7 +14,7 @@ IndexParserDriver::IndexParserDriver(const SymbolTable &global):
 
 Class::Ptr IndexParserDriver::newClass(const std::string& name, const std::string& base) const
 {
-        if (searchTables(name)) {
+        if (searchGlobal(name)) {
 		throw SemanticError("Redefinition of "+name);
         }
 	auto newBase = searchTables(base).has_value() ? base : "Object";
@@ -25,26 +25,8 @@ Class::Ptr IndexParserDriver::newClass(const std::string& name, const std::strin
 Function::Ptr IndexParserDriver::newFunction(const ir::Function::Signature& sig) const
 {
 	auto [type, name, args] = sig;
-        if (searchTables(name)) {
+        if (searchCurrent(name)) {
 		throw SemanticError("Redefinition of "+name);
         }
 	return ParserDriver::newFunction({type, name, args});
-}
-
-void IndexParserDriver::parseStart(ir::Function::Ptr fun)
-{
-	if (searchTables(fun->name())) {
-		throw SemanticError("Symbol "+fun->name()+" already defined.");
-	}
-
-	ParserDriver::parseStart(fun);
-}
-
-void IndexParserDriver::parseStart(ir::Class::Ptr cl)
-{
-	if (searchTables(cl->name())) {
-		throw SemanticError("Symbol "+cl->name()+" already defined.");
-	}
-
-	ParserDriver::parseStart(cl);
 }
