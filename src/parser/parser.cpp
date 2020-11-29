@@ -61,15 +61,25 @@ void ParserDriver::parse(const std::string &filename)
 	parse(input);
 }
 
-void ParserDriver::parse(std::istream &file, bool debug_on)
+void ParserDriver::parse(std::istream &file)
 {
 	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file) );
+	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, this));
+
+	if (int err = _parser->parse()) {
+		throw SyntaxError("parser returned: "+std::to_string(err));
+	}
+}
+
+void ParserDriver::parseExpression(std::istream& file, bool debug_on)
+{
+	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file, Parser::token::EXPR_PARSE_START));
 	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, this));
 	if (debug_on)
 		_parser->set_debug_level(1);
 
 	if (int err = _parser->parse()) {
-		throw SyntaxError("parser returned: "+std::to_string(err));
+		throw SyntaxError("parser returned: " + std::to_string(err));
 	}
 }
 

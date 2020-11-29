@@ -134,6 +134,8 @@
 // To correctly destroy symbols.
 %define parse.assert
 
+%token PROGRAM_START
+%token EXPR_PARSE_START
 %token END 0 "The End"
 %token <std::string> WORD
 %token CLASS
@@ -191,7 +193,7 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
 %nterm <nonterminal<OptLiteral>()> optional_assignment
-%nterm <nonterminal<Literal>()> literal
+%nterm <nonterminal<OptLiteral>()> literal
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
@@ -204,18 +206,23 @@
 %%
 
 /**
+ * Support multiple parsing approaches, differentiated by different first token.
+ */
+%start parser_start;
+parser_start : PROGRAM_START start
+             | EXPR_PARSE_START expr END { std::cout << $2; };
+
+/**
  * @brief Parse start.
  *
  * On global scale module consists of function and classes.
  * Optionaly we can support global variables.
  */
-/*
 start : function_definition start
       | class_definition start
       | eof
       ;
-*/
-start : expr END { std::cout << $1; };
+
 
 /**
  * Flex is programmed to return END token at the end of the

@@ -11,7 +11,12 @@ namespace vypcomp {
 
 class Scanner : public yyFlexLexer{
 public:
-	Scanner(std::istream &in) : yyFlexLexer(&in) {};
+	Scanner(std::istream &in) 
+		: yyFlexLexer(&in)
+	{};
+	Scanner(std::istream &in, Parser::token::token_kind_type start_token)
+		: yyFlexLexer(&in), start_token(start_token)
+	{};
 	virtual ~Scanner() {};
 
 	// We want to use differeny yylex with yacc.
@@ -23,6 +28,8 @@ public:
 
 private:
 	Parser::semantic_type *yylval = nullptr;
+	bool first_token = true;
+	Parser::token::token_kind_type start_token = Parser::token::PROGRAM_START;
 };
 
 class LexicalError: public std::exception {

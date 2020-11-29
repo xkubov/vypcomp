@@ -33,7 +33,12 @@ std::ostringstream buffer;
 %%
 
 %{
-            yylval = lval;
+			yylval = lval;
+			if (first_token)
+			{
+				first_token = false;
+				return start_token;
+			}
 %}
 
 [[:space:]]  ;
