@@ -15,7 +15,7 @@ public:
 		: yyFlexLexer(&in)
 	{};
 	Scanner(std::istream &in, Parser::token::token_kind_type start_token)
-		: yyFlexLexer(&in), start_token(start_token)
+		: yyFlexLexer(&in), start_token(start_token), prepend_first_token(true)
 	{};
 	virtual ~Scanner() {};
 
@@ -28,7 +28,7 @@ public:
 
 private:
 	Parser::semantic_type *yylval = nullptr;
-	bool first_token = true;
+	bool prepend_first_token = false;
 	Parser::token::token_kind_type start_token = Parser::token::PROGRAM_START;
 };
 

@@ -63,7 +63,7 @@ void ParserDriver::parse(const std::string &filename)
 
 void ParserDriver::parse(std::istream &file)
 {
-	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file) );
+	_scanner = std::unique_ptr<Scanner>(new vypcomp::Scanner(file, Parser::token::PROGRAM_START) );
 	_parser = std::unique_ptr<Parser>(new vypcomp::Parser(*_scanner, this));
 
 	if (int err = _parser->parse()) {

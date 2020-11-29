@@ -34,9 +34,9 @@ std::ostringstream buffer;
 
 %{
 			yylval = lval;
-			if (first_token)
+			if (prepend_first_token)
 			{
-				first_token = false;
+				prepend_first_token = false;
 				return start_token;
 			}
 %}
