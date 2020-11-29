@@ -147,9 +147,9 @@ const std::vector<AllocaInstruction::Ptr> Function::args() const
 	return _args;
 }
 
-std::vector<Datatype> Function::argTypes() const
+std::vector<PrimitiveDatatype> Function::argTypes() const
 {
-	std::vector<Datatype> types;
+	std::vector<PrimitiveDatatype> types;
 	for (auto arg: _args) {
 		types.push_back(arg->type());
 	}
@@ -193,7 +193,7 @@ void AllocaInstruction::addPrefix(const std::string& prefix)
 	_prefix += prefix;
 }
 
-Datatype AllocaInstruction::type() const
+PrimitiveDatatype AllocaInstruction::type() const
 {
 	return _type;
 }
@@ -238,7 +238,7 @@ void Class::add(AllocaInstruction::Ptr attr, bool isPublic)
 		_privateAttrs.push_back(attr);
 }
 
-Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<Datatype>& argtypes) const
+Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<PrimitiveDatatype>& argtypes) const
 {
 	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name, argtypes](const auto& method) {
 		return method->name() == name && method->argTypes() == argtypes;

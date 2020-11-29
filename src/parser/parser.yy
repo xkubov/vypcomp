@@ -36,7 +36,7 @@
 		std::string,
 		unsigned long long,
 		float,
-		Datatype,
+		PrimitiveDatatype,
 		Arglist,
 		Declaration,
 		PossibleDatatype,
@@ -147,7 +147,7 @@
 %token WHILE
 %token FOR
 
-%token <terminal<Datatype>()> DATA_TYPE
+%token <terminal<PrimitiveDatatype>()> DATA_TYPE
 
 %token <terminal<std::string>()>IDENTIFIER
 

@@ -76,9 +76,9 @@ this    { return token::THIS; }
 while   { return token::WHILE; }
 for     { return token::FOR; }
 
-int     { *yylval = Datatype::Int; return token::DATA_TYPE; }
-float   { *yylval = Datatype::Float; return token::DATA_TYPE; }
-string  { *yylval = Datatype::String; return token::DATA_TYPE; }
+int     { *yylval = PrimitiveDatatype::Int; return token::DATA_TYPE; }
+float   { *yylval = PrimitiveDatatype::Float; return token::DATA_TYPE; }
+string  { *yylval = PrimitiveDatatype::String; return token::DATA_TYPE; }
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
 

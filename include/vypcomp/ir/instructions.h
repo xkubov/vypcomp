@@ -14,15 +14,15 @@ namespace ir {
 /**
  * Provides datatype options.
  */
-enum class Datatype : int {
+enum class PrimitiveDatatype : int {
 	String,
 	Float,
 	Int
 };
 
-using Declaration = std::pair<Datatype, std::string>;
+using Declaration = std::pair<PrimitiveDatatype, std::string>;
 using Arglist = std::vector<Declaration>;
-using PossibleDatatype = std::optional<Datatype>;
+using PossibleDatatype = std::optional<PrimitiveDatatype>;
 
 
 struct Literal {
@@ -30,13 +30,13 @@ public:
 	using Impl = std::variant<std::string, unsigned long long, float>;
 	Literal(const Impl& val);
 
-	template<Datatype = Datatype::String>
+	template<PrimitiveDatatype = PrimitiveDatatype::String>
 	std::string get() const;
 
-	template<Datatype = Datatype::Int>
+	template<PrimitiveDatatype = PrimitiveDatatype::Int>
 	int get() const;
 
-	template<Datatype = Datatype::Float>
+	template<PrimitiveDatatype = PrimitiveDatatype::Float>
 	float get() const;
 
 private:
@@ -112,14 +112,14 @@ public:
 
 	void addPrefix(const std::string& prefix);
 
-	Datatype type() const;
+	PrimitiveDatatype type() const;
 	std::string name() const;
 	OptLiteral init() const;
 
 private:
 	std::string _varName;
 	std::string _prefix;
-	Datatype _type;
+	PrimitiveDatatype _type;
 	OptLiteral _init;
 };
 
@@ -141,7 +141,7 @@ public:
 	std::string name() const;
 	PossibleDatatype type() const;
 	const std::vector<AllocaInstruction::Ptr> args() const;
-	std::vector<Datatype> argTypes() const;
+	std::vector<PrimitiveDatatype> argTypes() const;
 
 private:
 	PossibleDatatype _type;
@@ -188,7 +188,7 @@ public:
 
 	Function::Ptr getPublicMethod(
 		const std::string& name,
-		const std::vector<Datatype>& argtypes) const;
+		const std::vector<PrimitiveDatatype>& argtypes) const;
 	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
 
 	const std::vector<Function::Ptr> publicMethods() const;
