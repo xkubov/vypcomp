@@ -1134,65 +1134,111 @@ TEST_F(ParserTests, testExpressionPrecedenceParentheses)
 	printf("finished");
 }
 
-TEST_F(ParserTests, testExpressionCast)
-{
-	std::stringstream input("(Pear)  apple");
+//TEST_F(ParserTests, testExpressionCast)
+//{
+//	std::stringstream input("(Pear)  apple");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionIdentifiers)
+//{
+//	std::stringstream input("pear+apple");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionMemberAccess)
+//{
+//	std::stringstream input("this.member.another_member");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionMemberAccessPrecedence)
+//{
+//	std::stringstream input("this.member + another_obj.another_member");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionNewPrecedence)
+//{
+//	std::stringstream input("this.member + new Object");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionFuncCallEmpty)
+//{
+//	std::stringstream input("this.member()");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
+//
+//TEST_F(ParserTests, testExpressionFuncCallArgs)
+//{
+//	std::stringstream input("this.member(ding, dong, 1337, \"test\")");
+//
+//	ParserDriver parser;
+//	parser.parseExpression(input, 0);
+//	printf("finished");
+//}
 
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
+TEST_F(ParserTests, literalExpressions)
+{
+	std::string inputs[] = { {"1337"}, {"\"hello string literal\""}, /*{"3.14159"} TODO: when floats are supported */ };
+	for (const auto& input_string : inputs)
+	{
+		ParserDriver parser;
+		std::stringstream input(input_string);
+		ASSERT_NO_THROW(parser.parseExpression(input, 0));
+	}
 }
 
-TEST_F(ParserTests, testExpressionIdentifiers)
+TEST_F(ParserTests, identifierExpressions)
 {
-	std::stringstream input("pear+apple");
-
 	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
+	std::stringstream input("identifierTest");
+	ASSERT_NO_THROW(parser.parseExpression(input, 0));
 }
 
-TEST_F(ParserTests, testExpressionMemberAccess)
+TEST_F(ParserTests, binaryOpExpressions)
 {
-	std::stringstream input("this.member.another_member");
-
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
+	std::string inputs[] = { 
+		{"13+37"}, {"\"hello string literal\" + \"string to concat\""}, /*{"3.14159+1.23"} TODO: when floats are supported */
+		{"58-78"},
+	};
+	for (const auto& input_string : inputs)
+	{
+		ParserDriver parser;
+		std::stringstream input(input_string);
+		ASSERT_NO_THROW(parser.parseExpression(input, 0));
+	}
 }
 
-TEST_F(ParserTests, testExpressionMemberAccessPrecedence)
+TEST_F(ParserTests, invalidBinaryOpExpressions)
 {
-	std::stringstream input("this.member + another_obj.another_member");
-
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
-}
-
-TEST_F(ParserTests, testExpressionNewPrecedence)
-{
-	std::stringstream input("this.member + new Object");
-
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
-}
-
-TEST_F(ParserTests, testExpressionFuncCallEmpty)
-{
-	std::stringstream input("this.member()");
-
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
-}
-
-TEST_F(ParserTests, testExpressionFuncCallArgs)
-{
-	std::stringstream input("this.member(ding, dong, 1337, \"test\")");
-
-	ParserDriver parser;
-	parser.parseExpression(input, 0);
-	printf("finished");
+	std::string inputs[] = { 
+		{"13+\"hello\""}, {"\"hello string literal\" + 16"},
+		{"\"hey\"-57"}, {"49-\"test\""}
+	};
+	for (const auto& input_string : inputs)
+	{
+		ParserDriver parser;
+		std::stringstream input(input_string);
+		ASSERT_THROW(parser.parseExpression(input, 0), SemanticError);
+	}
 }

@@ -3,6 +3,34 @@
 using namespace vypcomp;
 using namespace vypcomp::ir;
 
+bool vypcomp::ir::operator==(const Datatype& dt1, const Datatype& dt2)
+{
+	if (dt1.index() == dt2.index())
+	{
+		if (std::holds_alternative<PrimitiveDatatype>(dt1) && std::holds_alternative<PrimitiveDatatype>(dt2))
+		{
+			return std::get<PrimitiveDatatype>(dt1) == std::get<PrimitiveDatatype>(dt2);
+		}
+		else if (std::holds_alternative<ClassName>(dt1) && std::holds_alternative<ClassName>(dt2))
+		{
+			return std::get<ClassName>(dt1) == std::get<ClassName>(dt2);
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool vypcomp::ir::operator!=(const Datatype& dt1, const Datatype& dt2)
+{
+	return !(dt1 == dt2);
+}
+
 Literal::Literal(const Literal::Impl &val):
 	_val(val)
 {

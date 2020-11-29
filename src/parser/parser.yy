@@ -46,7 +46,8 @@
 		std::vector<std::pair<std::string, OptLiteral>>,
 		BasicBlock::Ptr,
 		Function::Ptr,
-		Class::Ptr
+		Class::Ptr,
+		Expression
 	>;
 
 	/**
@@ -175,10 +176,11 @@
 %left '<' LEQ '>' GEQ
 %left '+' '-'
 %left '*' '/'
+%nonassoc EXCLAMATION
 %left '.'
 %nonassoc LPAR RPAR
-%left NEW
-%left SUBEXPR // ureal token for expr->(expr) rule precedence
+%nonassoc NEW
+%nonassoc SUBEXPR // ureal token for expr->(expr) rule precedence
 
 %locations
 
@@ -200,9 +202,9 @@
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
-%nterm <nonterminal<std::string>()> expr
-%nterm <nonterminal<std::string>()> bin_op
-%nterm <nonterminal<std::string>()> optional_args
+%nterm <nonterminal<Expression>()> expr
+%nterm <nonterminal<Expression>()> binary_operation
+//%nterm <nonterminal<std::string>()> optional_args
 
 %%
 
@@ -211,7 +213,10 @@
  */
 %start parser_start;
 parser_start : PROGRAM_START start
-             | EXPR_PARSE_START expr END { std::cout << $2; };
+             | EXPR_PARSE_START expr END { 
+                 /* TODO: condition this on debug parse only if (debug_level()) */ 
+                 std::cout << "parsed expression: " << $2.value() << std::endl; 
+};
 
 /**
  * @brief Parse start.
@@ -343,93 +348,220 @@ statement : return {
 };
 
 expr 
-: expr '+' expr {
-    // check types for comaptibility
-    // emit binary_op instruction
-    std::ostringstream oss;
-    oss << "(" << $1 << " + " << $3 << ")";
-    $$ = oss.str();
-    // std::cout << oss.str() << std::endl;
+: LPAR expr RPAR %prec SUBEXPR {
+	$$ = $2;
 }
-| expr '-' expr {
-    std::ostringstream oss;
-    oss << "(" << $1 << " - " << $3 << ")";
-    $$ = oss.str();
-    // std::cout << oss.str() << std::endl;
-}
-| expr '*' expr {
-    std::ostringstream oss;
-    oss << "(" << $1 << " * " << $3 << ")";
-    $$ = oss.str();
-    // std::cout << oss.str() << std::endl;
-}
-| expr '/' expr {
-    std::ostringstream oss;
-    oss << "(" << $1 << " / " << $3 << ")";
-    $$ = oss.str();
-    // std::cout << oss.str() << std::endl;
-}
-| LPAR expr RPAR %prec SUBEXPR {
-    // will always just forward the result value
-    $$ = $2;
-}
-| LPAR IDENTIFIER RPAR expr {
-    // check if IDENTIFIER is a valid datatype
-    // emit conversion instruction if the datatypes are compatible
-    std::ostringstream oss;
-    oss << "((" << $2 << ")" << $4 << ")";
-    $$ = oss.str();
-    // std::cout << oss.str() << std::endl;
-}
-| expr LPAR optional_args {
-    // check whether expr is callable
-    // get args and check, whether args' types match
-    // emit call instruction
-    $$ = $1 + "(" + $3 + ")";
-}
-| expr '.' IDENTIFIER {
-    // Is expr type an object variable?
-    // set type depending whether member attribute/method
-    // emit load instruction if member attribute
-    // std::cout << ("(" + $1 + "." + $3 + ")");
-    $$ = "(" + $1 + "." + $3 + ")";
-}
-| NEW IDENTIFIER {
-    // does IDENTIFIER class exit?
-    // call class constructor
-    $$ = "new " + $2;
-}
-| STRING_LITERAL {
-    // emit load instruction
-    $$ = $1;
-}
-| INT_LITERAL
-{
-    // emit load instruction
-    $$ = std::to_string($1);
+| literal {
+	$$ = Expression($1.value().type(), $1.value().value());
 }
 | IDENTIFIER {
-    // Check for existing symbol in current context,
-    // emit load instruction
-    $$ = $1;
+	// TODO: search for the identifier in the symbol table, get its type
+	$$ = Expression(InvalidDatatype(), $1);
 }
-| SUPER {
-    // Is current context inside class method?
-    $$ = "super";
-}
-| THIS {
-    // Is current context inside class method?
-    $$ = "this";
+| binary_operation {
+	$$ = Expression($1.type(), "(" + $1.value() + ")");
 };
 
-optional_args : expr COMMA optional_args { $$ = $1 + ", " + $3; }
-              | expr RPAR { $$ = $1; };
-              | RPAR { $$ = "void"; };
-
-bin_op : '+' { $$ = "+"; }
-       | '-' { $$ = "-"; }
-       | '*' { $$ = "*"; }
-       | '/' { $$ = "/"; };
+binary_operation 
+: expr '+' expr {
+	try
+	{
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype1 != datatype2)
+		{
+			throw SemanticError("types do not match in + operation"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only primitive types are supported in + operation"); 
+	}
+	$$ = Expression($1.type(), $1.value() + "+" + $3.value());
+};
+| expr '-' expr {
+	try
+	{
+		// TODO: FLOAT support, modify type checks here
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		if (datatype1 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid first operand in - operation, must be int"); 
+		}
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype2 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid second operand in - operation, must be int"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only int types are supported in - operation"); 
+	}
+	$$ = Expression($1.type(), $1.value() + "-" + $3.value());
+}
+| expr '*' expr {
+	try
+	{
+		// TODO: FLOAT support, modify type checks here
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		if (datatype1 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid first operand in * operation, must be int"); 
+		}
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype2 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid second operand in * operation, must be int"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only int types are supported in * operation"); 
+	}
+	$$ = Expression($1.type(), $1.value() + "*" + $3.value());
+}
+| expr '/' expr {
+	try
+	{
+		// TODO: FLOAT support, modify type checks here
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		if (datatype1 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid first operand in / operation, must be int"); 
+		}
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype2 != PrimitiveDatatype::Int)
+		{
+			throw SemanticError("invalid second operand in / operation, must be int"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only int types are supported in / operation"); 
+	}
+	$$ = Expression($1.type(), $1.value() + "/" + $3.value());
+}
+| expr GEQ expr {
+	try
+	{
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype1 != datatype2)
+		{
+			throw SemanticError("types do not match in + operation"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only primitive types are supported in >= operation"); 
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + ">=" + $3.value());
+}
+| expr '>' expr {
+	try
+	{
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype1 != datatype2)
+		{
+			throw SemanticError("types do not match in + operation"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only primitive types are supported in > operation"); 
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + ">" + $3.value());
+}
+| expr LEQ expr {
+	try
+	{
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype1 != datatype2)
+		{
+			throw SemanticError("types do not match in + operation"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only primitive types are supported in <= operation"); 
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "<=" + $3.value());
+}
+| expr '<' expr {
+	try
+	{
+		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
+		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
+		if (datatype1 != datatype2)
+		{
+			throw SemanticError("types do not match in + operation"); 
+		}
+	}
+	catch (const std::bad_variant_access& e)
+	{
+		throw SemanticError("only primitive types are supported in < operation"); 
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "<" + $3.value());
+}
+| expr EQUALS expr {
+	if ($1.type() != $3.type())
+	{
+		throw SemanticError("types do not match in == operator");
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "==" + $3.value());
+}
+| expr NOTEQUALS expr {
+	if ($1.type() != $3.type())
+	{
+		throw SemanticError("types do not match in != operator");
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "!=" + $3.value());
+}
+| expr AND expr {
+	if ($1.type() != $3.type())
+	{
+		throw SemanticError("types do not match in && operator");
+	}
+	else
+	{
+		if (std::holds_alternative<PrimitiveDatatype>($1.type()))
+		{
+			if (std::get<PrimitiveDatatype>($1.type()) != PrimitiveDatatype::Int)
+			{
+				throw SemanticError("only int or object type allowed in && operator");
+			}
+		}
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "&&" + $3.value());
+}
+| expr OR expr {
+	if ($1.type() != $3.type())
+	{
+		throw SemanticError("types do not match in || operator");
+	}
+	else
+	{
+		if (std::holds_alternative<PrimitiveDatatype>($1.type()))
+		{
+			if (std::get<PrimitiveDatatype>($1.type()) != PrimitiveDatatype::Int)
+			{
+				throw SemanticError("only int or object type allowed in || operator");
+			}
+		}
+	}
+	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "||" + $3.value());
+}
+| expr '.' IDENTIFIER {
+	if (!std::holds_alternative<ClassName>($1.type()))
+	{
+		throw SemanticError("left hand operand of . operator is not an object variable");
+	}
+	// TODO: decide the type depending on $3 identifier lookup
+	$$ = Expression(FunctionType(), $1.value() + "." + $3);
+};
 
 /**
  * Parses return statement. If there is return statement without value we must ensure

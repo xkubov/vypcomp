@@ -20,9 +20,42 @@ enum class PrimitiveDatatype : int {
 	Int
 };
 
+using ClassName = std::string;
+struct FunctionType {};
+struct InvalidDatatype {};
+using Datatype = std::variant<PrimitiveDatatype, ClassName, FunctionType, InvalidDatatype>;
+bool operator==(const Datatype& dt1, const Datatype& dt2);
+bool operator!=(const Datatype& dt1, const Datatype& dt2);
 using Declaration = std::pair<PrimitiveDatatype, std::string>;
 using Arglist = std::vector<Declaration>;
 using PossibleDatatype = std::optional<PrimitiveDatatype>;
+
+class Expression {
+public:
+	using ValueType = std::string;
+	Expression()
+		: _type(InvalidDatatype()), _value("empty")
+	{}
+	Expression(Datatype type, ValueType value)
+		: _type(type), _value(value)
+	{};
+	Expression(const Expression& other) = default;
+	Expression& operator=(const Expression& other) = default;
+	Expression(Expression&& other) = default;
+	Expression& operator=(Expression&& other) = default;
+
+	Datatype type() const
+	{
+		return _type;
+	}
+	ValueType value() const
+	{
+		return _value;
+	}
+private:
+	Datatype _type;
+	ValueType _value;
+};
 
 struct Literal {
 public:
@@ -38,6 +71,22 @@ public:
 	template<PrimitiveDatatype = PrimitiveDatatype::Float>
 	float get() const;
 
+	Expression::ValueType value()
+	{
+		if (std::holds_alternative<std::string>(_val)) 
+			return "\"" + std::get<std::string>(_val) + "\"";
+		else if (std::holds_alternative<unsigned long long>(_val))
+			return std::to_string(std::get<unsigned long long>(_val));
+		else if (std::holds_alternative<float>(_val))
+			return std::to_string(std::get<float>(_val));
+	}
+
+	PrimitiveDatatype type() const
+	{
+		if (std::holds_alternative<std::string>(_val)) return PrimitiveDatatype::String;
+		else if (std::holds_alternative<float>(_val)) return PrimitiveDatatype::Float;
+		else if (std::holds_alternative<unsigned long long>(_val)) return PrimitiveDatatype::Int;
+	}
 private:
 	Impl _val;
 };
