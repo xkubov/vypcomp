@@ -190,6 +190,7 @@
 %nterm <nonterminal<Function::Ptr>()> function_declaration
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
+%nterm <nonterminal<BasicBlock::Ptr>()> else
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
 %nterm <nonterminal<OptLiteral>()> optional_assignment
@@ -264,13 +265,8 @@ function_definition : function_declaration function_body {
  */
 function_declaration : optional_type IDENTIFIER LPAR arg_list {
 	// Creates new funcion.
-	Function::Ptr fun(new Function({ $1, $2, $4 }));
-
-	// Starts parsing of the functon, allocates resources, creates alloca instructions
-	// for arguments (should not this be done in constructor of function?).
-	parser->parseStart(fun);
-
-	$$ = fun;
+	$$ = parser->newFunction({ $1, $2, $4 });
+	parser->parseStart($$);
 };
 
 /**
@@ -320,8 +316,14 @@ basic_block : statement basic_block {
 end_of_block : RBRA {
 	$$ = nullptr;
 }
-| IF basic_block {
-	$$ = $2; /*TODO: Generate two blocks and new instruction*/
+| IF LPAR expr RPAR LBRA basic_block else basic_block {
+	// TODO: process condition.
+	auto br = BranchInstruction::Ptr(new BranchInstruction($6, $8));
+	$8->addFirst(br);
+	$$ = $8;
+};
+
+else : ELSE LBRA basic_block {
 };
 
 /**
@@ -509,13 +511,12 @@ class_definition : class_declaration LBRA class_body {
 };
 
 class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
-	auto parent = parser->getClass($4);
-	Class::Ptr cl(new Class($2, parent));
-	parser->parseStart(cl);
-	$$ = cl;
+	$$ = parser->newClass($2, $4);
+	parser->parseStart($$);
 };
 
-class_body : RBRA;
+class_body : function_definition class_body
+	   | RBRA;
 
 optional_type : DATA_TYPE { $$ = $1; }
 	  | VOID { $$ = PossibleDatatype(); }

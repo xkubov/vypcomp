@@ -35,7 +35,7 @@ const SymbolTable& ParserDriver::table() const
 	return _tables[0];
 }
 
-Class::Ptr ParserDriver::getClass(const std::string &name)
+Class::Ptr ParserDriver::getClass(const std::string &name) const
 {
 	if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<Class::Ptr>(*symbol)) {
@@ -114,9 +114,36 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 	_currClass = cl;
 }
 
+Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& base) const
+{
+        if (auto symbol = searchGlobal(name)) {
+		if (!std::holds_alternative<Class::Ptr>(*symbol))
+			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
+
+		auto cl = std::get<Class::Ptr>(*symbol);
+		cl->setBase(getClass(base));
+		return cl;
+        }
+
+	return Class::Ptr(new Class(name, getClass(base)));
+}
+
+Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) const
+{
+	auto [type, name, args] = sig;
+        if (auto symbol = searchCurrent(name)) {
+		if (!std::holds_alternative<Function::Ptr>(*symbol))
+			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
+
+		return std::get<Function::Ptr>(*symbol);
+        }
+
+        return Function::Ptr(new Function({type, name, args}));
+}
+
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
-	if (searchTables(decl->name())) {
+	if (searchCurrent(decl->name())) {
 		throw SyntaxError("Redefinition of "+decl->name());
 	}
 }
@@ -132,7 +159,7 @@ void ParserDriver::ensureMainDefined() const
 	if (searchTables("main"))
 		return;
 
-	throw SemanticError("Main not defined.");
+	throw SemanticError("main not defined.");
 }
 
 void ParserDriver::pushSymbolTable(bool storeFunctions)
@@ -161,6 +188,22 @@ std::optional<SymbolTable::Symbol> ParserDriver::searchTables(const SymbolTable:
 		if (it->has(key))
 			return it->get(key);
 	}
+
+	return {};
+}
+
+std::optional<SymbolTable::Symbol> ParserDriver::searchGlobal(const SymbolTable::Key& key) const
+{
+	if (_tables[0].has(key))
+		return _tables[0].get(key);
+
+	return {};
+}
+
+std::optional<SymbolTable::Symbol> ParserDriver::searchCurrent(const SymbolTable::Key& key) const
+{
+	if (_tables[_tables.size()-1].has(key))
+		return _tables[0].get(key);
 
 	return {};
 }

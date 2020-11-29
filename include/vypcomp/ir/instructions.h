@@ -24,7 +24,6 @@ using Declaration = std::pair<PrimitiveDatatype, std::string>;
 using Arglist = std::vector<Declaration>;
 using PossibleDatatype = std::optional<PrimitiveDatatype>;
 
-
 struct Literal {
 public:
 	using Impl = std::variant<std::string, unsigned long long, float>;
@@ -181,8 +180,9 @@ private:
 class Class: public Instruction {
 public:
 	using Ptr = std::shared_ptr<Class>;
-	Class(const std::string& name, Class::Ptr parent);
+	Class(const std::string& name, Class::Ptr base);
 
+	void setBase(Class::Ptr base);
 	void add(Function::Ptr methods, bool isPublic = true);
 	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
 
@@ -200,7 +200,7 @@ public:
 	std::string name() const;
 
 private:
-	const std::string _name;
+	std::string _name;
 	Class::Ptr _parent;
 	std::vector<Function::Ptr> _publicMethods;
 	std::vector<Function::Ptr> _privateMethods;

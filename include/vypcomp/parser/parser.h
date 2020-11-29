@@ -37,10 +37,24 @@ public:
 	void generateOutput(const std::string &output) const;
 	void generateOutput(std::ostream &output) const;
 
-	virtual Class::Ptr getClass(const std::string& name);
+	Class::Ptr getClass(const std::string& name) const;
 
-	virtual void parseStart(ir::Function::Ptr fun);
-	virtual void parseStart(ir::Class::Ptr fun);
+	void parseStart(ir::Function::Ptr fun);
+	void parseStart(ir::Class::Ptr cl);
+
+	/**
+	 * Creates new class. This parser does not perform redefinition check. This is left
+	 * for index run. When class exists returns referecne to this class. This is solution
+	 * for not modifying global sybol table after first run and referencing same symbols.
+	 */
+	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const;
+
+	/**
+	 * Creates new function based on provided signature. This function does not perform
+	 * redefinition check. This is left for index run and expects that all names are behaving
+	 * well.
+	 */
+	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const;
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);
@@ -53,6 +67,8 @@ public:
 	void parseEnd();
 
 	std::optional<SymbolTable::Symbol> searchTables(const SymbolTable::Key& key) const;
+	std::optional<SymbolTable::Symbol> searchGlobal(const SymbolTable::Key& key) const;
+	std::optional<SymbolTable::Symbol> searchCurrent(const SymbolTable::Key& key) const;
 
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;
