@@ -104,6 +104,7 @@ string  { *yylval = Datatype::String; return token::DATA_TYPE; }
 "-"  { return '-'; }
 "*"  { return '*'; }
 "/"  { return '/'; }
+"."  { return '.'; }
 
 .  {
 	// TODO: parse word and print it.

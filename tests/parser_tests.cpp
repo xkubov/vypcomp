@@ -1095,42 +1095,104 @@ TEST_F(ParserTests, testEmbededMethods)
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
+//
+// Expression parsing unit tests
+//
 TEST_F(ParserTests, testExpressionBinaryOp)
 {
-	bool DEBUG = 0;
 	std::stringstream input("12 + 34");
 
 	ParserDriver parser;
-	parser.parse(input, DEBUG);
+	parser.parse(input, 0);
 	printf("finished");
 }
 
 TEST_F(ParserTests, testExpressionPrecedence)
 {
-	bool DEBUG = 0;
 	std::stringstream input("669 / 12 + 34 * 45");
 
 	ParserDriver parser;
-	parser.parse(input, DEBUG);
+	parser.parse(input, 0);
 	printf("finished");
 }
 
 TEST_F(ParserTests, testExpressionPrecedence1)
 {
-	bool DEBUG = 0;
 	std::stringstream input("74 * 12 * 34 + 45");
 
 	ParserDriver parser;
-	parser.parse(input, DEBUG);
+	parser.parse(input, 0);
 	printf("finished");
 }
 
 TEST_F(ParserTests, testExpressionPrecedenceParentheses)
 {
-	bool DEBUG = 0;
 	std::stringstream input("74 * ( 21 + 12 ) * 34 + 45");
 
 	ParserDriver parser;
-	parser.parse(input, DEBUG);
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionCast)
+{
+	std::stringstream input("(Pear)  apple");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionIdentifiers)
+{
+	std::stringstream input("pear+apple");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionMemberAccess)
+{
+	std::stringstream input("this.member.another_member");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionMemberAccessPrecedence)
+{
+	std::stringstream input("this.member + another_obj.another_member");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionNewPrecedence)
+{
+	std::stringstream input("this.member + new Object");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionFuncCallEmpty)
+{
+	std::stringstream input("this.member()");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
+	printf("finished");
+}
+
+TEST_F(ParserTests, testExpressionFuncCallArgs)
+{
+	std::stringstream input("this.member(ding, dong, 1337, \"test\")");
+
+	ParserDriver parser;
+	parser.parse(input, 0);
 	printf("finished");
 }

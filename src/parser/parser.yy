@@ -161,12 +161,22 @@
 %token LBRA
 %token COMMA
 %token ASSIGNMENT
-
-%left '+' '-'
-%left '*' '/'
-
 %token SEMICOLON
 %token COLON
+
+//
+// Operator precedence table in ascending order (later has higher precedence)
+//
+%left OR
+%left AND
+%left EQUALS NOTEQUALS
+%left '<' LEQ '>' GEQ
+%left '+' '-'
+%left '*' '/'
+%left '.'
+%nonassoc LPAR RPAR
+%left NEW
+%left SUBEXPR // ureal token for expr->(expr) rule precedence
 
 %locations
 
@@ -181,7 +191,7 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
 %nterm <nonterminal<OptLiteral>()> optional_assignment
-%nterm <nonterminal<OptLiteral>()> literal
+%nterm <nonterminal<Literal>()> literal
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
@@ -189,6 +199,7 @@
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
 %nterm <nonterminal<std::string>()> expr
 %nterm <nonterminal<std::string>()> bin_op
+%nterm <nonterminal<std::string>()> optional_args
 
 %%
 
@@ -204,7 +215,7 @@ start : function_definition start
       | eof
       ;
 */
-start : expr END;
+start : expr END { std::cout << $1; };
 
 /**
  * Flex is programmed to return END token at the end of the
@@ -322,40 +333,89 @@ statement : return {
 	$$ = $1;
 };
 
-expr : 
-expr '+' expr {
+expr 
+: expr '+' expr {
+    // check types for comaptibility
+    // emit binary_op instruction
     std::ostringstream oss;
     oss << "(" << $1 << " + " << $3 << ")";
     $$ = oss.str();
-    std::cout << oss.str() << std::endl;
+    // std::cout << oss.str() << std::endl;
 }
 | expr '-' expr {
     std::ostringstream oss;
     oss << "(" << $1 << " - " << $3 << ")";
     $$ = oss.str();
-    std::cout << oss.str() << std::endl;
+    // std::cout << oss.str() << std::endl;
 }
 | expr '*' expr {
     std::ostringstream oss;
     oss << "(" << $1 << " * " << $3 << ")";
     $$ = oss.str();
-    std::cout << oss.str() << std::endl;
+    // std::cout << oss.str() << std::endl;
 }
 | expr '/' expr {
     std::ostringstream oss;
     oss << "(" << $1 << " / " << $3 << ")";
     $$ = oss.str();
-    std::cout << oss.str() << std::endl;
+    // std::cout << oss.str() << std::endl;
 }
-| LPAR expr RPAR {
+| LPAR expr RPAR %prec SUBEXPR {
+    // will always just forward the result value
     $$ = $2;
 }
-| INT_LITERAL {
-    $$ = std::to_string($1);
+| LPAR IDENTIFIER RPAR expr {
+    // check if IDENTIFIER is a valid datatype
+    // emit conversion instruction if the datatypes are compatible
+    std::ostringstream oss;
+    oss << "((" << $2 << ")" << $4 << ")";
+    $$ = oss.str();
+    // std::cout << oss.str() << std::endl;
+}
+| expr LPAR optional_args {
+    // check whether expr is callable
+    // get args and check, whether args' types match
+    // emit call instruction
+    $$ = $1 + "(" + $3 + ")";
+}
+| expr '.' IDENTIFIER {
+    // Is expr type an object variable?
+    // set type depending whether member attribute/method
+    // emit load instruction if member attribute
+    // std::cout << ("(" + $1 + "." + $3 + ")");
+    $$ = "(" + $1 + "." + $3 + ")";
+}
+| NEW IDENTIFIER {
+    // does IDENTIFIER class exit?
+    // call class constructor
+    $$ = "new " + $2;
 }
 | STRING_LITERAL {
+    // emit load instruction
     $$ = $1;
+}
+| INT_LITERAL
+{
+    // emit load instruction
+    $$ = std::to_string($1);
+}
+| IDENTIFIER {
+    // Check for existing symbol in current context,
+    // emit load instruction
+    $$ = $1;
+}
+| SUPER {
+    // Is current context inside class method?
+    $$ = "super";
+}
+| THIS {
+    // Is current context inside class method?
+    $$ = "this";
 };
+
+optional_args : expr COMMA optional_args { $$ = $1 + ", " + $3; }
+              | expr RPAR { $$ = $1; };
+              | RPAR { $$ = "void"; };
 
 bin_op : '+' { $$ = "+"; }
        | '-' { $$ = "-"; }
