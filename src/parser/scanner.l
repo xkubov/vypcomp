@@ -110,6 +110,14 @@ string  { *yylval = PrimitiveDatatype::String; return token::DATA_TYPE; }
 "*"  { return '*'; }
 "/"  { return '/'; }
 "."  { return '.'; }
+"=="  { return token::EQUALS; }
+"!="  { return token::NOTEQUALS; }
+">"  { return '>'; }
+">="  { return token::GEQ; }
+"<"  { return '<'; }
+"<="  { return token::LEQ; }
+"||"  { return token::OR; }
+"&&"  { return token::AND; }
 
 .  {
 	// TODO: parse word and print it.

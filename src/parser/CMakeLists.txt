@@ -16,8 +16,10 @@ ADD_FLEX_BISON_DEPENDENCY(FlexScanner BisonParser)
 add_library(Parser
     parser.cpp
     symbol_table.cpp
+	expression.cpp
     ../../include/vypcomp/parser/parser.h
     ../../include/vypcomp/parser/scanner.h
+	../../include/vypcomp/parser/expression.h
     ${FLEX_FlexScanner_OUTPUTS}
     ${BISON_BisonParser_OUTPUTS}
 )

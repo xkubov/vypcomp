@@ -208,6 +208,11 @@ std::optional<SymbolTable::Symbol> ParserDriver::searchCurrent(const SymbolTable
 	return {};
 }
 
+Class::Ptr vypcomp::ParserDriver::getCurrentClass() const
+{
+	return _currClass;
+}
+
 SyntaxError::SyntaxError(const std::string& msg):
 	msg(msg)
 {

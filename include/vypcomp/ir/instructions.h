@@ -19,43 +19,16 @@ enum class PrimitiveDatatype : int {
 	Float,
 	Int
 };
-
 using ClassName = std::string;
 struct FunctionType {};
 struct InvalidDatatype {};
 using Datatype = std::variant<PrimitiveDatatype, ClassName, FunctionType, InvalidDatatype>;
 bool operator==(const Datatype& dt1, const Datatype& dt2);
 bool operator!=(const Datatype& dt1, const Datatype& dt2);
-using Declaration = std::pair<PrimitiveDatatype, std::string>;
+std::string to_string(const Datatype& t);
+using Declaration = std::pair<PrimitiveDatatype, std::string>; // TODO: rework all these to work with Datatype instead
 using Arglist = std::vector<Declaration>;
 using PossibleDatatype = std::optional<PrimitiveDatatype>;
-
-class Expression {
-public:
-	using ValueType = std::string;
-	Expression()
-		: _type(InvalidDatatype()), _value("empty")
-	{}
-	Expression(Datatype type, ValueType value)
-		: _type(type), _value(value)
-	{};
-	Expression(const Expression& other) = default;
-	Expression& operator=(const Expression& other) = default;
-	Expression(Expression&& other) = default;
-	Expression& operator=(Expression&& other) = default;
-
-	Datatype type() const
-	{
-		return _type;
-	}
-	ValueType value() const
-	{
-		return _value;
-	}
-private:
-	Datatype _type;
-	ValueType _value;
-};
 
 struct Literal {
 public:
@@ -71,7 +44,7 @@ public:
 	template<PrimitiveDatatype = PrimitiveDatatype::Float>
 	float get() const;
 
-	Expression::ValueType value()
+	std::string string_value() const
 	{
 		if (std::holds_alternative<std::string>(_val)) 
 			return "\"" + std::get<std::string>(_val) + "\"";
@@ -232,12 +205,14 @@ public:
 	Class(const std::string& name, Class::Ptr base);
 
 	void setBase(Class::Ptr base);
+	Class::Ptr getBase() const;
 	void add(Function::Ptr methods, bool isPublic = true);
 	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
 
 	Function::Ptr getPublicMethod(
 		const std::string& name,
 		const std::vector<PrimitiveDatatype>& argtypes) const;
+	Function::Ptr getPublicMethodByName(const std::string& name) const;
 	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
 
 	const std::vector<Function::Ptr> publicMethods() const;

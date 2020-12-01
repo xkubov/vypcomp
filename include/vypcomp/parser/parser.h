@@ -70,6 +70,7 @@ public:
 	std::optional<SymbolTable::Symbol> searchGlobal(const SymbolTable::Key& key) const;
 	std::optional<SymbolTable::Symbol> searchCurrent(const SymbolTable::Key& key) const;
 
+	Class::Ptr getCurrentClass() const;
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;
 	std::unique_ptr<vypcomp::Scanner> _scanner;

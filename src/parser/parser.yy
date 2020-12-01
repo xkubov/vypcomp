@@ -18,8 +18,10 @@
 	#include <iostream>
 	#include <variant>
 	#include <string>
+	#include <utility>
 
 	#include "vypcomp/ir/instructions.h"
+	#include "vypcomp/parser/expression.h"
 
 	namespace vypcomp {
 
@@ -47,7 +49,7 @@
 		BasicBlock::Ptr,
 		Function::Ptr,
 		Class::Ptr,
-		Expression
+		std::shared_ptr<Expression>
 	>;
 
 	/**
@@ -202,8 +204,8 @@
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
 %nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
-%nterm <nonterminal<Expression>()> expr
-%nterm <nonterminal<Expression>()> binary_operation
+%nterm <nonterminal<std::shared_ptr<Expression>>()> expr
+%nterm <nonterminal<std::shared_ptr<Expression>>()> binary_operation
 //%nterm <nonterminal<std::string>()> optional_args
 
 %%
@@ -214,8 +216,12 @@
 %start parser_start;
 parser_start : PROGRAM_START start
              | EXPR_PARSE_START expr END { 
-                 /* TODO: condition this on debug parse only if (debug_level()) */ 
-                 std::cout << "parsed expression: " << $2.value() << std::endl; 
+				/* TODO: condition this on debug parse only if (debug_level()) */ 
+				if ($2)
+					std::cout << "parsed expression: " << $2->to_string()
+						<< ", type: " << to_string($2->type()) << std::endl; 
+				else
+					std::cout << "expression parse yielded nullptr" << std::endl;
 };
 
 /**
@@ -349,218 +355,177 @@ statement : return {
 
 expr 
 : LPAR expr RPAR %prec SUBEXPR {
-	$$ = $2;
+	$$ = std::move($2);
 }
 | literal {
-	$$ = Expression($1.value().type(), $1.value().value());
+	$$ = std::make_shared<LiteralExpression>($1.value());
 }
 | IDENTIFIER {
-	// TODO: search for the identifier in the symbol table, get its type
-	$$ = Expression(InvalidDatatype(), $1);
+	auto search_result  = parser->searchTables($1);
+	if (search_result)
+	{
+		SymbolTable::Symbol symbol = search_result.value();
+		if (std::holds_alternative<AllocaInstruction::Ptr>(symbol))
+		{
+			auto instruction = std::get<AllocaInstruction::Ptr>(symbol);
+			$$ = std::make_shared<SymbolExpression>(instruction);
+		}
+		else if (std::holds_alternative<Function::Ptr>(symbol))
+		{
+			// TODO I think this can go as well since function call should be handled in other rule
+			throw SemanticError("Function type expression.");
+		}
+		else
+		{
+			throw SemanticError("Unsupported identifier type in expression.");
+		}
+	}
+	else
+	{
+		throw SemanticError("Undeclared identifier in expression.");
+	}
 }
 | binary_operation {
-	$$ = Expression($1.type(), "(" + $1.value() + ")");
+	$$ = std::move($1);
+}
+| THIS {
+	auto current_class = parser->getCurrentClass();
+	if (!current_class)
+	{
+		throw SemanticError("\"this\" used outside of a method context.");
+	}
+	else
+	{
+		// TODO: is `this` an AllocaInstruction in every method? (what are function params?)
+		throw std::runtime_error("this keyword unimplemented");
+	}
+}
+| SUPER {
+	auto current_class = parser->getCurrentClass();
+	if (!current_class)
+	{
+		throw SemanticError("\"super\" used outside of a method context.");
+	}
+	else
+	{
+		auto parent_class = current_class->getBase();
+		if (!parent_class)
+		{
+			throw SemanticError("\"super\" used in method context of parentless class.");
+		}
+		else
+		{
+			// TODO: super should be the same instruction as this with different type
+			throw std::runtime_error("super keyword not implemented");
+		}
+	}
 };
+// TODO function call here
+// | expr LPAR args ...
+// TODO cast
+// TODO new
 
 binary_operation 
 : expr '+' expr {
-	try
-	{
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype1 != datatype2)
-		{
-			throw SemanticError("types do not match in + operation"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only primitive types are supported in + operation"); 
-	}
-	$$ = Expression($1.type(), $1.value() + "+" + $3.value());
-};
+	$$ = std::make_shared<AddExpression>(std::move($1), std::move($3));
+}
 | expr '-' expr {
-	try
-	{
-		// TODO: FLOAT support, modify type checks here
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		if (datatype1 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid first operand in - operation, must be int"); 
-		}
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype2 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid second operand in - operation, must be int"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only int types are supported in - operation"); 
-	}
-	$$ = Expression($1.type(), $1.value() + "-" + $3.value());
+	$$ = std::make_shared<SubtractExpression>(std::move($1), std::move($3));
 }
 | expr '*' expr {
-	try
-	{
-		// TODO: FLOAT support, modify type checks here
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		if (datatype1 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid first operand in * operation, must be int"); 
-		}
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype2 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid second operand in * operation, must be int"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only int types are supported in * operation"); 
-	}
-	$$ = Expression($1.type(), $1.value() + "*" + $3.value());
+	$$ = std::make_shared<MultiplyExpression>(std::move($1), std::move($3));
 }
 | expr '/' expr {
-	try
-	{
-		// TODO: FLOAT support, modify type checks here
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		if (datatype1 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid first operand in / operation, must be int"); 
-		}
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype2 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid second operand in / operation, must be int"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only int types are supported in / operation"); 
-	}
-	$$ = Expression($1.type(), $1.value() + "/" + $3.value());
+	$$ = std::make_shared<DivideExpression>(std::move($1), std::move($3));
 }
 | expr GEQ expr {
-	try
-	{
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype1 != datatype2)
-		{
-			throw SemanticError("types do not match in + operation"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only primitive types are supported in >= operation"); 
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + ">=" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::GEQ, std::move($1), std::move($3)
+	);
 }
 | expr '>' expr {
-	try
-	{
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype1 != datatype2)
-		{
-			throw SemanticError("types do not match in + operation"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only primitive types are supported in > operation"); 
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + ">" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::GREATER, std::move($1), std::move($3)
+	);
 }
 | expr LEQ expr {
-	try
-	{
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype1 != datatype2)
-		{
-			throw SemanticError("types do not match in + operation"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only primitive types are supported in <= operation"); 
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "<=" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::LEQ, std::move($1), std::move($3)
+	);
 }
 | expr '<' expr {
-	try
-	{
-		auto datatype1 = std::get<PrimitiveDatatype>($1.type());
-		auto datatype2 = std::get<PrimitiveDatatype>($3.type());
-		if (datatype1 != datatype2)
-		{
-			throw SemanticError("types do not match in + operation"); 
-		}
-	}
-	catch (const std::bad_variant_access& e)
-	{
-		throw SemanticError("only primitive types are supported in < operation"); 
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "<" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::LESS, std::move($1), std::move($3)
+	);
 }
 | expr EQUALS expr {
-	if ($1.type() != $3.type())
-	{
-		throw SemanticError("types do not match in == operator");
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "==" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::EQUALS, std::move($1), std::move($3)
+	);
 }
 | expr NOTEQUALS expr {
-	if ($1.type() != $3.type())
-	{
-		throw SemanticError("types do not match in != operator");
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "!=" + $3.value());
+	$$ = std::make_shared<ComparisonExpression>(
+		ComparisonExpression::NOTEQUALS, std::move($1), std::move($3)
+	);
 }
 | expr AND expr {
-	if ($1.type() != $3.type())
-	{
-		throw SemanticError("types do not match in && operator");
-	}
-	else
-	{
-		if (std::holds_alternative<PrimitiveDatatype>($1.type()))
-		{
-			if (std::get<PrimitiveDatatype>($1.type()) != PrimitiveDatatype::Int)
-			{
-				throw SemanticError("only int or object type allowed in && operator");
-			}
-		}
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "&&" + $3.value());
+	$$ = std::make_shared<AndExpression>(std::move($1), std::move($3));
 }
 | expr OR expr {
-	if ($1.type() != $3.type())
-	{
-		throw SemanticError("types do not match in || operator");
-	}
-	else
-	{
-		if (std::holds_alternative<PrimitiveDatatype>($1.type()))
-		{
-			if (std::get<PrimitiveDatatype>($1.type()) != PrimitiveDatatype::Int)
-			{
-				throw SemanticError("only int or object type allowed in || operator");
-			}
-		}
-	}
-	$$ = Expression(PrimitiveDatatype::Int, $1.value() + "||" + $3.value());
+	$$ = std::make_shared<OrExpression>(std::move($1), std::move($3));
 }
 | expr '.' IDENTIFIER {
-	if (!std::holds_alternative<ClassName>($1.type()))
+	if (!std::holds_alternative<ClassName>($1->type()))
 	{
 		throw SemanticError("left hand operand of . operator is not an object variable");
 	}
-	// TODO: decide the type depending on $3 identifier lookup
-	$$ = Expression(FunctionType(), $1.value() + "." + $3);
+	ClassName class_name = std::get<ClassName>($1->type());
+	std::optional<SymbolTable::Symbol> search_result = parser->searchTables(class_name);
+	if (!search_result)
+	{
+		// Don't think this can happen since expression can only get a class type
+		// if the class search succeeded in the expr -> IDENTIFIER rule.
+		throw SemanticError("left hand operand of . operator has an undefined type");
+	}
+	else if (!std::holds_alternative<Class::Ptr>(*search_result))
+	{
+		throw SemanticError("left hand operand of . operator is not an object type");
+	}
+	else
+	{
+		Class::Ptr expr_class = std::get<Class::Ptr>(search_result.value());
+		// now determine whether identifier is a method or an attribute
+		// TODO - private extension: the decision to search private should be done depending
+		// on the current context (getClass()...). For now search only public.
+
+		// if (Class::Ptr current_class = parser->getCurrentClass(); 
+		// 	current_class && current_class->name() == expr_class->name())
+		// {
+		// 	// search for private as well
+		// }
+		// else
+		// we're in a method but expr is has a different type than the current class parsed
+		{
+			AllocaInstruction::Ptr attribute = expr_class->getPublicAttribute($3); 
+			if (attribute)
+			{
+				$$ = std::make_shared<SymbolExpression>(attribute);
+			}
+			else
+			{
+				// try method
+				Function::Ptr method = expr_class->getPublicMethodByName($3);
+				if (method)
+				{
+					$$ = std::make_shared<FunctionExpression>(method);
+				}
+				else
+				{
+					throw SemanticError("given object has not member named as " + $3);
+				}
+			}
+		}
+	}
 };
 
 /**

@@ -1218,8 +1218,18 @@ TEST_F(ParserTests, identifierExpressions)
 TEST_F(ParserTests, binaryOpExpressions)
 {
 	std::string inputs[] = { 
-		{"13+37"}, {"\"hello string literal\" + \"string to concat\""}, /*{"3.14159+1.23"} TODO: when floats are supported */
-		{"58-78"},
+		{"13 + 37"}, {"\"hello string literal\" + \"string to concat\""}, /*{"3.14159+1.23"} TODO: when floats are supported */
+		{"58 - 78"},
+		{"58 * 78"},
+		{"58 / 78"},
+		{"58 == 78"},
+		{"58 != 78"},
+		{"58 > 78"},
+		{"58 >= 78"},
+		{"58 < 78"},
+		{"58 <= 78"},
+		{"58 && 78"},
+		{"58 || 78"},
 	};
 	for (const auto& input_string : inputs)
 	{

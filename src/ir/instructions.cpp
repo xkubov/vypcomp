@@ -1,8 +1,13 @@
+#include <stdexcept>
+
 #include "vypcomp/ir/instructions.h"
 
 using namespace vypcomp;
 using namespace vypcomp::ir;
 
+//
+// Datatypes
+//
 bool vypcomp::ir::operator==(const Datatype& dt1, const Datatype& dt2)
 {
 	if (dt1.index() == dt2.index())
@@ -29,6 +34,38 @@ bool vypcomp::ir::operator==(const Datatype& dt1, const Datatype& dt2)
 bool vypcomp::ir::operator!=(const Datatype& dt1, const Datatype& dt2)
 {
 	return !(dt1 == dt2);
+}
+
+std::string vypcomp::ir::to_string(const Datatype& t)
+{
+	if (std::holds_alternative<PrimitiveDatatype>(t))
+	{
+		auto enum_val = std::get<PrimitiveDatatype>(t);
+		if (enum_val == PrimitiveDatatype::Float)
+		{
+			return "float";
+		}
+		else if (enum_val == PrimitiveDatatype::Int)
+		{
+			return "int";
+		}
+		else
+		{
+			return "string";
+		}
+	}
+	else if (std::holds_alternative<ClassName>(t))
+	{
+		return "class " + std::get<ClassName>(t);
+	}
+	else if (std::holds_alternative<FunctionType>(t))
+	{
+		return "function";
+	}
+	else
+	{
+		return "invalid type";
+	}
 }
 
 Literal::Literal(const Literal::Impl &val):
@@ -251,6 +288,11 @@ void Class::setBase(Class::Ptr base)
 	_parent = base;
 }
 
+Class::Ptr Class::getBase() const
+{
+	return _parent;
+}
+
 void Class::add(Function::Ptr method, bool isPublic)
 {
 	method->addPrefix(_name);
@@ -282,6 +324,21 @@ Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<
 
 	if (_parent)
 		return _parent->getPublicMethod(name, argtypes);
+
+	return nullptr;
+}
+
+Function::Ptr Class::getPublicMethodByName(const std::string& name) const
+{
+	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
+		return method->name() == name;
+		});
+
+	if (it != _publicMethods.end())
+		return *it;
+
+	if (_parent)
+		return _parent->getPublicMethodByName(name);
 
 	return nullptr;
 }
