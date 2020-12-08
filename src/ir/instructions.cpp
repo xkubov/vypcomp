@@ -274,6 +274,14 @@ OptLiteral AllocaInstruction::init() const
 }
 
 // ------------------------------
+// Assignment
+// ------------------------------
+
+Assignment::Assignment(AllocaInstruction::Ptr ptr, Expression::ValueType expr):
+	_ptr(ptr), _expr(expr)
+{
+}
+// ------------------------------
 // Class
 // ------------------------------
 

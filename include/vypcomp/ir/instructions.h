@@ -43,7 +43,12 @@ private:
 	std::string _name = "";
 };
 
-class AllocaInstruction: public Instruction {
+class DummyInstruction : public Instruction {
+public:
+	using Ptr = std::shared_ptr<DummyInstruction>;
+};
+
+class AllocaInstruction : public Instruction {
 public:
 	using Ptr = std::shared_ptr<AllocaInstruction>;
 
@@ -66,6 +71,23 @@ private:
 	std::string _prefix;
 	PrimitiveDatatype _type;
 	OptLiteral _init;
+};
+
+class Assignment: public Instruction {
+public:
+	using Ptr = std::shared_ptr<Assignment>;
+
+	/**
+	 * Initial value is stored in form of string.
+	 */
+	Assignment(
+		AllocaInstruction::Ptr ptr,
+		Expression::ValueType expr
+	);
+
+private:
+	AllocaInstruction::Ptr _ptr;
+	Expression::ValueType _expr;
 };
 
 class Function: public Instruction {

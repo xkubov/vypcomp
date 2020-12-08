@@ -91,8 +91,7 @@ protected:
 	Instruction::Ptr _next = nullptr;
 };
 
-class Expression 
-{
+class Expression {
 public:
 	using ValueType = std::shared_ptr<Expression>;
 	Expression()
