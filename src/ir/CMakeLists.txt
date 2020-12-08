@@ -1,6 +1,8 @@
 add_library(Ir
     instructions.cpp
+    expression.cpp
     ../../include/vypcomp/ir/instructions.h
+    ../../include/vypcomp/ir/expression.h
 )
 
 add_library(Vypcomp::Ir ALIAS Ir)

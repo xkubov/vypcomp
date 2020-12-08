@@ -5,6 +5,7 @@
 
 #include "vypcomp/parser/scanner.h"
 #include "vypcomp/parser/symbol_table.h"
+#include "vypcomp/errors/errors.h"
 
 #include "location.hh"
 #include "bison_parser.tab.hpp"
@@ -77,24 +78,6 @@ private:
 
 	std::vector<vypcomp::SymbolTable> _tables;
 	Class::Ptr _currClass = nullptr;
-};
-
-class SyntaxError : public std::exception {
-public:
-	SyntaxError(const std::string& msg);
-	const char * what() const throw() override;
-
-private:
-	std::string msg;
-};
-
-class SemanticError: public std::exception {
-public:
-	SemanticError(const std::string& msg);
-	const char * what() const throw() override;
-
-private:
-	std::string msg;
 };
 
 }

@@ -8,7 +8,8 @@
 namespace vypcomp
 {
 
-using namespace ir;
+namespace ir
+{
 
 class Expression 
 {
@@ -156,4 +157,5 @@ private:
 	ValueType _op2;
 };
 
+}
 }

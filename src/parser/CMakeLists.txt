@@ -16,15 +16,16 @@ add_library(Parser
     parser.cpp
     symbol_table.cpp
     indexdriver.cpp
-	expression.cpp
     ../../include/vypcomp/parser/parser.h
     ../../include/vypcomp/parser/scanner.h
-	../../include/vypcomp/parser/expression.h
     ${FLEX_FlexScanner_OUTPUTS}
     ${BISON_BisonParser_OUTPUTS}
 )
 
-target_link_libraries(Parser Vypcomp::Ir)
+target_link_libraries(Parser
+    Vypcomp::Errors
+    Vypcomp::Ir
+)
 
 add_library(Vypcomp::Parser ALIAS Parser)
 

@@ -1,10 +1,10 @@
 #include <stdexcept>
 
-#include "vypcomp/parser/expression.h"
+#include "vypcomp/errors/errors.h"
+#include "vypcomp/ir/expression.h"
 #include "vypcomp/ir/instructions.h"
-#include "vypcomp/parser/parser.h"
 
-using namespace vypcomp;
+using namespace vypcomp::ir;
 
 //
 // Expressions
@@ -12,7 +12,7 @@ using namespace vypcomp;
 //
 // Literal Expression
 //
-LiteralExpression::LiteralExpression(ir::Literal value)
+LiteralExpression::LiteralExpression(Literal value)
 	: Expression(value.type()), _value(value)
 {}
 std::string LiteralExpression::to_string() const

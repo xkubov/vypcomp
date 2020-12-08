@@ -20,8 +20,8 @@
 	#include <string>
 	#include <utility>
 
+	#include "vypcomp/ir/expression.h"
 	#include "vypcomp/ir/instructions.h"
-	#include "vypcomp/parser/expression.h"
 
 	namespace vypcomp {
 

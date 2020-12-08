@@ -212,24 +212,3 @@ Class::Ptr vypcomp::ParserDriver::getCurrentClass() const
 {
 	return _currClass;
 }
-
-SyntaxError::SyntaxError(const std::string& msg):
-	msg(msg)
-{
-}
-
-const char* SyntaxError::what() const throw()
-{
-	return msg.c_str();
-}
-
-
-SemanticError::SemanticError(const std::string& msg):
-	msg(msg)
-{
-}
-
-const char* SemanticError::what() const throw()
-{
-	return msg.c_str();
-}

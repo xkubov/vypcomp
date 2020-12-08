@@ -127,17 +127,3 @@ string  { *yylval = PrimitiveDatatype::String; return token::DATA_TYPE; }
 }
 
 %%
-
-namespace vypcomp {
-
-vypcomp::LexicalError::LexicalError(const std::string& msg):
-	msg(msg)
-{
-};
-
-const char * vypcomp::LexicalError::what() const throw()
-{
-	return msg.c_str();
-};
-
-}

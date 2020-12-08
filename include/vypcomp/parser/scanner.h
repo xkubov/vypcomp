@@ -4,6 +4,7 @@
 #include <FlexLexer.h>
 #endif
 
+#include "vypcomp/errors/errors.h"
 #include "bison_parser.tab.hpp"
 #include "location.hh"
 
@@ -30,15 +31,6 @@ private:
 	Parser::semantic_type *yylval = nullptr;
 	Parser::token::token_kind_type start_token = Parser::token::PROGRAM_START;
 	bool prepend_first_token = false;
-};
-
-class LexicalError: public std::exception {
-public:
-	LexicalError(const std::string& msg);
-	const char * what() const throw() override;
-
-private:
-	std::string msg;
 };
 
 }
