@@ -195,6 +195,7 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
 %nterm <nonterminal<BasicBlock::Ptr>()> else
+%nterm <nonterminal<BasicBlock::Ptr>()> if_body
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
 %nterm <nonterminal<OptLiteral>()> optional_assignment
@@ -327,15 +328,30 @@ basic_block : statement basic_block {
 end_of_block : RBRA {
 	$$ = nullptr;
 }
-| IF LPAR expr RPAR LBRA basic_block else basic_block {
+| IF LPAR expr RPAR if_body else basic_block {
 	// TODO: process condition.
-	auto br = BranchInstruction::Ptr(new BranchInstruction($6, $8));
-	$8->addFirst(br);
-	$$ = $8;
+	auto br = BranchInstruction::Ptr(new BranchInstruction($5, $6));
+	$7->addFirst(br);
+	$$ = $7;
 };
 
-else : ELSE LBRA basic_block {
-};
+if_body : if_action basic_block {
+     parser->popSymbolTable();
+     $$ = $2;
+}
+
+if_action : LBRA {
+	parser->pushSymbolTable();
+}
+
+else : else_action basic_block {
+     parser->popSymbolTable();
+     $$ = $2;
+}
+
+else_action : ELSE LBRA {
+     parser->pushSymbolTable();
+}
 
 /**
  * Statemetn definition.
@@ -344,7 +360,7 @@ statement : return {
 	$$ = {$1};
 }
 | IDENTIFIER ASSIGNMENT expr SEMICOLON {
-	throw std::runtime_error("Assignment not implemented.");
+	$$ = {parser->assign($1, $3)};
 }
 | IDENTIFIER LPAR expr RPAR SEMICOLON {
 	throw std::runtime_error("Function calls not implemented.");

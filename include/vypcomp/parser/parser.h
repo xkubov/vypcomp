@@ -57,6 +57,8 @@ public:
 	 */
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const;
 
+	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
+
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);
 

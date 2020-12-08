@@ -30,3 +30,8 @@ Function::Ptr IndexParserDriver::newFunction(const ir::Function::Signature& sig)
         }
 	return ParserDriver::newFunction({type, name, args});
 }
+
+Instruction::Ptr IndexParserDriver::assign(const std::string &name, const ir::Expression::ValueType &val) const
+{
+	return DummyInstruction::Ptr(new DummyInstruction);
+}

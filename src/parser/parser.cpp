@@ -141,6 +141,24 @@ Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) cons
         return Function::Ptr(new Function({type, name, args}));
 }
 
+Instruction::Ptr ParserDriver::assign(const std::string& name,
+                       const ir::Expression::ValueType &val) const
+{
+        if (auto symbol = searchTables(name)) {
+		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
+			throw SemanticError("Cannot assign to function.");
+
+		return Assignment::Ptr(
+			new Assignment(
+				std::get<AllocaInstruction::Ptr>(*symbol),
+				val
+			)
+		);
+        }
+
+	throw SemanticError("Assignment to undefined variable "+name);
+}
+
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (searchCurrent(decl->name())) {
@@ -151,7 +169,7 @@ void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 void ParserDriver::add(const ir::AllocaInstruction::Ptr &decl)
 {
 	verify(decl);
-	_tables.front().insert({decl->name(), decl});
+	_tables.back().insert({decl->name(), decl});
 }
 
 void ParserDriver::ensureMainDefined() const
@@ -203,7 +221,7 @@ std::optional<SymbolTable::Symbol> ParserDriver::searchGlobal(const SymbolTable:
 std::optional<SymbolTable::Symbol> ParserDriver::searchCurrent(const SymbolTable::Key& key) const
 {
 	if (_tables[_tables.size()-1].has(key))
-		return _tables[0].get(key);
+		return _tables[_tables.size()-1].get(key);
 
 	return {};
 }
