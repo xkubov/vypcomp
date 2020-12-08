@@ -3,6 +3,7 @@
 #include <variant>
 #include <memory>
 
+#include "vypcomp/ir/ir.h"
 #include "vypcomp/ir/instructions.h"
 
 namespace vypcomp
@@ -10,32 +11,6 @@ namespace vypcomp
 
 namespace ir
 {
-
-class Expression 
-{
-public:
-	using ValueType = std::shared_ptr<Expression>;
-	Expression()
-		: _type(InvalidDatatype())
-	{}
-	Expression(Datatype type)
-		: _type(type)
-	{}
-	Expression(const Expression& other) = default;
-	Expression& operator=(const Expression& other) = default;
-	Expression(Expression&& other) = default;
-	Expression& operator=(Expression&& other) = default;
-	virtual ~Expression() = default;
-
-	Datatype type() const
-	{
-		return _type;
-	}
-
-	virtual std::string to_string() const = 0;
-protected:
-	Datatype _type;
-};
 
 class LiteralExpression : public Expression 
 {

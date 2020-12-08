@@ -1,6 +1,7 @@
 add_library(Ir
     instructions.cpp
     expression.cpp
+    ../../include/vypcomp/ir/ir.h
     ../../include/vypcomp/ir/instructions.h
     ../../include/vypcomp/ir/expression.h
 )
