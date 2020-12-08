@@ -816,6 +816,23 @@ TEST_F(ParserTests, supportSuperAccess)
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
+TEST_F(ParserTests, supportCustomTypes)
+{
+        std::stringstream input(R"(
+		class parent: Object  {
+			int ok;
+		}
+		class derived : parent {
+		}
+		parent foo(void) {
+		}
+                void main(void) {
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_NO_THROW(parser.parse(input));
+}
 
 TEST_F(ParserTests, supportConstructor)
 {
@@ -1016,6 +1033,25 @@ TEST_F(ParserTests, supportPolymorphism)
 		}
                 void main(void) {
 			parent b = new Class;
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_NO_THROW(parser.parse(input));
+}
+
+TEST_F(ParserTests, supportPolymorphismReturn)
+{
+        std::stringstream input(R"(
+		class parent: Object  {
+			int ok;
+		}
+		class derived : parent {
+		}
+		parent foo(void) {
+			return new derived;
+		}
+                void main(void) {
                 }
         )");
 
