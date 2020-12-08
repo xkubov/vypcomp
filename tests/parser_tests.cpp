@@ -113,8 +113,8 @@ TEST_F(ParserTests, supportAssignmentOfLiterals)
 			int a,b; string s;
 			a = 0;
 			b = 1;
-			s = "\"Hello\x000020World!\"\n";
-			s = "\x00010Dty\x000159i";
+			s = "\"Hellox000020World!\"\n";
+			s = "00010Dtyx000159i";
                         return;
                 }
         )");
