@@ -52,6 +52,8 @@ public:
 			return std::to_string(std::get<unsigned long long>(_val));
 		else if (std::holds_alternative<float>(_val))
 			return std::to_string(std::get<float>(_val));
+		else
+			throw std::runtime_error("Unexpected type: "+std::to_string(__LINE__));
 	}
 
 	PrimitiveDatatype type() const
@@ -59,6 +61,7 @@ public:
 		if (std::holds_alternative<std::string>(_val)) return PrimitiveDatatype::String;
 		else if (std::holds_alternative<float>(_val)) return PrimitiveDatatype::Float;
 		else if (std::holds_alternative<unsigned long long>(_val)) return PrimitiveDatatype::Int;
+		else throw std::runtime_error("Unexpected type."+std::to_string(__LINE__));
 	}
 private:
 	Impl _val;

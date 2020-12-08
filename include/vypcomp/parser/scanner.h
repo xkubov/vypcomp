@@ -28,8 +28,8 @@ public:
 
 private:
 	Parser::semantic_type *yylval = nullptr;
-	bool prepend_first_token = false;
 	Parser::token::token_kind_type start_token = Parser::token::PROGRAM_START;
+	bool prepend_first_token = false;
 };
 
 class LexicalError: public std::exception {

@@ -4,7 +4,6 @@ find_package(FLEX REQUIRED)
 BISON_TARGET(BisonParser
     parser.yy
     ${CMAKE_CURRENT_BINARY_DIR}/bison_parser.tab.cpp
-    COMPILE_FLAGS -Wcounterexamples
 )
 FLEX_TARGET(FlexScanner
     scanner.l
@@ -16,6 +15,7 @@ ADD_FLEX_BISON_DEPENDENCY(FlexScanner BisonParser)
 add_library(Parser
     parser.cpp
     symbol_table.cpp
+    indexdriver.cpp
 	expression.cpp
     ../../include/vypcomp/parser/parser.h
     ../../include/vypcomp/parser/scanner.h
