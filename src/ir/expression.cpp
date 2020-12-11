@@ -13,7 +13,7 @@ using namespace vypcomp::ir;
 // Literal Expression
 //
 LiteralExpression::LiteralExpression(Literal value)
-	: Expression(value.type()), _value(value)
+	: Expression(Datatype(value.type())), _value(value)
 {}
 std::string LiteralExpression::to_string() const
 {
@@ -35,7 +35,7 @@ std::string SymbolExpression::to_string() const
 // Function Expression
 //
 FunctionExpression::FunctionExpression(Function::Ptr value)
-	: Expression(FunctionType()), _value(value)
+	: Expression(Datatype(Datatype::FunctionType())), _value(value)
 {}
 std::string FunctionExpression::to_string() const
 {
@@ -53,17 +53,17 @@ AddExpression::AddExpression(ValueType&& op1, ValueType&& op2)
 		// Parser done a big bad! Should not happen once every expression type is implemented.
 		throw std::runtime_error("one of operands in AddExpression is null");
 	}
-	if (std::holds_alternative<PrimitiveDatatype>(_op1->type()) && std::holds_alternative<PrimitiveDatatype>(_op2->type()))
+	if (_op1->type().is<PrimitiveDatatype>() && _op2->type().is<PrimitiveDatatype>())
 	{
-		auto datatype1 = std::get<PrimitiveDatatype>(_op1->type());
-		auto datatype2 = std::get<PrimitiveDatatype>(_op2->type());
+		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
+		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
 		if (datatype1 != datatype2)
 		{
 			throw SemanticError("types do not match in + operation");
 		}
 		else
 		{
-			_type = datatype1;
+			_type = _op1->type();
 		}
 	}
 	else
@@ -79,14 +79,14 @@ std::string AddExpression::to_string() const
 SubtractExpression::SubtractExpression(ValueType&& op1, ValueType&& op2)
 	: Expression(), _op1(std::move(op1)), _op2(std::move(op2))
 {
-	if (std::holds_alternative<PrimitiveDatatype>(_op1->type()) && std::holds_alternative<PrimitiveDatatype>(_op2->type()))
+	if (_op1->type().is<PrimitiveDatatype>() && _op2->type().is<PrimitiveDatatype>())
 	{
-		auto datatype1 = std::get<PrimitiveDatatype>(_op1->type());
-		auto datatype2 = std::get<PrimitiveDatatype>(_op2->type());
+		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
+		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
 		// TODO: FLOAT extension here needed
 		if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Int)
 		{
-			_type = datatype1;
+			_type = _op1->type();
 		}
 		else
 		{
@@ -109,17 +109,17 @@ MultiplyExpression::MultiplyExpression(ValueType&& op1, ValueType&& op2)
 	try
 	{
 		// TODO: FLOAT support, modify type checks here
-		auto datatype1 = std::get<PrimitiveDatatype>(_op1->type());
+		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
 		if (datatype1 != PrimitiveDatatype::Int)
 		{
 			throw SemanticError("invalid first operand in * operation, must be int");
 		}
-		auto datatype2 = std::get<PrimitiveDatatype>(_op2->type());
+		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
 		if (datatype2 != PrimitiveDatatype::Int)
 		{
 			throw SemanticError("invalid second operand in * operation, must be int");
 		}
-		_type = datatype1;
+		_type = _op1->type();
 	}
 	catch (const std::bad_variant_access& e)
 	{
@@ -137,17 +137,17 @@ DivideExpression::DivideExpression(ValueType&& op1, ValueType&& op2)
 	try
 	{
 		// TODO: FLOAT support, modify type checks here
-		auto datatype1 = std::get<PrimitiveDatatype>(_op1->type());
+		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
 		if (datatype1 != PrimitiveDatatype::Int)
 		{
 			throw SemanticError("invalid first operand in / operation, must be int");
 		}
-		auto datatype2 = std::get<PrimitiveDatatype>(_op2->type());
+		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
 		if (datatype2 != PrimitiveDatatype::Int)
 		{
 			throw SemanticError("invalid second operand in / operation, must be int");
 		}
-		_type = datatype1;
+		_type = _op1->type();
 	}
 	catch (const std::bad_variant_access& e)
 	{
@@ -160,7 +160,7 @@ std::string DivideExpression::to_string() const
 }
 
 ComparisonExpression::ComparisonExpression(Operation operation, ValueType&& op1, ValueType&& op2)
-	: Expression(PrimitiveDatatype::Int), _operation(operation), _op1(std::move(op1)), _op2(std::move(op2))
+	: Expression(Datatype(PrimitiveDatatype::Int)), _operation(operation), _op1(std::move(op1)), _op2(std::move(op2))
 {
 	if (_op1->type() != _op2->type())
 	{
@@ -169,7 +169,7 @@ ComparisonExpression::ComparisonExpression(Operation operation, ValueType&& op1,
 	if (_operation != EQUALS && _operation != NOTEQUALS)
 	{
 		// these two operations actually allow arbitrary identical datatypes
-		if (!std::holds_alternative<PrimitiveDatatype>(_op1->type()) || !std::holds_alternative<PrimitiveDatatype>(_op2->type()))
+		if (!_op1->type().is<PrimitiveDatatype>() || !_op2->type().is<PrimitiveDatatype>())
 		{
 			throw SemanticError("only primitive types are supported in " + op_string() + " operation");
 		}
@@ -201,7 +201,7 @@ std::string ComparisonExpression::op_string() const
 }
 
 AndExpression::AndExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(PrimitiveDatatype::Int), _op1(std::move(op1)), _op2(std::move(op2))
+	: Expression(Datatype(PrimitiveDatatype::Int)), _op1(std::move(op1)), _op2(std::move(op2))
 {
 	if (_op1->type() != _op2->type())
 	{
@@ -214,7 +214,7 @@ std::string AndExpression::to_string() const
 }
 
 OrExpression::OrExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(PrimitiveDatatype::Int), _op1(std::move(op1)), _op2(std::move(op2))
+	: Expression(Datatype(PrimitiveDatatype::Int)), _op1(std::move(op1)), _op2(std::move(op2))
 {
 	if (_op1->type() != _op2->type())
 	{

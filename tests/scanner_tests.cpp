@@ -107,9 +107,9 @@ TEST_F(ScannerTests, supportKeywordSequences)
 TEST_F(ScannerTests, suppotDatatypes)
 {
 	Input2Token dataTypes {
-		{"int", Parser::token::DATA_TYPE},
-		{"string", Parser::token::DATA_TYPE},
-		{"float", Parser::token::DATA_TYPE}
+		{"int", Parser::token::PRIMITIVE_DATA_TYPE},
+		{"string", Parser::token::PRIMITIVE_DATA_TYPE},
+		{"float", Parser::token::PRIMITIVE_DATA_TYPE}
 	};
 
 	expectValid(dataTypes);

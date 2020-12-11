@@ -7,92 +7,6 @@
 using namespace vypcomp;
 using namespace vypcomp::ir;
 
-//
-// Datatypes
-//
-bool vypcomp::ir::operator==(const Datatype& dt1, const Datatype& dt2)
-{
-	if (dt1.index() == dt2.index())
-	{
-		if (std::holds_alternative<PrimitiveDatatype>(dt1) && std::holds_alternative<PrimitiveDatatype>(dt2))
-		{
-			return std::get<PrimitiveDatatype>(dt1) == std::get<PrimitiveDatatype>(dt2);
-		}
-		else if (std::holds_alternative<ClassName>(dt1) && std::holds_alternative<ClassName>(dt2))
-		{
-			return std::get<ClassName>(dt1) == std::get<ClassName>(dt2);
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool vypcomp::ir::operator!=(const Datatype& dt1, const Datatype& dt2)
-{
-	return !(dt1 == dt2);
-}
-
-std::string vypcomp::ir::to_string(const Datatype& t)
-{
-	if (std::holds_alternative<PrimitiveDatatype>(t))
-	{
-		auto enum_val = std::get<PrimitiveDatatype>(t);
-		if (enum_val == PrimitiveDatatype::Float)
-		{
-			return "float";
-		}
-		else if (enum_val == PrimitiveDatatype::Int)
-		{
-			return "int";
-		}
-		else
-		{
-			return "string";
-		}
-	}
-	else if (std::holds_alternative<ClassName>(t))
-	{
-		return "class " + std::get<ClassName>(t);
-	}
-	else if (std::holds_alternative<FunctionType>(t))
-	{
-		return "function";
-	}
-	else
-	{
-		return "invalid type";
-	}
-}
-
-Literal::Literal(const Literal::Impl &val):
-	_val(val)
-{
-}
-
-// ------------------------------
-// Instruction
-// ------------------------------
-
-Instruction::Instruction()
-{
-}
-
-void Instruction::setNext(Instruction::Ptr next)
-{
-	_next = next;
-}
-
-Instruction::Ptr Instruction::next() const
-{
-	return _next;
-}
-
 // ------------------------------
 // BasicBlock
 // ------------------------------
@@ -205,7 +119,7 @@ BasicBlock::Ptr Function::last() const
 
 bool Function::isVoid() const
 {
-	return _type.has_value();
+	return !_type.has_value();
 }
 
 std::string Function::name() const
@@ -223,9 +137,9 @@ const std::vector<AllocaInstruction::Ptr> Function::args() const
 	return _args;
 }
 
-std::vector<PrimitiveDatatype> Function::argTypes() const
+std::vector<Datatype> Function::argTypes() const
 {
-	std::vector<PrimitiveDatatype> types;
+	std::vector<Datatype> types;
 	for (auto arg: _args) {
 		types.push_back(arg->type());
 	}
@@ -271,6 +185,12 @@ bool Return::isVoid() const
 	return _expr == nullptr;
 }
 
+
+std::string Return::str() const
+{
+	return "return "+_expr->to_string();
+}
+
 // ------------------------------
 // LoopInstruction
 // ------------------------------
@@ -302,7 +222,7 @@ void AllocaInstruction::addPrefix(const std::string& prefix)
 	_prefix += prefix;
 }
 
-PrimitiveDatatype AllocaInstruction::type() const
+Datatype AllocaInstruction::type() const
 {
 	return _type;
 }
@@ -371,7 +291,7 @@ void Class::add(AllocaInstruction::Ptr attr, bool isPublic)
 		_privateAttrs.push_back(attr);
 }
 
-Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<PrimitiveDatatype>& argtypes) const
+Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<Datatype>& argtypes) const
 {
 	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name, argtypes](const auto& method) {
 		return method->name() == name && method->argTypes() == argtypes;

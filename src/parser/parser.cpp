@@ -161,6 +161,24 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 	throw SemanticError("Assignment to undefined variable "+name);
 }
 
+Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) const
+{
+	if (_currFunction == nullptr) {
+		throw SemanticError("Return statement out of a function");
+	}
+
+	if (val == nullptr) {
+		if (!_currFunction->isVoid())
+			throw SemanticError("Invalid return for function "+_currFunction->name()+" with type: "+_currFunction->type()->to_string());
+		return Return::Ptr(new Return());
+	}
+
+	if (val->type() != *_currFunction->type())
+		throw SemanticError("Return type mismatch.");
+
+	return Return::Ptr(new Return(val));
+}
+
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (searchCurrent(decl->name())) {
@@ -240,7 +258,19 @@ std::optional<SymbolTable::Symbol> ParserDriver::searchCurrent(const SymbolTable
 	return {};
 }
 
-Class::Ptr vypcomp::ParserDriver::getCurrentClass() const
+Class::Ptr ParserDriver::getCurrentClass() const
 {
 	return _currClass;
+}
+
+Datatype ParserDriver::customDatatype(const std::string& dt) const
+{
+	if (auto symbol = searchTables(dt)) {
+		if (!std::holds_alternative<Class::Ptr>(*symbol))
+			throw SemanticError("not a type: "+dt);
+
+		return Datatype(dt);
+	}
+
+	throw SemanticError("Invalid datatype.");
 }

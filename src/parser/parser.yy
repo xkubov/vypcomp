@@ -39,6 +39,7 @@
 		unsigned long long,
 		float,
 		PrimitiveDatatype,
+		Datatype,
 		Arglist,
 		Declaration,
 		PossibleDatatype,
@@ -152,7 +153,7 @@
 %token WHILE
 %token FOR
 
-%token <terminal<PrimitiveDatatype>()> DATA_TYPE
+%token <terminal<PrimitiveDatatype>()> PRIMITIVE_DATA_TYPE
 
 %token <terminal<std::string>()>IDENTIFIER
 
@@ -186,6 +187,7 @@
 
 %locations
 
+%nterm <nonterminal<Datatype>()> datatype
 %nterm <nonterminal<PossibleDatatype>()> optional_type
 %nterm <nonterminal<Declaration>()> decl
 %nterm <nonterminal<Arglist>()> args
@@ -220,7 +222,7 @@ parser_start : PROGRAM_START start
 				/* TODO: condition this on debug parse only if (debug_level()) */ 
 				if ($2)
 					std::cout << "parsed expression: " << $2->to_string()
-						<< ", type: " << to_string($2->type()) << std::endl; 
+						<< ", type: " << $2->type().to_string() << std::endl; 
 				else
 					std::cout << "expression parse yielded nullptr" << std::endl;
 };
@@ -495,11 +497,11 @@ binary_operation
 	$$ = std::make_shared<OrExpression>(std::move($1), std::move($3));
 }
 | expr '.' IDENTIFIER {
-	if (!std::holds_alternative<ClassName>($1->type()))
+	if (!$1->type().is<ir::Datatype::ClassName>())
 	{
 		throw SemanticError("left hand operand of . operator is not an object variable");
 	}
-	ClassName class_name = std::get<ClassName>($1->type());
+	auto class_name = $1->type().get<ir::Datatype::ClassName>();
 	std::optional<SymbolTable::Symbol> search_result = parser->searchTables(class_name);
 	if (!search_result)
 	{
@@ -552,7 +554,8 @@ binary_operation
  * Parses return statement. If there is return statement without value we must ensure
  * that we are in void function.
  */
-return : RETURN SEMICOLON { $$ = nullptr; }
+return : RETURN SEMICOLON { $$ = parser->createReturn(nullptr); }
+       | RETURN expr { $$ = parser->createReturn($2); }
        ;
 
 /**
@@ -560,7 +563,7 @@ return : RETURN SEMICOLON { $$ = nullptr; }
  * Declaration might be one or more declarations ( int a; int a,b,c;) and assignment
  * might be initialized (int a = 42;)
  */
-declaration : DATA_TYPE at_least_one_id {
+declaration : datatype at_least_one_id {
 	std::vector<Instruction::Ptr> result;
 
 	for (auto [id, init]: $2) {
@@ -623,7 +626,7 @@ more_args: COMMA decl more_args { $3.insert($3.begin(), $2); $$ = std::move($3);
 	 | RPAR {$$ = {};}
 	 ;
 
-decl : DATA_TYPE IDENTIFIER { $$ = {$1, $2}; }
+decl : datatype IDENTIFIER { $$ = {$1, $2}; }
      ;
 
 class_definition : class_declaration LBRA class_body {
@@ -638,9 +641,13 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 class_body : function_definition class_body
 	   | RBRA;
 
-optional_type : DATA_TYPE { $$ = $1; }
-	  | VOID { $$ = PossibleDatatype(); }
+optional_type : datatype { $$ = $1; }
+	  | VOID { $$ = {}; }
 	  ;
+
+datatype : PRIMITIVE_DATA_TYPE { $$ = ir::Datatype($1); }
+	 | IDENTIFIER { $$ = parser->customDatatype($1); }
+	 ;
 
 %%
 

@@ -18,16 +18,47 @@ enum class PrimitiveDatatype : int {
 	Float,
 	Int
 };
-using ClassName = std::string;
-struct FunctionType {};
-struct InvalidDatatype {};
-using Datatype = std::variant<PrimitiveDatatype, ClassName, FunctionType, InvalidDatatype>;
-bool operator==(const Datatype& dt1, const Datatype& dt2);
-bool operator!=(const Datatype& dt1, const Datatype& dt2);
-std::string to_string(const Datatype& t);
-using Declaration = std::pair<PrimitiveDatatype, std::string>; // TODO: rework all these to work with Datatype instead
+
+class Datatype {
+public:
+	using ClassName = std::string;
+	struct FunctionType {};
+	struct InvalidDatatype {};
+
+	using DT = std::variant<
+		PrimitiveDatatype,
+		ClassName,
+		FunctionType,
+		InvalidDatatype
+	>;
+
+public:
+	Datatype(const DT& dt = InvalidDatatype());
+	Datatype(const Datatype& dt);
+
+	const Datatype& operator=(const Datatype& other);
+	bool operator==(const Datatype& other) const;
+	bool operator!=(const Datatype& other) const;
+	std::string to_string() const;
+	bool isPrimitive() const;
+	
+	template<class T>
+	T get() const {
+		return std::get<T>(_dt);
+	}
+
+	template<class T>
+	bool is() const {
+		return std::holds_alternative<T>(_dt);
+	}
+
+private:
+	DT _dt;
+};
+
+using Declaration = std::pair<Datatype, std::string>;
 using Arglist = std::vector<Declaration>;
-using PossibleDatatype = std::optional<PrimitiveDatatype>;
+using PossibleDatatype = std::optional<Datatype>;
 
 struct Literal {
 public:
@@ -97,9 +128,9 @@ class Expression {
 public:
 	using ValueType = std::shared_ptr<Expression>;
 	Expression()
-		: _type(InvalidDatatype())
+		: _type(Datatype::InvalidDatatype())
 	{}
-	Expression(Datatype type)
+	Expression(const Datatype& type)
 		: _type(type)
 	{}
 	Expression(const Expression& other) = default;

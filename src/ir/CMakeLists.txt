@@ -1,4 +1,5 @@
 add_library(Ir
+    ir.cpp
     instructions.cpp
     expression.cpp
     ../../include/vypcomp/ir/ir.h

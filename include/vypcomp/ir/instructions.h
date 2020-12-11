@@ -61,13 +61,13 @@ public:
 	void addPrefix(const std::string& prefix);
 	virtual std::string str() const override;
 
-	PrimitiveDatatype type() const;
+	Datatype type() const;
 	std::string name() const;
 
 private:
 	std::string _varName;
 	std::string _prefix;
-	PrimitiveDatatype _type;
+	Datatype _type;
 };
 
 class Assignment: public Instruction {
@@ -107,7 +107,7 @@ public:
 	std::string name() const;
 	PossibleDatatype type() const;
 	const std::vector<AllocaInstruction::Ptr> args() const;
-	std::vector<PrimitiveDatatype> argTypes() const;
+	std::vector<Datatype> argTypes() const;
 
 private:
 	PossibleDatatype _type;
@@ -139,8 +139,10 @@ class Return: public Instruction {
 public:
 	using Ptr = std::shared_ptr<Return>;
 
-	Return(Expression::ValueType expr);
+	Return(Expression::ValueType expr = nullptr);
 	bool isVoid() const;
+
+	virtual std::string str() const override;
 
 private:
 	Expression::ValueType _expr;
@@ -173,7 +175,7 @@ public:
 
 	Function::Ptr getPublicMethod(
 		const std::string& name,
-		const std::vector<PrimitiveDatatype>& argtypes) const;
+		const std::vector<Datatype>& argtypes) const;
 	Function::Ptr getPublicMethodByName(const std::string& name) const;
 	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
 
