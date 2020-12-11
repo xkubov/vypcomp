@@ -555,7 +555,7 @@ binary_operation
  * that we are in void function.
  */
 return : RETURN SEMICOLON { $$ = parser->createReturn(nullptr); }
-       | RETURN expr { $$ = parser->createReturn($2); }
+       | RETURN expr SEMICOLON { $$ = parser->createReturn($2); }
        ;
 
 /**
