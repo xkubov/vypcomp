@@ -10,15 +10,6 @@ using namespace vypcomp;
 
 class ParserTests : public Test {};
 
-TEST_F(ParserTests, emptyInput)
-{
-	std::stringstream input;
-	std::ostringstream output;
-
-	ParserDriver parser;
-	ASSERT_NO_THROW(parser.parse(input));
-}
-
 TEST_F(ParserTests, invalidFile)
 {
 	ParserDriver parser;
