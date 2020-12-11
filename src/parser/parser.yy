@@ -333,10 +333,10 @@ end_of_block : RBRA {
 	$7->addFirst(br);
 	$$ = $7;
 }
-| WHILE LPAR expr RPAR LBRA basic_block RBRA basic_block {
+| WHILE LPAR expr RPAR LBRA basic_block basic_block {
 	auto br = LoopInstruction::Ptr(new LoopInstruction($3, $6));
-	$8->addFirst(br);
-	$$ = $8;
+	$7->addFirst(br);
+	$$ = $7;
 }
 
 if_body : if_action basic_block {
