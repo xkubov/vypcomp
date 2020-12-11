@@ -105,6 +105,7 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 	for (auto arg: fun->args()) {
 		//TODO: push args to bottom table.
 	}
+	_currFunction = fun;
 }
 
 void ParserDriver::parseStart(ir::Class::Ptr cl)
@@ -194,10 +195,22 @@ void ParserDriver::popSymbolTable()
 	_tables.pop_back();
 }
 
-void ParserDriver::parseEnd()
+void ParserDriver::parseClassEnd()
 {
+	if (_currClass == nullptr)
+		throw std::runtime_error("Invalid usage of parseClassEnd");
+
 	popSymbolTable();
 	_currClass = nullptr;
+}
+
+void ParserDriver::parseFunctionEnd()
+{
+	if (_currFunction == nullptr)
+		throw std::runtime_error("Invalid usage of parseFunctionEnd");
+
+	popSymbolTable();
+	_currFunction = nullptr;
 }
 
 std::optional<SymbolTable::Symbol> ParserDriver::searchTables(const SymbolTable::Key& key) const

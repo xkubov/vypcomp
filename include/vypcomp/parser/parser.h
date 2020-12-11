@@ -67,7 +67,8 @@ public:
 	void pushSymbolTable(bool storeFunctions=false);
 	void popSymbolTable();
 
-	void parseEnd();
+	void parseClassEnd();
+	void parseFunctionEnd();
 
 	std::optional<SymbolTable::Symbol> searchTables(const SymbolTable::Key& key) const;
 	std::optional<SymbolTable::Symbol> searchGlobal(const SymbolTable::Key& key) const;
@@ -80,6 +81,7 @@ private:
 
 	std::vector<vypcomp::SymbolTable> _tables;
 	Class::Ptr _currClass = nullptr;
+	Function::Ptr _currFunction = nullptr;
 };
 
 }

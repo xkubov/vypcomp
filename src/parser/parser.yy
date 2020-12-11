@@ -263,7 +263,7 @@ function_definition : function_declaration function_body {
 	// function scope and we need to get rid of it. We
 	// might have as well delete the symbol table in this place
 	// but I found it to be dubious and all the logic is in parseEnd.
-	parser->parseEnd();
+	parser->parseFunctionEnd();
 };
 
 /**
@@ -627,7 +627,7 @@ decl : DATA_TYPE IDENTIFIER { $$ = {$1, $2}; }
      ;
 
 class_definition : class_declaration LBRA class_body {
-	parser->parseEnd();
+	parser->parseClassEnd();
 };
 
 class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
