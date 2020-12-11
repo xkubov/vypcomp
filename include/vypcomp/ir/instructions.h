@@ -128,12 +128,14 @@ public:
 	using Ptr = std::shared_ptr<BranchInstruction>;
 
 	BranchInstruction(
+		Expression::ValueType expr,
 		BasicBlock::Ptr ifBlock,
 		BasicBlock::Ptr elseBlock
 	);
 	virtual std::string str() const override;
 
 private:
+	Expression::ValueType _expr = nullptr;
 	BasicBlock::Ptr _if = nullptr;
 	BasicBlock::Ptr _else = nullptr;
 };

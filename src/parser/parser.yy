@@ -329,8 +329,7 @@ end_of_block : RBRA {
 	$$ = nullptr;
 }
 | IF LPAR expr RPAR if_body else basic_block {
-	// TODO: process condition.
-	auto br = BranchInstruction::Ptr(new BranchInstruction($5, $6));
+	auto br = BranchInstruction::Ptr(new BranchInstruction($3, $5, $6));
 	$7->addFirst(br);
 	$$ = $7;
 };

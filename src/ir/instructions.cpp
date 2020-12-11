@@ -243,8 +243,10 @@ std::string Function::str() const
 // ------------------------------
 
 BranchInstruction::BranchInstruction(
+		Expression::ValueType expr,
 		BasicBlock::Ptr ifBlock,
 		BasicBlock::Ptr elseBlock):
+	_expr(expr),
 	_if(ifBlock),
 	_else(elseBlock)
 {
