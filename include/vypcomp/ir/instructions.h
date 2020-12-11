@@ -46,6 +46,7 @@ private:
 class DummyInstruction : public Instruction {
 public:
 	using Ptr = std::shared_ptr<DummyInstruction>;
+	virtual std::string str() const override;
 };
 
 class AllocaInstruction : public Instruction {
@@ -61,6 +62,7 @@ public:
 	);
 
 	void addPrefix(const std::string& prefix);
+	virtual std::string str() const override;
 
 	PrimitiveDatatype type() const;
 	std::string name() const;
@@ -84,6 +86,7 @@ public:
 		AllocaInstruction::Ptr ptr,
 		Expression::ValueType expr
 	);
+	virtual std::string str() const override;
 
 private:
 	AllocaInstruction::Ptr _ptr;
@@ -102,6 +105,7 @@ public:
 
 	BasicBlock::Ptr first() const;
 	BasicBlock::Ptr last() const;
+	virtual std::string str() const override;
 
 	bool isVoid() const;
 
@@ -127,6 +131,7 @@ public:
 		BasicBlock::Ptr ifBlock,
 		BasicBlock::Ptr elseBlock
 	);
+	virtual std::string str() const override;
 
 private:
 	BasicBlock::Ptr _if = nullptr;
@@ -140,6 +145,7 @@ public:
 	LoopInstruction(
 		BasicBlock::Ptr loop
 	);
+	virtual std::string str() const override;
 
 private:
 	BasicBlock::Ptr _body = nullptr;
@@ -168,6 +174,7 @@ public:
 	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
 
 	std::string name() const;
+	virtual std::string str() const override;
 
 private:
 	std::string _name;

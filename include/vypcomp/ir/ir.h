@@ -87,6 +87,8 @@ public:
 	void setNext(Instruction::Ptr next);
 	Instruction::Ptr next() const;
 
+	virtual std::string str() const = 0;
+
 protected:
 	Instruction::Ptr _next = nullptr;
 };

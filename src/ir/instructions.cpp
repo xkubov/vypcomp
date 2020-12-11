@@ -1,3 +1,4 @@
+#include <variant>
 #include <algorithm>
 #include <stdexcept>
 
@@ -154,6 +155,15 @@ std::string BasicBlock::name() const
 }
 
 // ------------------------------
+// BasicBlock
+// ------------------------------
+
+std::string DummyInstruction::str() const
+{
+	return "dummy";
+}
+
+// ------------------------------
 // Function
 // ------------------------------
 
@@ -223,6 +233,11 @@ std::vector<PrimitiveDatatype> Function::argTypes() const
 	return types;
 }
 
+std::string Function::str() const
+{
+	throw std::runtime_error("Not implemented.");
+}
+
 // ------------------------------
 // BranchInstruction
 // ------------------------------
@@ -235,6 +250,11 @@ BranchInstruction::BranchInstruction(
 {
 }
 
+std::string BranchInstruction::str() const
+{
+	throw std::runtime_error("Not implemented.");
+}
+
 // ------------------------------
 // LoopInstruction
 // ------------------------------
@@ -242,6 +262,11 @@ BranchInstruction::BranchInstruction(
 LoopInstruction::LoopInstruction(BasicBlock::Ptr body):
 	_body(body)
 {
+}
+
+std::string LoopInstruction::str() const
+{
+	throw std::runtime_error("Not implemented.");
 }
 
 // ------------------------------
@@ -274,6 +299,11 @@ OptLiteral AllocaInstruction::init() const
 	return _init;
 }
 
+std::string AllocaInstruction::str() const
+{
+	throw std::runtime_error("Not implemented.");
+}
+
 // ------------------------------
 // Assignment
 // ------------------------------
@@ -282,6 +312,12 @@ Assignment::Assignment(AllocaInstruction::Ptr ptr, Expression::ValueType expr):
 	_ptr(ptr), _expr(expr)
 {
 }
+
+std::string Assignment::str() const
+{
+	throw std::runtime_error("Not implemented.");
+}
+
 // ------------------------------
 // Class
 // ------------------------------
@@ -370,4 +406,9 @@ AllocaInstruction::Ptr Class::getPublicAttribute(const std::string& name) const
 std::string Class::name() const
 {
 	return _name;
+}
+
+std::string Class::str() const
+{
+	throw std::runtime_error("Not implemented.");
 }
