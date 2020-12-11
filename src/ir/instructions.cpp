@@ -261,7 +261,10 @@ std::string BranchInstruction::str() const
 // LoopInstruction
 // ------------------------------
 
-LoopInstruction::LoopInstruction(BasicBlock::Ptr body):
+LoopInstruction::LoopInstruction(
+		Expression::ValueType expr,
+		BasicBlock::Ptr body):
+	_expr(expr),
 	_body(body)
 {
 }

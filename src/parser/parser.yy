@@ -332,7 +332,12 @@ end_of_block : RBRA {
 	auto br = BranchInstruction::Ptr(new BranchInstruction($3, $5, $6));
 	$7->addFirst(br);
 	$$ = $7;
-};
+}
+| WHILE LPAR expr RPAR LBRA basic_block RBRA basic_block {
+	auto br = LoopInstruction::Ptr(new LoopInstruction($3, $6));
+	$8->addFirst(br);
+	$$ = $8;
+}
 
 if_body : if_action basic_block {
      parser->popSymbolTable();

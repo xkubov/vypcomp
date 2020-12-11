@@ -151,7 +151,7 @@ TEST_F(ParserTests, supportAssignmentInitialization2)
 {
         std::stringstream input(R"(
                 void main(void) {
-			int a = 0, b = 1; string s = "Hello world!", float f = 0.0;
+			int a = 0, b = 1; string s = "Hello world!"; float f = 0.0;
                         return;
                 }
         )");

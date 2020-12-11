@@ -145,11 +145,13 @@ public:
 	using Ptr = std::shared_ptr<LoopInstruction>;
 
 	LoopInstruction(
+		Expression::ValueType expr,
 		BasicBlock::Ptr loop
 	);
 	virtual std::string str() const override;
 
 private:
+	Expression::ValueType _expr = nullptr;
 	BasicBlock::Ptr _body = nullptr;
 };
 
