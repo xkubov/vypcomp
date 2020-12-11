@@ -258,6 +258,20 @@ std::string BranchInstruction::str() const
 }
 
 // ------------------------------
+// BranchInstruction
+// ------------------------------
+
+Return::Return(Expression::ValueType expr):
+	_expr(expr)
+{
+}
+
+bool Return::isVoid() const
+{
+	return _expr == nullptr;
+}
+
+// ------------------------------
 // LoopInstruction
 // ------------------------------
 

@@ -135,6 +135,17 @@ private:
 	BasicBlock::Ptr _else = nullptr;
 };
 
+class Return: public Instruction {
+public:
+	using Ptr = std::shared_ptr<Return>;
+
+	Return(Expression::ValueType expr);
+	bool isVoid() const;
+
+private:
+	Expression::ValueType _expr;
+};
+
 class LoopInstruction: public Instruction {
 public:
 	using Ptr = std::shared_ptr<LoopInstruction>;
