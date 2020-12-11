@@ -639,6 +639,7 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 };
 
 class_body : function_definition class_body
+	   | declaration class_body
 	   | RBRA;
 
 optional_type : datatype { $$ = $1; }
