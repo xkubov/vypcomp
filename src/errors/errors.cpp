@@ -5,12 +5,12 @@ using namespace vypcomp;
 vypcomp::LexicalError::LexicalError(const std::string& msg):
 	msg(msg)
 {
-};
+}
 
 const char * vypcomp::LexicalError::what() const throw()
 {
 	return msg.c_str();
-};
+}
 
 SyntaxError::SyntaxError(const std::string& msg):
 	msg(msg)

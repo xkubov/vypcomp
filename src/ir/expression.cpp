@@ -196,6 +196,8 @@ std::string ComparisonExpression::op_string() const
 	case NOTEQUALS:
 		return "!=";
 	}
+
+	throw std::runtime_error("Invalid operator.");
 }
 
 AndExpression::AndExpression(ValueType&& op1, ValueType&& op2)

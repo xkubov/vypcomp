@@ -36,7 +36,6 @@ if (MSVC)
         endif()
     endforeach()
 else()
-    add_compile_options(-Wall -pedantic -Werror)
 endif()
 
 if(APPLE)
