@@ -278,8 +278,7 @@ std::string LoopInstruction::str() const
 // AllocaInstruction
 // ------------------------------
 
-AllocaInstruction::AllocaInstruction(const Declaration& decl, const OptLiteral& init):
-	_init(init)
+AllocaInstruction::AllocaInstruction(const Declaration& decl)
 {
 	std::tie(_type, _varName) = decl;
 }
@@ -297,11 +296,6 @@ PrimitiveDatatype AllocaInstruction::type() const
 std::string AllocaInstruction::name() const
 {
 	return _varName;
-}
-
-OptLiteral AllocaInstruction::init() const
-{
-	return _init;
 }
 
 std::string AllocaInstruction::str() const

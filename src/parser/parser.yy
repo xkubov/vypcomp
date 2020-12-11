@@ -45,11 +45,11 @@
 		Instruction::Ptr,
 		OptLiteral,
 		std::vector<Instruction::Ptr>,
-		std::vector<std::pair<std::string, OptLiteral>>,
+		std::vector<std::pair<std::string, Expression::ValueType>>,
 		BasicBlock::Ptr,
 		Function::Ptr,
 		Class::Ptr,
-		std::shared_ptr<Expression>
+		Expression::ValueType
 	>;
 
 	/**
@@ -198,13 +198,13 @@
 %nterm <nonterminal<BasicBlock::Ptr>()> if_body
 %nterm <nonterminal<BasicBlock::Ptr>()> end_of_block
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> statement
-%nterm <nonterminal<OptLiteral>()> optional_assignment
+%nterm <nonterminal<Expression::ValueType>()> optional_assignment
 %nterm <nonterminal<OptLiteral>()> literal
 %nterm <nonterminal<std::vector<Instruction::Ptr>>()> declaration
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
-%nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> id2init
-%nterm <nonterminal<std::vector<std::pair<std::string, OptLiteral>>>()> at_least_one_id
+%nterm <nonterminal<std::vector<std::pair<std::string, Expression::ValueType>>>()> id2init
+%nterm <nonterminal<std::vector<std::pair<std::string, Expression::ValueType>>>()> at_least_one_id
 %nterm <nonterminal<std::shared_ptr<Expression>>()> expr
 %nterm <nonterminal<std::shared_ptr<Expression>>()> binary_operation
 //%nterm <nonterminal<std::string>()> optional_args
@@ -566,9 +566,12 @@ declaration : DATA_TYPE at_least_one_id {
 	for (auto [id, init]: $2) {
 		// TODO: remove init from alloca instruction. Check init with parser.
 		// TODO: make init as method of declaration.
-		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({$1, id}, init));
+		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({$1, id}));
 		parser->add(decl);
 		result.push_back(decl);
+		if (init) {
+			result.push_back(parser->assign(id, init));
+		}
 	}
 
 	$$ = result;
@@ -595,9 +598,9 @@ id2init : SEMICOLON {
 };
 
 optional_assignment : {
-	$$ = {};
+	$$ = nullptr;
 }
-| ASSIGNMENT literal {
+| ASSIGNMENT expr {
 	$$ = $2;
 };
 

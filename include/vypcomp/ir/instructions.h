@@ -56,23 +56,18 @@ public:
 	/**
 	 * Initial value is stored in form of string.
 	 */
-	AllocaInstruction(
-		const Declaration& decl,
-		const OptLiteral& init = {}
-	);
+	AllocaInstruction(const Declaration& decl);
 
 	void addPrefix(const std::string& prefix);
 	virtual std::string str() const override;
 
 	PrimitiveDatatype type() const;
 	std::string name() const;
-	OptLiteral init() const;
 
 private:
 	std::string _varName;
 	std::string _prefix;
 	PrimitiveDatatype _type;
-	OptLiteral _init;
 };
 
 class Assignment: public Instruction {
