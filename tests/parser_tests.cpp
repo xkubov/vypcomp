@@ -449,7 +449,7 @@ TEST_F(ParserTests, dontSupportNestedComments)
         )");
 
         ParserDriver parser;
-	ASSERT_NO_THROW(parser.parse(input));
+	ASSERT_THROW(parser.parse(input), SyntaxError);
 }
 
 // Semicolon as terminator means that it ends statemets (not separates).
