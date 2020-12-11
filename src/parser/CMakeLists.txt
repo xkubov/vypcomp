@@ -37,6 +37,5 @@ target_include_directories(Parser
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${FLEX_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
