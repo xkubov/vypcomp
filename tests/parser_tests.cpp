@@ -406,7 +406,7 @@ TEST_F(ParserTests, supportComments)
 		/**
 		 * @brief This is main commented in block comment.
 		 */
-                int/*32_t*/ main(void/*, int*/) {
+                void/*32_t*/ main(void/*, int*/) {
 			// Main does not return anything.
                         return /*0*/;
                 } // This is fine.
