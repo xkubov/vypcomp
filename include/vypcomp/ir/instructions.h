@@ -34,6 +34,7 @@ public:
 	void addFirst(Instruction::Ptr first);
 	Instruction::Ptr first() const;
 	Instruction::Ptr last() const;
+	std::string str(const std::string& prefix) const;
 
 	std::string name() const;
 
@@ -46,7 +47,7 @@ private:
 class DummyInstruction : public Instruction {
 public:
 	using Ptr = std::shared_ptr<DummyInstruction>;
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 };
 
 class AllocaInstruction : public Instruction {
@@ -59,7 +60,7 @@ public:
 	AllocaInstruction(const Declaration& decl);
 
 	void addPrefix(const std::string& prefix);
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 	Datatype type() const;
 	std::string name() const;
@@ -81,7 +82,7 @@ public:
 		AllocaInstruction::Ptr ptr,
 		Expression::ValueType expr
 	);
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 private:
 	AllocaInstruction::Ptr _ptr;
@@ -100,7 +101,7 @@ public:
 
 	BasicBlock::Ptr first() const;
 	BasicBlock::Ptr last() const;
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 	bool isVoid() const;
 
@@ -127,7 +128,7 @@ public:
 		BasicBlock::Ptr ifBlock,
 		BasicBlock::Ptr elseBlock
 	);
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 private:
 	Expression::ValueType _expr = nullptr;
@@ -142,7 +143,7 @@ public:
 	Return(Expression::ValueType expr = nullptr);
 	bool isVoid() const;
 
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 private:
 	Expression::ValueType _expr;
@@ -156,7 +157,7 @@ public:
 		Expression::ValueType expr,
 		BasicBlock::Ptr loop
 	);
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 private:
 	Expression::ValueType _expr = nullptr;
@@ -186,7 +187,7 @@ public:
 	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
 
 	std::string name() const;
-	virtual std::string str() const override;
+	virtual std::string str(const std::string& prefix) const override;
 
 private:
 	std::string _name;

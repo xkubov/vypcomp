@@ -1,3 +1,4 @@
+#include <sstream>
 #include <variant>
 #include <algorithm>
 #include <stdexcept>
@@ -63,6 +64,17 @@ Instruction::Ptr BasicBlock::last() const
 	return prev;
 }
 
+std::string BasicBlock::str(const std::string& prefix) const
+{
+	std::ostringstream out;
+	out << prefix << "block: " << _name << std::endl;
+	for (auto it = _first; it != nullptr; it = it->next()) {
+		out << it->str(prefix+"  > ");
+	}
+
+	return out.str();
+}
+
 std::string BasicBlock::name() const
 {
 	return _name;
@@ -72,9 +84,11 @@ std::string BasicBlock::name() const
 // BasicBlock
 // ------------------------------
 
-std::string DummyInstruction::str() const
+std::string DummyInstruction::str(const std::string& prefix) const
 {
-	return "dummy";
+	std::ostringstream out;
+	out << prefix << "dummpy" << std::endl;
+	return out.str();
 }
 
 // ------------------------------
@@ -147,9 +161,15 @@ std::vector<Datatype> Function::argTypes() const
 	return types;
 }
 
-std::string Function::str() const
+std::string Function::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+	out << prefix << "function: " << _name << std::endl;
+	for (auto bb = _first; bb != nullptr; bb = bb->next()) {
+		out << bb->str(prefix+"  ");
+	}
+
+	return out.str();
 }
 
 // ------------------------------
@@ -166,13 +186,19 @@ BranchInstruction::BranchInstruction(
 {
 }
 
-std::string BranchInstruction::str() const
+std::string BranchInstruction::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+	out << prefix << "condition: " << _expr->to_string() << std::endl;
+	out << _if->str(prefix+"  ");
+	out << prefix << "else: " << std::endl;
+	out << _else->str(prefix+"  ");
+
+	return out.str();
 }
 
 // ------------------------------
-// BranchInstruction
+// Return
 // ------------------------------
 
 Return::Return(Expression::ValueType expr):
@@ -186,9 +212,11 @@ bool Return::isVoid() const
 }
 
 
-std::string Return::str() const
+std::string Return::str(const std::string& prefix) const
 {
-	return "return "+_expr->to_string();
+	std::ostringstream out;
+	out << prefix << "return " << _expr->to_string() << std::endl;
+	return out.str();
 }
 
 // ------------------------------
@@ -203,9 +231,12 @@ LoopInstruction::LoopInstruction(
 {
 }
 
-std::string LoopInstruction::str() const
+std::string LoopInstruction::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+	out << prefix << "while " << _expr->to_string() << std::endl;
+	out << _body->str(prefix+"  ");
+	return out.str();
 }
 
 // ------------------------------
@@ -232,9 +263,14 @@ std::string AllocaInstruction::name() const
 	return _varName;
 }
 
-std::string AllocaInstruction::str() const
+std::string AllocaInstruction::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+
+	out << prefix << "alloca " << _type.to_string() << " " << _varName
+		<< "(prefix: " << _prefix << " )" << std::endl;
+
+	return out.str();
 }
 
 // ------------------------------
@@ -246,9 +282,14 @@ Assignment::Assignment(AllocaInstruction::Ptr ptr, Expression::ValueType expr):
 {
 }
 
-std::string Assignment::str() const
+std::string Assignment::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+
+	out << prefix << "assignment: " << _expr->to_string() << std::endl;
+	out << _ptr->str(prefix+" ->");
+	
+	return out.str();
 }
 
 // ------------------------------
@@ -341,7 +382,26 @@ std::string Class::name() const
 	return _name;
 }
 
-std::string Class::str() const
+std::string Class::str(const std::string& prefix) const
 {
-	throw std::runtime_error("Not implemented.");
+	std::ostringstream out;
+	out << prefix << "class: " << _name << " : " << (_parent ? _parent->name() : "nullptr") << std::endl;
+	out << "public methods:" << std::endl;
+	for (auto& m: _publicMethods) {
+		out << m->str("  ");
+	}
+	out << "private methods:" << std::endl;
+	for (auto& m: _privateMethods) {
+		out << m->str("  ");
+	}
+	out << "public attributes:" << std::endl;
+	for (auto& m: _publicAttrs) {
+		out << m->str("  ");
+	}
+	out << "private attributes:" << std::endl;
+	for (auto& m: _privateAttrs) {
+		out << m->str("  ");
+	}
+
+	return out.str();
 }
