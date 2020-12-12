@@ -6,6 +6,7 @@
 #include <tuple>
 #include <variant>
 #include <vector>
+#include <stdexcept>
 
 namespace vypcomp {
 namespace ir {
