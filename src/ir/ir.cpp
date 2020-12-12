@@ -10,6 +10,10 @@ Instruction::Instruction()
 {
 }
 
+Instruction::~Instruction()
+{
+}
+
 void Instruction::setNext(Instruction::Ptr next)
 {
 	_next = next;

@@ -114,6 +114,7 @@ public:
 	using Ptr = std::shared_ptr<Instruction>;
 
 	Instruction();
+	virtual ~Instruction();
 
 	void setNext(Instruction::Ptr next);
 	Instruction::Ptr next() const;
