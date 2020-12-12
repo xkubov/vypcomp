@@ -31,6 +31,18 @@ Function::Ptr IndexParserDriver::newFunction(const ir::Function::Signature& sig)
 	return ParserDriver::newFunction({type, name, args});
 }
 
+Datatype IndexParserDriver::customDatatype(const std::string& dt) const
+{
+	if (auto symbol = searchTables(dt)) {
+		if (!std::holds_alternative<Class::Ptr>(*symbol))
+			throw SemanticError("not a type: "+dt);
+
+		return Datatype(dt);
+	}
+
+	return Datatype(Datatype::InvalidDatatype());
+}
+
 Instruction::Ptr IndexParserDriver::assign(const std::string &name, const ir::Expression::ValueType &val) const
 {
 	return DummyInstruction::Ptr(new DummyInstruction);
