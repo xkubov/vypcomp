@@ -9,19 +9,29 @@ using namespace vypcomp;
 struct Args {
 	std::string inputFile = "";
 	std::string outputFile = "out.vc";
+	bool verbose = false;
 
         static std::string usage(const std::string& name) {
-		return name+": FILE [FILE]";
+		return name+": [-v|--verbose] FILE [FILE]";
 	}
 
         static Args parse(int argc, char** argv) {
 		Args args;
-		if (argc < 2)
-			throw std::runtime_error("invalid arguments.\n"+Args::usage(std::string(argv[0])));
+		if (argc == 1)
+			throw std::runtime_error("expected arguments\n"+ Args::usage(std::string(argv[0])));
 
-		if (argc > 2)
-			args.outputFile = argv[2];
-		args.inputFile = argv[1];
+		int base = 1;
+		if (std::string(argv[1]) == "-v" || std::string(argv[1]) == "--verbose") {
+			args.verbose = true;
+			base = 2;
+		}
+
+		if (argc < base+1)
+			throw std::runtime_error("invalid arguments\n"+Args::usage(std::string(argv[0])));
+
+		if (argc > base+1)
+			args.outputFile = argv[base+1];
+		args.inputFile = argv[base];
 		return args;
 	}
 };
@@ -34,6 +44,14 @@ int main(int argc, char** argv)
 		indexRun.parse(args.inputFile);
 		ParserDriver parser(indexRun.table());
 		parser.parse(args.inputFile);
+		if (args.verbose) {
+			for (auto [_, v]: parser.table().data()) {
+				std::visit([](auto&& arg) {
+					std::cout << arg->str("");
+				}, v);
+				std::cout << std::endl;
+			}
+		}
 	} catch (const LexicalError &le) {
 		std::cerr << "lexical error: " << le.what() << std::endl;
 		return 11;

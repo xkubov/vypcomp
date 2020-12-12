@@ -69,7 +69,7 @@ std::string BasicBlock::str(const std::string& prefix) const
 	std::ostringstream out;
 	out << prefix << "block: " << _name << std::endl;
 	for (auto it = _first; it != nullptr; it = it->next()) {
-		out << it->str(prefix+"  > ");
+		out << it->str(prefix+"| ");
 	}
 
 	return out.str();
@@ -215,7 +215,7 @@ bool Return::isVoid() const
 std::string Return::str(const std::string& prefix) const
 {
 	std::ostringstream out;
-	out << prefix << "return " << _expr->to_string() << std::endl;
+	out << prefix << "return " << (_expr ? _expr->to_string() : "VOID") << std::endl;
 	return out.str();
 }
 
@@ -268,7 +268,7 @@ std::string AllocaInstruction::str(const std::string& prefix) const
 	std::ostringstream out;
 
 	out << prefix << "alloca " << _type.to_string() << " " << _varName
-		<< "(prefix: " << _prefix << " )" << std::endl;
+		<< " (prefix: " << _prefix << " )" << std::endl;
 
 	return out.str();
 }
@@ -287,7 +287,7 @@ std::string Assignment::str(const std::string& prefix) const
 	std::ostringstream out;
 
 	out << prefix << "assignment: " << _expr->to_string() << std::endl;
-	out << _ptr->str(prefix+" ->");
+	out << _ptr->str(prefix+" -> ");
 	
 	return out.str();
 }
@@ -390,18 +390,29 @@ std::string Class::str(const std::string& prefix) const
 	for (auto& m: _publicMethods) {
 		out << m->str("  ");
 	}
+	if (_publicMethods.empty())
+		out << prefix << "  -- None" << std::endl;
+
 	out << "private methods:" << std::endl;
 	for (auto& m: _privateMethods) {
 		out << m->str("  ");
 	}
+	if (_privateMethods.empty())
+		out << prefix << "  -- None" << std::endl;
+
 	out << "public attributes:" << std::endl;
 	for (auto& m: _publicAttrs) {
 		out << m->str("  ");
 	}
+	if (_privateAttrs.empty())
+		out << prefix << "  -- None" << std::endl;
+
 	out << "private attributes:" << std::endl;
 	for (auto& m: _privateAttrs) {
 		out << m->str("  ");
 	}
+	if (_publicAttrs.empty())
+		out << prefix << "  -- None" << std::endl;
 
 	return out.str();
 }

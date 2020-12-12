@@ -34,3 +34,8 @@ SymbolTable::Symbol SymbolTable::get(const Key& key) const
 
 	return _table.at(key);
 }
+
+const std::map<SymbolTable::Key, SymbolTable::Symbol>& SymbolTable::data() const
+{
+	return _table;
+}

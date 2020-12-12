@@ -22,6 +22,7 @@ public:
 
 	bool has(const Key& symb) const;
 	Symbol get(const Key& symb) const;
+	const std::map<Key, Symbol>& data() const;
 
 private:
 	std::map<Key, Symbol> _table;
