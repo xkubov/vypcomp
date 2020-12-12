@@ -150,6 +150,11 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
 			throw SemanticError("Cannot assign to function.");
 
+		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
+		if (var->type() != val->type()) {
+			throw SemanticError("Invalid type.");
+		}
+
 		return Assignment::Ptr(
 			new Assignment(
 				std::get<AllocaInstruction::Ptr>(*symbol),
