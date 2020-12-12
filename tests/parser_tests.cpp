@@ -807,6 +807,63 @@ TEST_F(ParserTests, supportSuperAccess)
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
+/*BONUS*/
+TEST_F(ParserTests, supportVisibility)
+{
+        std::stringstream input(R"(
+		class Test : Object {
+			public void setFoo(void) {
+			}
+			private int foo = 0;
+		}
+                void main(void) {
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_NO_THROW(parser.parse(input));
+}
+
+/*BONUS*/
+TEST_F(ParserTests, supportVisibility2)
+{
+        std::stringstream input(R"(
+		class Test : Object {
+			public void setFoo(int foo) {
+				this.foo = foo;
+			}
+			private int foo = 0;
+		}
+                void main(void) {
+			Test test;
+			test.setFoo(3);
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_NO_THROW(parser.parse(input));
+}
+
+/*BONUS*/
+TEST_F(ParserTests, supportVisibilityViolation)
+{
+        std::stringstream input(R"(
+		class Test : Object {
+			public void setFoo(void) {
+				foo = 10;
+			}
+			private int foo = 0;
+		}
+                void main(void) {
+			Test test;
+			test.foo = 3;
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_THROW(parser.parse(input), SemanticError);
+}
+
 TEST_F(ParserTests, supportCustomTypes)
 {
         std::stringstream input(R"(

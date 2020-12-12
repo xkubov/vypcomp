@@ -152,6 +152,9 @@
 %token VOID
 %token WHILE
 %token FOR
+%token PUBLIC
+%token PRIVATE
+%token PROTECTED
 
 %token <terminal<PrimitiveDatatype>()> PRIMITIVE_DATA_TYPE
 
@@ -639,7 +642,13 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 };
 
 class_body : function_definition class_body
+	   | PUBLIC function_definition class_body
+	   | PRIVATE function_definition class_body
+	   | PROTECTED function_definition class_body
 	   | declaration class_body
+	   | PUBLIC declaration class_body
+	   | PRIVATE declaration class_body
+	   | PROTECTED declaration class_body
 	   | RBRA;
 
 optional_type : datatype { $$ = $1; }

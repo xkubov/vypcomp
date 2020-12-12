@@ -80,6 +80,9 @@ super   { return token::SUPER; }
 this    { return token::THIS; }
 while   { return token::WHILE; }
 for     { return token::FOR; }
+public  { return token::PUBLIC; }
+private  { return token::PRIVATE; }
+protected  { return token::PROTECTED; }
 
 int     { *yylval = PrimitiveDatatype::Int; return token::PRIMITIVE_DATA_TYPE; }
 float   { *yylval = PrimitiveDatatype::Float; return token::PRIMITIVE_DATA_TYPE; }
