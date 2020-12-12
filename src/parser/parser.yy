@@ -531,7 +531,7 @@ binary_operation
 		// else
 		// we're in a method but expr is has a different type than the current class parsed
 		{
-			AllocaInstruction::Ptr attribute = expr_class->getPublicAttribute($3); 
+			AllocaInstruction::Ptr attribute = expr_class->getAttribute($3, ir::Class::Visibility::Public); 
 			if (attribute)
 			{
 				$$ = std::make_shared<SymbolExpression>(attribute);
@@ -539,7 +539,7 @@ binary_operation
 			else
 			{
 				// try method
-				Function::Ptr method = expr_class->getPublicMethodByName($3);
+				Function::Ptr method = expr_class->getMethod($3, ir::Class::Visibility::Public);
 				if (method)
 				{
 					$$ = std::make_shared<FunctionExpression>(method);
@@ -641,7 +641,7 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 	parser->parseStart($$);
 };
 
-class_body : function_definition class_body
+class_body : function_definition class_body { parser->getCurrentClass(); }
 	   | PUBLIC function_definition class_body
 	   | PRIVATE function_definition class_body
 	   | PROTECTED function_definition class_body
