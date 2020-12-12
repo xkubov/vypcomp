@@ -170,7 +170,7 @@ TEST_F(ParserTests, supportFloat)
 			float f;
 			f = 0.0;
 			f = 1.f;
-			f= = .1;
+			f = .1;
                         return;
                 }
         )");
