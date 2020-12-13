@@ -29,18 +29,27 @@ public:
 	SymbolExpression(AllocaInstruction::Ptr value);
 
 	virtual std::string to_string() const override;
+	AllocaInstruction::Ptr getValue() const;
 private:
 	AllocaInstruction::Ptr _value;
 };
 
+// This expression type has type Datatype::FunctionType when it is referenced by an identifier.
+// When a call operation with arguments is provided, the expression gets the proper type
+// from the function return type.
 class FunctionExpression : public Expression
 {
 public:
+	using ArgExpressions = std::vector<Expression::ValueType>;
 	FunctionExpression(Function::Ptr value);
+	FunctionExpression(Function::Ptr value, ArgExpressions args);
 
 	virtual std::string to_string() const override;
+	Function::Ptr getFunction() const;
+	ArgExpressions getArgs() const;
 private:
 	Function::Ptr _value;
+	ArgExpressions _args;
 };
 
 class AddExpression : public Expression 

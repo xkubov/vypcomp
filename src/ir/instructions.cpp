@@ -307,7 +307,10 @@ std::string Assignment::str(const std::string& prefix) const
 	std::ostringstream out;
 
 	out << prefix << "assignment: " << _expr->to_string() << std::endl;
-	out << _ptr->str(prefix+" -> ");
+	if (_ptr)
+		out << _ptr->str(prefix + " -> ");
+	else
+		out << prefix << " -> VOID" << std::endl;
 	
 	return out.str();
 }

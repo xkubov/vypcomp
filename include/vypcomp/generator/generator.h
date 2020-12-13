@@ -26,7 +26,7 @@ namespace vypcomp
     private:
         void generate(vypcomp::ir::Function::Ptr input);
         void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets);
-        void generate_expression(ir::Expression::ValueType input, RegisterName destination);
+        void generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets);
         void generate_return();
         std::vector<ir::AllocaInstruction::Ptr> get_alloca_instructions(vypcomp::ir::Instruction::Ptr block);
 

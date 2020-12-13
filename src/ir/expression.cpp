@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <sstream>
 
 #include "vypcomp/errors/errors.h"
 #include "vypcomp/ir/expression.h"
@@ -34,16 +35,44 @@ std::string SymbolExpression::to_string() const
 {
 	return "(symbol: " + _value->name() + ")";
 }
+AllocaInstruction::Ptr SymbolExpression::getValue() const
+{
+	return _value;
+}
 
 //
 // Function Expression
 //
 FunctionExpression::FunctionExpression(Function::Ptr value)
-	: Expression(Datatype(Datatype::FunctionType())), _value(value)
+	: Expression(Datatype(Datatype::FunctionType())), _value(value), _args()
+{}
+FunctionExpression::FunctionExpression(Function::Ptr value, ArgExpressions args)
+	: 
+	Expression(value->type() ? value->type().value() : Datatype(Datatype::FunctionType())), 
+	_value(value), 
+	_args(args)
 {}
 std::string FunctionExpression::to_string() const
 {
-	return "(function: " + _value->name() + ")";
+	std::ostringstream ss;
+	ss << "(function: " + _value->name() + ")(";
+	for (auto i = 0ull; i < _args.size(); i++)
+	{
+		auto& arg_expr = _args[i];
+		ss << arg_expr->to_string();
+		if (i != _args.size() - 1)
+			ss << ", ";
+	}
+	ss << ")";
+	return ss.str();
+}
+Function::Ptr FunctionExpression::getFunction() const
+{
+	return _value;
+}
+FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
+{
+	return _args;
 }
 
 //

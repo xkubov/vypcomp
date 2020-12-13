@@ -186,6 +186,53 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 	throw SemanticError("Assignment to undefined variable "+name);
 }
 
+std::vector<Instruction::Ptr> ParserDriver::call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const
+{
+	auto search_result = searchTables(name);
+	if (search_result)
+	{
+		SymbolTable::Symbol symbol = search_result.value();
+		if (std::holds_alternative<Function::Ptr>(symbol))
+		{
+			auto function = std::get<Function::Ptr>(symbol);
+			if (function->name() == "print")
+			{
+				if (args.size() < 1) throw SemanticError("print has to have at least 1 parameter");
+				for (const ir::Expression::ValueType& argument : args)
+				{
+					auto arg_type = argument->type();
+					if (!arg_type.isPrimitive())
+					{
+						throw SemanticError("print called with non-primitive datatype parameter.");
+					}
+				}
+			}
+			else
+			{
+				if (args.size() != function->args().size()) 
+					throw SemanticError("Provided argument count does not match the declared parameter count.");
+
+				for (std::size_t i = 0; i < args.size(); i++)
+				{
+					auto formal_type = function->argTypes()[i];
+					auto actual_type = args[i]->type();
+					if (formal_type != actual_type)
+						throw SemanticError("Provided argument type does not match declared type.");
+				}
+			}
+			return { std::make_shared<Assignment>(nullptr, std::make_shared<FunctionExpression>(function, args)) };
+		}
+		else
+		{
+			throw SemanticError("Identifier in function call is not a function.");
+		}
+	}
+	else
+	{
+		throw SemanticError("Identifier does not exist.");
+	}
+}
+
 Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) const
 {
 	if (_currFunction == nullptr) {

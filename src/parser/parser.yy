@@ -50,7 +50,8 @@
 		BasicBlock::Ptr,
 		Function::Ptr,
 		Class::Ptr,
-		Expression::ValueType
+		Expression::ValueType,
+		std::vector<std::shared_ptr<Expression>>
 	>;
 
 	/**
@@ -212,7 +213,7 @@
 %nterm <nonterminal<std::vector<std::pair<std::string, Expression::ValueType>>>()> at_least_one_id
 %nterm <nonterminal<std::shared_ptr<Expression>>()> expr
 %nterm <nonterminal<std::shared_ptr<Expression>>()> binary_operation
-//%nterm <nonterminal<std::string>()> optional_args
+%nterm <nonterminal<std::vector<std::shared_ptr<Expression>>>()> func_call_args
 
 %%
 
@@ -361,8 +362,8 @@ statement : return {
 | IDENTIFIER ASSIGNMENT expr SEMICOLON {
 	$$ = {parser->assign($1, $3)};
 }
-| IDENTIFIER LPAR expr RPAR SEMICOLON {
-	throw std::runtime_error("Function calls not implemented.");
+| IDENTIFIER LPAR func_call_args SEMICOLON {
+	$$ = parser->call_func($1, $3);
 }
 | declaration {
 	$$ = $1;
@@ -381,6 +382,22 @@ expr
 | literal {
 	$$ = std::make_shared<LiteralExpression>($1.value());
 }
+| expr LPAR func_call_args {
+	auto exp = $1;
+	auto args = $3;
+	if (!exp->type().is<Datatype::FunctionType>())
+	{
+		throw SemanticError("Function call attempted on non-function expression.");
+	}
+	else
+	{
+		auto function_expr = dynamic_cast<FunctionExpression*>($1.get());
+		// TODO: verify argument types and argument count, `print` will have a vararg flag
+		// excluding it from the count check (just verify that all types are primitive)
+		// probably use the same parser->call_func and take the first element of the vector
+		$$ = std::make_shared<FunctionExpression>(function_expr->getFunction(), $3);
+	}
+}
 | IDENTIFIER {
 	auto search_result  = parser->searchTables($1);
 	if (search_result)
@@ -393,12 +410,12 @@ expr
 		}
 		else if (std::holds_alternative<Function::Ptr>(symbol))
 		{
-			// TODO I think this can go as well since function call should be handled in other rule
-			throw SemanticError("Function type expression.");
+			auto func = std::get<Function::Ptr>(symbol);
+			$$ = std::make_shared<FunctionExpression>(func);
 		}
 		else
 		{
-			throw SemanticError("Unsupported identifier type in expression.");
+				throw SemanticError("Unsupported identifier type in expression.");
 		}
 	}
 	else
@@ -440,7 +457,16 @@ expr
 			throw std::runtime_error("super keyword not implemented");
 		}
 	}
-};
+}
+;
+
+func_call_args 
+: expr COMMA func_call_args { 
+	$$.push_back($1);
+	$$.insert($$.end(), $3.begin(), $3.end()); 
+}
+| expr RPAR { $$ = { $1 }; }
+| RPAR { $$ = {}; };
 // TODO function call here
 // | expr LPAR args ...
 // TODO cast

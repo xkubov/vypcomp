@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include <vypcomp/generator/generator.h>
-#include <vypcomp/generator/generator.h>
+#include <vypcomp/ir/instructions.h>
 
 using namespace vypcomp;
 
@@ -34,15 +34,31 @@ void Generator::generate(const vypcomp::SymbolTable& symbol_table)
             // handle embedded intrinsic functions
             if (function->name() == "print")
             {
-                // WRITES / WRITEI (maybe split into printf printi in the print call parsing)
+                // just do nothing and generate WRITEI, WRITES, WRITEF directly on call site
+                //// WRITES / WRITEI (maybe split into printf printi in the print call parsing)
+                //*out << "LABEL _internal_printi\n";
+                //*out << "WRITEI [$SP-1]\n";
+                //*out << "RETURN [$SP]\n\n";
+
+                //*out << "LABEL _internal_prints\n";
+                //*out << "WRITES [$SP-1]\n";
+                //*out << "RETURN [$SP]\n\n";
+
+                //*out << "LABEL _internal_printf\n";
+                //*out << "WRITEF [$SP-1]\n";
+                //*out << "RETURN [$SP]\n" << std::endl;
             }
             else if (function->name() == "readInt")
             {
-                // READI
+                *out << "LABEL readInt\n";
+                *out << "READI $0\n";
+                *out << "RETURN [$SP]\n" << std::endl;
             }
             else if (function->name() == "readString")
             {
-                // READS
+                *out << "LABEL readString\n";
+                *out << "READS $0\n";
+                *out << "RETURN [$SP]\n" << std::endl;
             }
             else if (function->name() == "length")
             {
@@ -96,7 +112,7 @@ void Generator::generate(vypcomp::ir::Function::Ptr input)
         // if there are any variables in the possible instruction stream, reserve stack space for them
         *out << "ADDI $SP, $SP, " << variable_count << std::endl;
         // shift the offsets of function arguments
-        std::for_each(variable_offsets.begin(), variable_offsets.end(), [this](auto& ptr_offset_pair) { ptr_offset_pair.second -= variable_count;  });
+        std::for_each(variable_offsets.begin(), variable_offsets.end(), [this](auto& ptr_offset_pair) { ptr_offset_pair.second += variable_count;  });
         // insert $SP offsets of local variables
         for (std::size_t i = 0; i < variable_count; i++)
         {
@@ -142,21 +158,27 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
     {
         auto destination = instr->getAlloca();
         auto expr = instr->getExpr();
-        // may need to get return register, or give the generate_expression destination address
-        // TODO: some long expressions may run out of free registers for intermediate results
-        auto variable_offset_iter = variable_offsets.find(destination.get());
-        if (variable_offset_iter == variable_offsets.end()) throw std::runtime_error("Assignment destination was not found while generating assignment");
-        auto& [_, variable_offset] = *variable_offset_iter;
-        auto result_register = std::string("$0");
-        generate_expression(expr, result_register);
-        *out << "SET [$SP-" << variable_offset << "], " << result_register << std::endl;
+        if (!destination) 
+        {
+            // statement level function call that discards the result
+            generate_expression(expr, "", variable_offsets);
+        }
+        else
+        {
+            auto variable_offset_iter = variable_offsets.find(destination.get());
+            if (variable_offset_iter == variable_offsets.end()) throw std::runtime_error("Assignment destination was not found while generating assignment");
+            auto& [_, variable_offset] = *variable_offset_iter;
+            auto result_register = std::string("$0");
+            generate_expression(expr, result_register, variable_offsets);
+            *out << "SET [$SP-" << variable_offset << "], " << result_register << std::endl;
+        }
     }
     else if (auto instr = dynamic_cast<ir::Return*>(input.get()))
     {
         if (!instr->isVoid())
         {
             auto expr = instr->getExpr();
-            generate_expression(expr, "$0");
+            generate_expression(expr, "$0", variable_offsets);
         }
         generate_return();
     }
@@ -201,14 +223,71 @@ void Generator::generate_return()
     {
         *out << "RETURN [$SP]" << std::endl;
     }
+    *out << std::endl;
 }
 
-void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, RegisterName destination)
-{
+void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets)
+{   
     if (auto lit_expr = dynamic_cast<ir::LiteralExpression*>(input.get()))
     {
         auto lit_value = lit_expr->getValue();
+        if (destination.size() == 0) throw std::runtime_error("Can't assign literal expression to null.");
         *out << "SET " << destination << ", " << lit_value.vypcode_representation() << std::endl;
+    }
+    else if (auto func_expr = dynamic_cast<ir::FunctionExpression*>(input.get()))
+    {
+        auto func_name = func_expr->getFunction()->name();
+        auto function_args = func_expr->getArgs();
+        const auto args_count = function_args.size();
+        if (func_name == "print")
+        {
+            // each argument is a standalone call
+            for (std::size_t i = 0; i < args_count; i++)
+            {
+                const ir::Expression::ValueType& argument = function_args[i];
+                ir::Datatype argument_type = argument->type();
+                // should be safe because primitive types are checked by parser
+                ir::PrimitiveDatatype prim_type = argument_type.get<ir::PrimitiveDatatype>();
+                generate_expression(argument, "$0", variable_offsets);
+                switch (prim_type)
+                {
+                case ir::PrimitiveDatatype::Int:
+                    *out << "WRITEI $0" << std::endl;
+                    break;
+                case ir::PrimitiveDatatype::String:
+                    *out << "WRITES $0" << std::endl;
+                    break;
+                case ir::PrimitiveDatatype::Float:
+                    *out << "WRITEF $0" << std::endl;
+                    break;
+                default:
+                    throw std::runtime_error("Unexpected primitive type in print.");
+                }
+
+            }
+        }
+        else
+        {
+            // reserve stack space
+            *out << "ADDI $SP, $SP, " << args_count << std::endl;
+            for (std::size_t i = 0; i < args_count; i++)
+            {
+                const ir::Expression::ValueType& argument = function_args[i];
+                generate_expression(argument, "$0", variable_offsets);
+                std::int64_t offset = args_count - i; // first argument has lowest stack address, last is $SP-1
+                *out << "SET " << "[$SP-" << offset << "], $0" << std::endl;
+            }
+            *out << "CALL [$SP], " << func_name << std::endl;
+        }
+    }
+    else if (auto symb_expr = dynamic_cast<ir::SymbolExpression*>(input.get()))
+    {
+        if (destination.size() == 0) throw std::runtime_error("Can't assign symbol expression to null.");
+        auto alloca_src = symb_expr->getValue();
+        auto find_result = variable_offsets.find(alloca_src.get());
+        if (find_result == variable_offsets.end()) throw std::runtime_error("Did not find assigned offset to alloca instruction.");
+        auto& [_, offset] = *find_result;
+        *out << "SET " << destination << ", " << "[$SP-" << offset << "]" << std::endl;
     }
     else
     {
