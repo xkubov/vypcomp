@@ -337,67 +337,128 @@ Class::Ptr Class::getBase() const
 	return _parent;
 }
 
-void Class::add(Function::Ptr method, bool isPublic)
+void Class::add(Function::Ptr method, const Visibility& v)
 {
 	method->addPrefix(_name);
 
-	if (isPublic)
-		_publicMethods.push_back(method);
-	else
+	switch (v) {
+	case Visibility::Private:
 		_privateMethods.push_back(method);
+		break;
+	case Visibility::Protected:
+		_protectedMethods.push_back(method);
+		break;
+	default:
+		_publicMethods.push_back(method);
+	}
 }
 
-void Class::add(AllocaInstruction::Ptr attr, bool isPublic)
+void Class::add(AllocaInstruction::Ptr attr, const Visibility& v)
 {
 	attr->addPrefix(_name);
 
-	if (isPublic)
-		_publicAttrs.push_back(attr);
-	else
+	switch (v) {
+	case Visibility::Private:
 		_privateAttrs.push_back(attr);
+		break;
+	case Visibility::Protected:
+		_protectedAttrs.push_back(attr);
+		break;
+	default:
+		_publicAttrs.push_back(attr);
+	}
 }
 
-Function::Ptr Class::getPublicMethod(const std::string& name, const std::vector<Datatype>& argtypes) const
+Function::Ptr Class::getMethod(const std::string& name, const std::vector<Datatype>& argtypes, const Visibility& v) const
 {
-	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name, argtypes](const auto& method) {
-		return method->name() == name && method->argTypes() == argtypes;
-	});
+	switch (v) {
+		case Visibility::Protected:
+		case Visibility::Private: {
+			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name, argtypes](const auto& method) {
+				return method->name() == name && method->argTypes() == argtypes;
+			});
+			if (it != _publicMethods.end())
+				return *it;
 
-	if (it != _publicMethods.end())
-		return *it;
+			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name, argtypes](const auto& method) {
+				return method->name() == name && method->argTypes() == argtypes;
+			});
+			if (pit != _publicMethods.end())
+				return *pit;
+		}
+		case Visibility::Public:
+		default: {
+			auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name, argtypes](const auto& method) {
+				return method->name() == name && method->argTypes() == argtypes;
+			});
+			if (it != _publicMethods.end())
+				return *it;
 
-	if (_parent)
-		return _parent->getPublicMethod(name, argtypes);
+			if (_parent)
+				return _parent->getMethod(name, argtypes, v);
+		}
+	}
 
 	return nullptr;
 }
 
-Function::Ptr Class::getPublicMethodByName(const std::string& name) const
+Function::Ptr Class::getMethod(const std::string& name, const Visibility& v) const
 {
-	auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
-		return method->name() == name;
+	switch (v) {
+		case Visibility::Protected:
+		case Visibility::Private: {
+			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name](const auto& method) {
+				return method->name() == name;
+			});
+			if (it != _publicMethods.end())
+				return *it;
+
+			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name](const auto& method) {
+				return method->name() == name;
+			});
+			if (pit != _publicMethods.end())
+				return *pit;
+		}
+		case Visibility::Public:
+		default: {
+			auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
+				return method->name() == name;
+			});
+			if (it != _publicMethods.end())
+				return *it;
+
+			if (_parent)
+				return _parent->getMethod(name, v);
+		}
+	}
+
+	return nullptr;
+}
+
+AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibility& v) const
+{
+	if ((v == Visibility::Protected) || (v == Visibility::Private)) {
+		auto it = std::find_if(_privateAttrs.begin(), _privateAttrs.end(), [name](const auto& attr) {
+			return attr->name() == name;
 		});
+		if (it != _privateAttrs.end())
+			return *it;
 
-	if (it != _publicMethods.end())
-		return *it;
+		auto pit = std::find_if(_protectedAttrs.begin(), _protectedAttrs.end(), [name](const auto& attr) {
+			return attr->name() == name;
+		});
+		if (pit != _protectedAttrs.end())
+			return *it;
+	}
 
-	if (_parent)
-		return _parent->getPublicMethodByName(name);
-
-	return nullptr;
-}
-
-AllocaInstruction::Ptr Class::getPublicAttribute(const std::string& name) const
-{
 	auto it = std::find_if(_publicAttrs.begin(), _publicAttrs.end(), [name](const auto& attr) {
 		return attr->name() == name;
 	});
-
 	if (it != _publicAttrs.end())
 		return *it;
 
 	if (_parent)
-		return _parent->getPublicAttribute(name);
+		return _parent->getAttribute(name, v);
 
 	return nullptr;
 }
@@ -425,18 +486,32 @@ std::string Class::str(const std::string& prefix) const
 	if (_privateMethods.empty())
 		out << prefix << "  -- None" << std::endl;
 
+	out << "protected methods:" << std::endl;
+	for (auto& m: _protectedMethods) {
+		out << m->str("  ");
+	}
+	if (_protectedMethods.empty())
+		out << prefix << "  -- None" << std::endl;
+
 	out << "public attributes:" << std::endl;
 	for (auto& m: _publicAttrs) {
 		out << m->str("  ");
 	}
-	if (_privateAttrs.empty())
+	if (_publicAttrs.empty())
 		out << prefix << "  -- None" << std::endl;
 
 	out << "private attributes:" << std::endl;
 	for (auto& m: _privateAttrs) {
 		out << m->str("  ");
 	}
-	if (_publicAttrs.empty())
+	if (_privateAttrs.empty())
+		out << prefix << "  -- None" << std::endl;
+
+	out << "protected attributes:" << std::endl;
+	for (auto& m: _protectedAttrs) {
+		out << m->str("  ");
+	}
+	if (_protectedAttrs.empty())
 		out << prefix << "  -- None" << std::endl;
 
 	return out.str();

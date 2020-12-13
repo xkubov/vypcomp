@@ -332,17 +332,7 @@ basic_block : statement basic_block {
  */
 end_of_block : RBRA {
 	$$ = nullptr;
-}
-| IF LPAR expr RPAR if_body else basic_block {
-	auto br = BranchInstruction::Ptr(new BranchInstruction($3, $5, $6));
-	$7->addFirst(br);
-	$$ = $7;
-}
-| WHILE LPAR expr RPAR LBRA basic_block basic_block {
-	auto br = LoopInstruction::Ptr(new LoopInstruction($3, $6));
-	$7->addFirst(br);
-	$$ = $7;
-}
+};
 
 if_body : if_action basic_block {
      parser->popSymbolTable();
@@ -376,6 +366,12 @@ statement : return {
 }
 | declaration {
 	$$ = $1;
+}
+| IF LPAR expr RPAR if_body else {
+	$$ = {BranchInstruction::Ptr(new BranchInstruction($3, $5, $6))};
+}
+| WHILE LPAR expr RPAR LBRA basic_block {
+	$$ = {LoopInstruction::Ptr(new LoopInstruction($3, $6))};
 };
 
 expr 
@@ -531,7 +527,7 @@ binary_operation
 		// else
 		// we're in a method but expr is has a different type than the current class parsed
 		{
-			AllocaInstruction::Ptr attribute = expr_class->getPublicAttribute($3); 
+			AllocaInstruction::Ptr attribute = expr_class->getAttribute($3, ir::Class::Visibility::Public); 
 			if (attribute)
 			{
 				$$ = std::make_shared<SymbolExpression>(attribute);
@@ -539,7 +535,7 @@ binary_operation
 			else
 			{
 				// try method
-				Function::Ptr method = expr_class->getPublicMethodByName($3);
+				Function::Ptr method = expr_class->getMethod($3, ir::Class::Visibility::Public);
 				if (method)
 				{
 					$$ = std::make_shared<FunctionExpression>(method);
@@ -641,7 +637,7 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 	parser->parseStart($$);
 };
 
-class_body : function_definition class_body
+class_body : function_definition class_body { parser->getCurrentClass(); }
 	   | PUBLIC function_definition class_body
 	   | PRIVATE function_definition class_body
 	   | PROTECTED function_definition class_body

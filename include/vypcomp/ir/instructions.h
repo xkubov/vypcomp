@@ -170,25 +170,46 @@ private:
 
 class Class: public Instruction {
 public:
+	enum class Visibility {
+		Public,
+		Private,
+		Protected
+	};
+public:
 	using Ptr = std::shared_ptr<Class>;
 	Class(const std::string& name, Class::Ptr base);
 
 	void setBase(Class::Ptr base);
 	Class::Ptr getBase() const;
-	void add(Function::Ptr methods, bool isPublic = true);
-	void add(AllocaInstruction::Ptr attr, bool isPublic = true);
+	void add(Function::Ptr methods, const Visibility& v = Visibility::Public);
+	void add(AllocaInstruction::Ptr attr, const Visibility& v = Visibility::Public);
 
-	Function::Ptr getPublicMethod(
+	// Visibility:
+	//  - Public: method that is available to public
+	//  - Protected/Private: method that is available to the class too.
+	Function::Ptr getMethod(
 		const std::string& name,
-		const std::vector<Datatype>& argtypes) const;
-	Function::Ptr getPublicMethodByName(const std::string& name) const;
-	AllocaInstruction::Ptr getPublicAttribute(const std::string& name) const;
+		const std::vector<Datatype>& argtypes,
+		const Visibility& v = Visibility::Public
+	) const;
+	Function::Ptr getMethod(
+		const std::string& name,
+		const Visibility& v = Visibility::Public
+	) const;
+
+	//
+	// Visibility:
+	//  - Public: attribute that is available to public
+	//  - Protected/Private: attribute that is available to the class too.
+	AllocaInstruction::Ptr getAttribute(const std::string& name, const Visibility& v = Visibility::Public) const;
 
 	const std::vector<Function::Ptr> publicMethods() const;
 	const std::vector<Function::Ptr> privateMethods() const;
+	const std::vector<Function::Ptr> protectedMethods() const;
 
 	const std::vector<AllocaInstruction::Ptr> publicAttributes() const;
 	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
+	const std::vector<AllocaInstruction::Ptr> protectedAttributes() const;
 
 	std::string name() const;
 	virtual std::string str(const std::string& prefix) const override;
@@ -198,8 +219,10 @@ private:
 	Class::Ptr _parent;
 	std::vector<Function::Ptr> _publicMethods;
 	std::vector<Function::Ptr> _privateMethods;
+	std::vector<Function::Ptr> _protectedMethods;
 	std::vector<AllocaInstruction::Ptr> _publicAttrs;
 	std::vector<AllocaInstruction::Ptr> _privateAttrs;
+	std::vector<AllocaInstruction::Ptr> _protectedAttrs;
 };
 
 }
