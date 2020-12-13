@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 #include <vypcomp/generator/generator.h>
 #include <vypcomp/generator/generator.h>
@@ -75,30 +76,47 @@ void Generator::generate(vypcomp::ir::Function::Ptr input)
     if (!input) return;
     auto first_block = input->first();
     *out << "LABEL " << input->name() << std::endl;
-    auto alloca_instructions = get_alloca_instructions(first_block->first());
-    auto arg_count = input->args().size();
-    auto variable_count = alloca_instructions.size();
+    auto local_variables = get_alloca_instructions(first_block->first());
+    auto& args = input->args();
+    const std::size_t arg_count = args.size();
+    const std::size_t variable_count = local_variables.size();
     OffsetMap variable_offsets{};
     if (arg_count != 0)
     {
-        // TODO: insert args' offsets into variable_offsets map
+        // assign $SP offsets of arguments
+        for (std::size_t i = 0; i < arg_count; i++)
+        {
+            auto& alloca_instr = args[i];
+            std::int64_t offset = arg_count - i; // first arg has lowest stack position, last arg is $SP-1
+            variable_offsets[alloca_instr.get()] = offset;
+        }
     }
     if (variable_count != 0)
     {
         // if there are any variables in the possible instruction stream, reserve stack space for them
         *out << "ADDI $SP, $SP, " << variable_count << std::endl;
-        // TODO: shift offsets of args in variable_offsets 
-
+        // shift the offsets of function arguments
+        std::for_each(variable_offsets.begin(), variable_offsets.end(), [variable_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= variable_count;  });
+        // insert $SP offsets of local variables
         for (std::size_t i = 0; i < variable_count; i++)
         {
-            auto& alloca_instr = alloca_instructions[i];
+            auto& alloca_instr = local_variables[i];
             std::int64_t offset = variable_count - i - 1; // last variable is [$SP]
             variable_offsets[alloca_instr.get()] = offset;
-            if (verbose)
-            {
-                // dump notation of local variables into code
-                *out << "# " << alloca_instr->name() << " [$SP-" << offset << "]" << std::endl;
-            }
+        }
+    }
+    if (verbose)
+    {
+        // dump offsets of all local symbols into code
+        for (auto& alloca_instr : args)
+        {
+            auto offset = variable_offsets[alloca_instr.get()];
+            *out << "# " << alloca_instr->name() << " [$SP-" << offset << "]" << std::endl;
+        }
+        for (auto& alloca_instr : local_variables)
+        {
+            auto offset = variable_offsets[alloca_instr.get()];
+            *out << "# " << alloca_instr->name() << " [$SP-" << offset << "]" << std::endl;
         }
     }
 
@@ -135,8 +153,9 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         auto variable_offset_iter = variable_offsets.find(destination.get());
         if (variable_offset_iter == variable_offsets.end()) throw std::runtime_error("Assignment destination was not found while generating assignment");
         auto& [_, variable_offset] = *variable_offset_iter;
-        auto result_register = generate_expression(expr);
-        *out << "SET " << "[$SP-" << variable_offset << "], " << result_register << std::endl;
+        auto result_register = std::string("$0");
+        generate_expression(expr, result_register);
+        *out << "SET [$SP-" << variable_offset << "], " << result_register << std::endl;
     }
     else
     {
@@ -145,13 +164,12 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
     }
 }
 
-vypcomp::Generator::RegisterName vypcomp::Generator::generate_expression(ir::Expression::ValueType input)
+void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, RegisterName destination)
 {
     if (auto lit_expr = dynamic_cast<ir::LiteralExpression*>(input.get()))
     {
         auto lit_value = lit_expr->getValue();
-        *out << "SET " << "$0" << ", " << lit_value.vypcode_representation() << std::endl;
-        return "$0";
+        *out << "SET " << destination << ", " << lit_value.vypcode_representation() << std::endl;
     }
     else
     {
