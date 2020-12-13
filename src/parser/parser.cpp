@@ -5,13 +5,33 @@
 #include "vypcomp/parser/parser.h"
 
 using namespace vypcomp;
+using namespace std::string_literals;
 
 SymbolTable initSymbolTable()
 {
 	auto table = SymbolTable(true);
 	auto object = ir::Class::Ptr(new ir::Class("Object", nullptr));
-
-	table.insert({"Object", object});
+	table.insert({ "Object", object });
+	// add functions here
+	// int readInt(void)
+	table.insert({ "readInt", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Int), "readInt", Arglist())) });
+	// string readString(void)
+	table.insert({ "readString", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::String), "readString", Arglist())) });
+	// int length(string s)
+	table.insert({ "length", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Int), std::string("length"), Arglist{ std::make_pair(Datatype(PrimitiveDatatype::String), "s")} )) });
+	auto subStr_ptr = std::make_shared<ir::Function>(Function::Signature(
+		PrimitiveDatatype::String, 
+		std::string("length"), 
+		Arglist{ { 
+			std::make_pair(Datatype(PrimitiveDatatype::String), "s"s),
+			std::make_pair(Datatype(PrimitiveDatatype::Int), "i"s),
+			std::make_pair(Datatype(PrimitiveDatatype::Int), "n"s)
+		} }
+	));
+	// string subStr(string s, int i, int n)
+	table.insert({ "subStr", subStr_ptr });
+	// void print(PrimitiveDatatype i, ...)
+	table.insert({ "print", std::make_shared<ir::Function>(std::make_tuple(std::nullopt, "print", Arglist())) }); // a special one handled differently in parser
 	return table;
 }
 
