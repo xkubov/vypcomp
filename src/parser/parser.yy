@@ -332,17 +332,7 @@ basic_block : statement basic_block {
  */
 end_of_block : RBRA {
 	$$ = nullptr;
-}
-| IF LPAR expr RPAR if_body else basic_block {
-	auto br = BranchInstruction::Ptr(new BranchInstruction($3, $5, $6));
-	$7->addFirst(br);
-	$$ = $7;
-}
-| WHILE LPAR expr RPAR LBRA basic_block basic_block {
-	auto br = LoopInstruction::Ptr(new LoopInstruction($3, $6));
-	$7->addFirst(br);
-	$$ = $7;
-}
+};
 
 if_body : if_action basic_block {
      parser->popSymbolTable();
@@ -376,6 +366,12 @@ statement : return {
 }
 | declaration {
 	$$ = $1;
+}
+| IF LPAR expr RPAR if_body else {
+	$$ = {BranchInstruction::Ptr(new BranchInstruction($3, $5, $6))};
+}
+| WHILE LPAR expr RPAR LBRA basic_block {
+	$$ = {LoopInstruction::Ptr(new LoopInstruction($3, $6))};
 };
 
 expr 
