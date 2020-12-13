@@ -148,7 +148,7 @@ public:
 	bool isVoid() const;
 
 	virtual std::string str(const std::string& prefix) const override;
-
+	Expression::ValueType getExpr() const;
 private:
 	Expression::ValueType _expr;
 };

@@ -229,6 +229,11 @@ std::string Return::str(const std::string& prefix) const
 	return out.str();
 }
 
+Expression::ValueType Return::getExpr() const
+{
+	return _expr;
+}
+
 // ------------------------------
 // LoopInstruction
 // ------------------------------

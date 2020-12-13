@@ -27,11 +27,17 @@ namespace vypcomp
         void generate(vypcomp::ir::Function::Ptr input);
         void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets);
         void generate_expression(ir::Expression::ValueType input, RegisterName destination);
-        bool is_alloca(vypcomp::ir::Instruction::Ptr instr);
+        void generate_return();
         std::vector<ir::AllocaInstruction::Ptr> get_alloca_instructions(vypcomp::ir::Instruction::Ptr block);
 
+        bool is_alloca(vypcomp::ir::Instruction::Ptr instr) const;
+        bool is_return(vypcomp::ir::Instruction::Ptr instr) const;
     private:
         std::unique_ptr<std::ostream> out;
         bool verbose = false;
+        // These variables are needed when the generator jumps into an instruction stream from generate(function)
+        // so that it can properly generate return statements
+        std::size_t arg_count = 0;
+        std::size_t variable_count = 0;
     };
 }

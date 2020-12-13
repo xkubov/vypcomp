@@ -78,8 +78,8 @@ void Generator::generate(vypcomp::ir::Function::Ptr input)
     *out << "LABEL " << input->name() << std::endl;
     auto local_variables = get_alloca_instructions(first_block->first());
     auto& args = input->args();
-    const std::size_t arg_count = args.size();
-    const std::size_t variable_count = local_variables.size();
+    arg_count = args.size();
+    variable_count = local_variables.size();
     OffsetMap variable_offsets{};
     if (arg_count != 0)
     {
@@ -96,7 +96,7 @@ void Generator::generate(vypcomp::ir::Function::Ptr input)
         // if there are any variables in the possible instruction stream, reserve stack space for them
         *out << "ADDI $SP, $SP, " << variable_count << std::endl;
         // shift the offsets of function arguments
-        std::for_each(variable_offsets.begin(), variable_offsets.end(), [variable_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= variable_count;  });
+        std::for_each(variable_offsets.begin(), variable_offsets.end(), [this](auto& ptr_offset_pair) { ptr_offset_pair.second -= variable_count;  });
         // insert $SP offsets of local variables
         for (std::size_t i = 0; i < variable_count; i++)
         {
@@ -125,16 +125,10 @@ void Generator::generate(vypcomp::ir::Function::Ptr input)
         generate_instruction(instruction, variable_offsets);
     }
 
-    if (variable_count != 0)
+    if (!is_return(input->first()->last()))
     {
-        *out << "SUBI $SP, $SP, " << variable_count;
-        if (verbose)
-            *out << " # [$SP] is now return address\n";
-        else
-            *out << "\n";
-        *out << "SET $1, [$SP]" << "\n";
-        *out << "SUBI $SP, $SP, " << arg_count << "\n";
-        *out << "RETURN $1" << std::endl;
+        *out << "SET $0, 0" << std::endl;
+        generate_return();
     }
 }
 
@@ -157,10 +151,55 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         generate_expression(expr, result_register);
         *out << "SET [$SP-" << variable_offset << "], " << result_register << std::endl;
     }
+    else if (auto instr = dynamic_cast<ir::Return*>(input.get()))
+    {
+        if (!instr->isVoid())
+        {
+            auto expr = instr->getExpr();
+            generate_expression(expr, "$0");
+        }
+        generate_return();
+    }
     else
     {
         std::cerr << "skipping past instruction:\n" << input->str("") << std::endl;
         //throw std::runtime_error("Generator encountered unsupported IR instruction type.");
+    }
+}
+
+void Generator::generate_return()
+{
+    //  high address
+    // |  ...    |
+    // |  loc2   |
+    // |  loc1   |
+    // | return  |
+    // |  arg3   |
+    // |  arg2   |
+    // |  arg1   |
+    // |  ...    |
+    //  low address
+    // stack layout
+    // generate implicit 0 return
+    if (variable_count != 0)
+    {
+        // reclaim stack of local variables
+        *out << "SUBI $SP, $SP, " << variable_count;
+        if (verbose)
+            *out << " # [$SP] is now return address\n";
+        else
+            *out << "\n";
+    }
+    if (arg_count != 0)
+    {
+        // reclaim stack of arguments
+        *out << "SET $1, [$SP]" << "\n";
+        *out << "SUBI $SP, $SP, " << arg_count << "\n";
+        *out << "RETURN $1" << std::endl;
+    }
+    else
+    {
+        *out << "RETURN [$SP]" << std::endl;
     }
 }
 
@@ -177,9 +216,14 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
     }
 }
 
-bool vypcomp::Generator::is_alloca(vypcomp::ir::Instruction::Ptr instr)
+bool vypcomp::Generator::is_alloca(vypcomp::ir::Instruction::Ptr instr) const
 {
     return dynamic_cast<ir::AllocaInstruction*>(instr.get()) != nullptr;
+}
+
+bool vypcomp::Generator::is_return(vypcomp::ir::Instruction::Ptr instr) const
+{
+    return dynamic_cast<ir::Return*>(instr.get()) != nullptr;
 }
 
 std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_alloca_instructions(vypcomp::ir::Instruction::Ptr first)
