@@ -3,6 +3,7 @@
 
 #include "vypcomp/parser/parser.h"
 #include "vypcomp/parser/indexdriver.h"
+#include "vypcomp/generator/generator.h"
 
 using namespace vypcomp;
 
@@ -52,6 +53,9 @@ int main(int argc, char** argv)
 				std::cout << std::endl;
 			}
 		}
+
+		Generator gen(args.outputFile, args.verbose);
+		gen.generate(parser.table());
 	} catch (const LexicalError &le) {
 		std::cerr << "lexical error: " << le.what() << std::endl;
 		return 11;

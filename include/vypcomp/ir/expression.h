@@ -18,6 +18,7 @@ public:
 	LiteralExpression(vypcomp::ir::Literal value);
 
 	virtual std::string to_string() const override;
+	vypcomp::ir::Literal getValue() const;
 private:
 	vypcomp::ir::Literal _value;
 };

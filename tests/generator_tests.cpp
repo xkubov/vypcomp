@@ -12,7 +12,7 @@ class GeneratorTests : public Test {};
 
 TEST_F(GeneratorTests, firstTest)
 {
-    std::ostringstream out;
-    Generator gen(true);
-    ASSERT_NO_THROW(gen.generate(nullptr, out));
+    Generator gen(std::make_unique<std::ostringstream>(), true);
+    const auto& result_out = gen.get_output();
+    ASSERT_NO_THROW(gen.generate(vypcomp::SymbolTable()));
 }

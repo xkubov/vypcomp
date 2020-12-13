@@ -87,6 +87,25 @@ public:
 			throw std::runtime_error("Unexpected type: "+std::to_string(__LINE__));
 	}
 
+	std::string vypcode_representation() const
+	{
+		if (std::holds_alternative<std::string>(_val))
+		{
+			// TODO: escape
+			return "\"" + std::get<std::string>(_val) + "\"";
+		}
+		else if (std::holds_alternative<unsigned long long>(_val))
+			return std::to_string(std::get<unsigned long long>(_val));
+		else if (std::holds_alternative<double>(_val))
+		{
+			char buf[64] = { 0 };
+			std::sprintf(buf, "%a", std::get<double>(_val));
+			return std::string(buf);
+		}
+		else
+			throw std::runtime_error("Unexpected type: " + std::to_string(__LINE__));
+	}
+
 	PrimitiveDatatype type() const
 	{
 		if (std::holds_alternative<std::string>(_val)) return PrimitiveDatatype::String;

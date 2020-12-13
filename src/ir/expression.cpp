@@ -19,6 +19,10 @@ std::string LiteralExpression::to_string() const
 {
 	return _value.string_value();
 }
+vypcomp::ir::Literal LiteralExpression::getValue() const
+{
+	return _value;
+}
 
 //
 // Symbol Expression

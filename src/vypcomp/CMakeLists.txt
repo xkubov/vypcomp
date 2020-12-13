@@ -8,6 +8,7 @@ set_property(
 )
 target_link_libraries(vypcomp
     Vypcomp::Parser
+    Vypcomp::Generator
 )
 target_include_directories(vypcomp
     PRIVATE
