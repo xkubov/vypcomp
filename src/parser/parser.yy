@@ -37,7 +37,7 @@
 	using TokenImpl = std::variant<
 		std::string,
 		unsigned long long,
-		float,
+		double,
 		PrimitiveDatatype,
 		Datatype,
 		Arglist,
@@ -162,7 +162,7 @@
 
 %token <terminal<std::string>()>STRING_LITERAL
 %token <terminal<unsigned long long>()>INT_LITERAL
-%token <terminal<float>()>FLOAT_LITERAL
+%token <terminal<double>()>FLOAT_LITERAL
 
 %token LPAR
 %token RPAR

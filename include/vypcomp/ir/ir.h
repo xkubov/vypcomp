@@ -63,7 +63,7 @@ using PossibleDatatype = std::optional<Datatype>;
 
 struct Literal {
 public:
-	using Impl = std::variant<std::string, unsigned long long, float>;
+	using Impl = std::variant<std::string, unsigned long long, double>;
 	Literal(const Impl& val);
 
 	template<PrimitiveDatatype = PrimitiveDatatype::String>
@@ -73,7 +73,7 @@ public:
 	int get() const;
 
 	template<PrimitiveDatatype = PrimitiveDatatype::Float>
-	float get() const;
+	double get() const;
 
 	std::string string_value() const
 	{
@@ -81,8 +81,8 @@ public:
 			return "\"" + std::get<std::string>(_val) + "\"";
 		else if (std::holds_alternative<unsigned long long>(_val))
 			return std::to_string(std::get<unsigned long long>(_val));
-		else if (std::holds_alternative<float>(_val))
-			return std::to_string(std::get<float>(_val));
+		else if (std::holds_alternative<double>(_val))
+			return std::to_string(std::get<double>(_val));
 		else
 			throw std::runtime_error("Unexpected type: "+std::to_string(__LINE__));
 	}
@@ -90,7 +90,7 @@ public:
 	PrimitiveDatatype type() const
 	{
 		if (std::holds_alternative<std::string>(_val)) return PrimitiveDatatype::String;
-		else if (std::holds_alternative<float>(_val)) return PrimitiveDatatype::Float;
+		else if (std::holds_alternative<double>(_val)) return PrimitiveDatatype::Float;
 		else if (std::holds_alternative<unsigned long long>(_val)) return PrimitiveDatatype::Int;
 		else throw std::runtime_error("Unexpected type."+std::to_string(__LINE__));
 	}
