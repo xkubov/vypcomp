@@ -197,6 +197,16 @@ std::string BranchInstruction::str(const std::string& prefix) const
 	return out.str();
 }
 
+BasicBlock::Ptr BranchInstruction::getIf() const
+{
+	return _if;
+}
+
+BasicBlock::Ptr BranchInstruction::getElse() const
+{
+	return _else;
+}
+
 // ------------------------------
 // Return
 // ------------------------------
@@ -237,6 +247,11 @@ std::string LoopInstruction::str(const std::string& prefix) const
 	out << prefix << "while " << _expr->to_string() << std::endl;
 	out << _body->str(prefix+"  ");
 	return out.str();
+}
+
+BasicBlock::Ptr LoopInstruction::getBody() const
+{
+	return _body;
 }
 
 // ------------------------------
@@ -290,6 +305,16 @@ std::string Assignment::str(const std::string& prefix) const
 	out << _ptr->str(prefix+" -> ");
 	
 	return out.str();
+}
+
+AllocaInstruction::Ptr Assignment::getAlloca() const
+{
+	return _ptr;
+}
+
+Expression::ValueType Assignment::getExpr() const
+{
+	return _expr;
 }
 
 // ------------------------------

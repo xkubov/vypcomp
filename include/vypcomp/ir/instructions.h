@@ -11,6 +11,8 @@
 
 namespace vypcomp {
 
+class Generator;
+
 namespace ir {
 
 /**
@@ -83,7 +85,8 @@ public:
 		Expression::ValueType expr
 	);
 	virtual std::string str(const std::string& prefix) const override;
-
+	AllocaInstruction::Ptr getAlloca() const;
+	Expression::ValueType getExpr() const;
 private:
 	AllocaInstruction::Ptr _ptr;
 	Expression::ValueType _expr;
@@ -129,7 +132,8 @@ public:
 		BasicBlock::Ptr elseBlock
 	);
 	virtual std::string str(const std::string& prefix) const override;
-
+	BasicBlock::Ptr getIf() const;
+	BasicBlock::Ptr getElse() const;
 private:
 	Expression::ValueType _expr = nullptr;
 	BasicBlock::Ptr _if = nullptr;
@@ -158,7 +162,7 @@ public:
 		BasicBlock::Ptr loop
 	);
 	virtual std::string str(const std::string& prefix) const override;
-
+	BasicBlock::Ptr getBody() const;
 private:
 	Expression::ValueType _expr = nullptr;
 	BasicBlock::Ptr _body = nullptr;

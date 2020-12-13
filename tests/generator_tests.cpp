@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include <vypcomp/ir/ir.h>
+#include <vypcomp/generator/generator.h>
 
 using namespace ::testing;
 
@@ -12,5 +12,7 @@ class GeneratorTests : public Test {};
 
 TEST_F(GeneratorTests, firstTest)
 {
-    std::cout << "success?" << std::endl;
+    std::ostringstream out;
+    Generator gen(true);
+    ASSERT_NO_THROW(gen.generate(nullptr, out));
 }
