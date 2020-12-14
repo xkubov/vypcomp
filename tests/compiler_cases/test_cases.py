@@ -38,6 +38,3 @@ class HelloName(VYPaTestCase):
     input_file = "hello_io.vl"
     test_stdin = b"Richard"
     test_stdout = b"What's your name? Hello, Richard. Your name has length: 7"
-
-
-test_cases = (HelloWorldCase, HelloName)
