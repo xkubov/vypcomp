@@ -261,7 +261,12 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
         else
         {
             // reserve stack space
-            *out << "ADDI $SP, $SP, " << args_count << std::endl;
+            *out << "ADDI $SP, $SP, " << args_count;
+            if (verbose)
+                *out << " # reserved stack for function parameters" << std::endl;
+            else
+                *out << std::endl;
+            // shift local variable offsets by the amount stack increased
             std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second += args_count;  });
             for (std::size_t i = 0; i < args_count; i++)
             {
@@ -270,8 +275,9 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
                 std::int64_t offset = args_count - i; // first argument has lowest stack address, last is $SP-1
                 *out << "SET " << "[$SP-" << offset << "], $0" << std::endl;
             }
-            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= args_count;  });
             *out << "CALL [$SP], " << func_name << std::endl;
+            // shift local variable offsets back, since callee cleaned up the stack
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= args_count;  });
         }
     }
     else if (auto symb_expr = dynamic_cast<ir::SymbolExpression*>(input.get()))
