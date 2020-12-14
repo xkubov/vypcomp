@@ -1,0 +1,9 @@
+void main(void)
+{
+	string name;
+	print("What's your name? ");
+	name = readString();
+	print("Hello, ", name, ". ");
+	print("Your name has length: ", length(name)); 
+	return;
+}

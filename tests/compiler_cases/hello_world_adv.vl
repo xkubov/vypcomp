@@ -1,0 +1,6 @@
+void main(void)
+{
+	string helo = "Hello, ", wrld = "world!";
+	print(helo, wrld); 
+	return;
+}
