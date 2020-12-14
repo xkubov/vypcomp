@@ -21,7 +21,7 @@ SymbolTable initSymbolTable()
 	table.insert({ "length", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Int), std::string("length"), Arglist{ std::make_pair(Datatype(PrimitiveDatatype::String), "s")} )) });
 	auto subStr_ptr = std::make_shared<ir::Function>(Function::Signature(
 		PrimitiveDatatype::String, 
-		std::string("length"), 
+		std::string("subStr"), 
 		Arglist{ { 
 			std::make_pair(Datatype(PrimitiveDatatype::String), "s"s),
 			std::make_pair(Datatype(PrimitiveDatatype::Int), "i"s),

@@ -35,18 +35,6 @@ void Generator::generate(const vypcomp::SymbolTable& symbol_table)
             if (function->name() == "print")
             {
                 // just do nothing and generate WRITEI, WRITES, WRITEF directly on call site
-                //// WRITES / WRITEI (maybe split into printf printi in the print call parsing)
-                //*out << "LABEL _internal_printi\n";
-                //*out << "WRITEI [$SP-1]\n";
-                //*out << "RETURN [$SP]\n\n";
-
-                //*out << "LABEL _internal_prints\n";
-                //*out << "WRITES [$SP-1]\n";
-                //*out << "RETURN [$SP]\n\n";
-
-                //*out << "LABEL _internal_printf\n";
-                //*out << "WRITEF [$SP-1]\n";
-                //*out << "RETURN [$SP]\n" << std::endl;
             }
             else if (function->name() == "readInt")
             {
@@ -62,7 +50,11 @@ void Generator::generate(const vypcomp::SymbolTable& symbol_table)
             }
             else if (function->name() == "length")
             {
-                // GETSIZE
+                *out << "LABEL length\n";
+                *out << "GETSIZE $0, [$SP-1]\n";
+                *out << "SET $1, [$SP]\n";
+                *out << "SUBI $SP, $SP, 1\n"; // length has one parameter
+                *out << "RETURN $1\n" << std::endl;
             }
             else if (function->name() == "subStr")
             {
@@ -270,6 +262,7 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
         {
             // reserve stack space
             *out << "ADDI $SP, $SP, " << args_count << std::endl;
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second += args_count;  });
             for (std::size_t i = 0; i < args_count; i++)
             {
                 const ir::Expression::ValueType& argument = function_args[i];
@@ -277,6 +270,7 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
                 std::int64_t offset = args_count - i; // first argument has lowest stack address, last is $SP-1
                 *out << "SET " << "[$SP-" << offset << "], $0" << std::endl;
             }
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= args_count;  });
             *out << "CALL [$SP], " << func_name << std::endl;
         }
     }
