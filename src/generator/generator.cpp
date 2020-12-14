@@ -40,20 +40,24 @@ void Generator::generate(const vypcomp::SymbolTable& symbol_table)
             {
                 *out << "LABEL readInt\n";
                 *out << "READI $0\n";
-                *out << "RETURN [$SP]\n" << std::endl;
+                *out << "SET $1, [$SP]\n";
+                *out << "SUBI $SP, $SP, 1\n"; // length has no parameters
+                *out << "RETURN $1\n" << std::endl;
             }
             else if (function->name() == "readString")
             {
                 *out << "LABEL readString\n";
                 *out << "READS $0\n";
-                *out << "RETURN [$SP]\n" << std::endl;
+                *out << "SET $1, [$SP]\n";
+                *out << "SUBI $SP, $SP, 1\n"; // length has no parameters
+                *out << "RETURN $1\n" << std::endl;
             }
             else if (function->name() == "length")
             {
                 *out << "LABEL length\n";
                 *out << "GETSIZE $0, [$SP-1]\n";
                 *out << "SET $1, [$SP]\n";
-                *out << "SUBI $SP, $SP, 1\n"; // length has one parameter
+                *out << "SUBI $SP, $SP, 2\n"; // length has one parameter
                 *out << "RETURN $1\n" << std::endl;
             }
             else if (function->name() == "subStr")
@@ -184,10 +188,10 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
 void Generator::generate_return()
 {
     //  high address
-    // |  ...    |
+    // |  ...    | < SP after prolog
     // |  loc2   |
     // |  loc1   |
-    // | return  |
+    // | return  | < SP at entry
     // |  arg3   |
     // |  arg2   |
     // |  arg1   |
@@ -204,18 +208,10 @@ void Generator::generate_return()
         else
             *out << "\n";
     }
-    if (arg_count != 0)
-    {
-        // reclaim stack of arguments
-        *out << "SET $1, [$SP]" << "\n";
-        *out << "SUBI $SP, $SP, " << arg_count << "\n";
-        *out << "RETURN $1" << std::endl;
-    }
-    else
-    {
-        *out << "RETURN [$SP]" << std::endl;
-    }
-    *out << std::endl;
+    // reclaim stack of arguments, move by at least one (return address)
+    *out << "SET $1, [$SP]" << "\n";
+    *out << "SUBI $SP, $SP, " << arg_count+1 << "\n";
+    *out << "RETURN $1\n" << std::endl;
 }
 
 void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets)
@@ -261,13 +257,13 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
         else
         {
             // reserve stack space
-            *out << "ADDI $SP, $SP, " << args_count;
+            *out << "ADDI $SP, $SP, " << args_count + 1; // at least one for return address, last arg is $SP-1
             if (verbose)
                 *out << " # reserved stack for function parameters" << std::endl;
             else
                 *out << std::endl;
             // shift local variable offsets by the amount stack increased
-            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second += args_count;  });
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second += args_count + 1ll;  });
             for (std::size_t i = 0; i < args_count; i++)
             {
                 const ir::Expression::ValueType& argument = function_args[i];
@@ -277,7 +273,7 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
             }
             *out << "CALL [$SP], " << func_name << std::endl;
             // shift local variable offsets back, since callee cleaned up the stack
-            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= args_count;  });
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [args_count](auto& ptr_offset_pair) { ptr_offset_pair.second -= args_count + 1ll;  });
         }
     }
     else if (auto symb_expr = dynamic_cast<ir::SymbolExpression*>(input.get()))

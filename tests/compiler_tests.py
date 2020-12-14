@@ -10,7 +10,7 @@ class VYPaTestCase(unittest.TestCase):
     test_stdin = b""
     test_stdout = b""
 
-    output_file_path = "out.vc"
+    output_file_path = "testout.vc"
 
     compiler_path = ""
     interpret_path = ""
@@ -21,7 +21,7 @@ class VYPaTestCase(unittest.TestCase):
 
     def run(self, result=None):
         input_file_path = os.path.join(os.path.abspath("."), "compiler_cases", self.input_file)
-        compile_command = [self.compiler_path, input_file_path, self.output_file_path]
+        compile_command = [self.compiler_path, '-v', input_file_path, self.output_file_path]
         compiler_subproc = subprocess.Popen(compile_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return_code = compiler_subproc.wait()
         (stdout, stderr) = compiler_subproc.communicate()
