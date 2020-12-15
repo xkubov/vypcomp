@@ -91,7 +91,6 @@ public:
 	{
 		if (std::holds_alternative<std::string>(_val))
 		{
-			// TODO: escape
 			return "\"" + std::get<std::string>(_val) + "\"";
 		}
 		else if (std::holds_alternative<unsigned long long>(_val))

@@ -43,10 +43,10 @@ class HelloName(VYPaTestCase):
 class IfTestTaken(VYPaTestCase):
     input_file = "if_test1.vl"
     test_stdin = b""
-    test_stdout = b"if takenif exited"
+    test_stdout = b"if taken\nif exited"
 
 
 class IfTestNotTaken(VYPaTestCase):
     input_file = "if_test0.vl"
     test_stdin = b""
-    test_stdout = b"else takenif exited"
+    test_stdout = b"else taken\nif exited"

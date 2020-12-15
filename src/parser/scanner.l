@@ -49,13 +49,14 @@ std::ostringstream buffer;
 <BLOCK_COMMENT>.     { }
 \/\/.*$   ;
 
-\"                      { buffer.str(""); buffer.clear(); BEGIN(STRING_PARSE); }
-<STRING_PARSE>\\n       { buffer << "\n"; }
-<STRING_PARSE>\\t       { buffer << "\t"; }
-<STRING_PARSE>\\\"      { buffer << "\""; }
-<STRING_PARSE>\\\\      { buffer << "\\"; }
-<STRING_PARSE>\\.       { throw LexicalError("Invalid escape: "+std::string(yytext)); }
-<STRING_PARSE>\"        {
+\"                              { buffer.str(""); buffer.clear(); BEGIN(STRING_PARSE); }
+<STRING_PARSE>\\n               { buffer << "\\n"; }
+<STRING_PARSE>\\t               { buffer << "\\t"; }
+<STRING_PARSE>\\\"              { buffer << "\\\""; }
+<STRING_PARSE>\\\\              { buffer << "\\\\"; }
+<STRING_PARSE>\\x[0-9a-fA-F]{6} { buffer << std::string(yytext); }
+<STRING_PARSE>\\.               { throw LexicalError("Invalid escape: "+std::string(yytext)); }
+<STRING_PARSE>\"                {
 	BEGIN(INITIAL);
 	*yylval = buffer.str();
 	buffer.str(""); buffer.clear();

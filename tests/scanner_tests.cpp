@@ -160,10 +160,11 @@ TEST_F(ScannerTests, suppotStringLiterals)
 {
 	std::map<std::string, std::string> stringLiteral {
 		{R"("Ez literal")", "Ez literal"},
-		{R"("With new line \nliteral")", "With new line \nliteral"},
-		{R"("With tabs \t\tok")", "With tabs \t\tok"},
-		{R"("With escaped escapes \\ \\ \\")", "With escaped escapes \\ \\ \\"},
-		{R"("With escaped escaped \"quotes\"")", "With escaped escaped \"quotes\""}
+		{R"("With new line \nliteral")", "With new line \\nliteral"},
+		{R"("With tabs \t\tok")", "With tabs \\t\\tok"},
+		{R"("With escaped escapes \\ \\ \\")", "With escaped escapes \\\\ \\\\ \\\\"},
+		{R"("With escaped escaped \"quotes\"")", "With escaped escaped \\\"quotes\\\""},
+		{R"("With unicode sequence \x01FFaa")", "With unicode sequence \\x01FFaa"},
 	};
 
 	Parser::semantic_type type;

@@ -2,11 +2,11 @@ void main(void)
 {
 	if (0)
 	{
-		print("if taken");
+		print("if taken\n");
 	}
 	else
 	{
-		print("else taken");
+		print("else taken\n");
 	}
 	print("if exited");
 	return;
