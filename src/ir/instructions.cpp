@@ -264,6 +264,11 @@ BasicBlock::Ptr LoopInstruction::getBody() const
 	return _body;
 }
 
+Expression::ValueType LoopInstruction::getExpr() const
+{
+	return _expr;
+}
+
 // ------------------------------
 // AllocaInstruction
 // ------------------------------

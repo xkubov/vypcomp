@@ -1,0 +1,11 @@
+void main(void)
+{
+	string input = "test";
+	while (length(input))
+	{
+		print("string is not empty\n");
+		input = readString();
+	}
+	print("string empty");
+	return;
+}

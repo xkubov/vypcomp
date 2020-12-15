@@ -56,3 +56,14 @@ class RecursiveTest(VYPaTestCase):
     input_file = "recursive_calls.vl"
     test_stdin = b"\n\n\ny"
     test_stdout = b"enter to cont, q to quit\ncontinue\nenter to cont, q to quit\ncontinue\nenter to cont, q to quit\ncontinue\nenter to cont, q to quit\nexiting"
+
+
+class WhileTest(VYPaTestCase):
+    input_file = "while.vl"
+    test_stdin = b"a\nb\nc\n\n"
+    test_stdout = b"string is not empty\nstring is not empty\nstring is not empty\nstring is not empty\nstring empty"
+
+
+# TODO: compiler error tests:
+#   - non-int/object type in if
+#   - non-int/object type in while

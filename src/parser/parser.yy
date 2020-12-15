@@ -374,6 +374,8 @@ statement : return {
 	$$ = {BranchInstruction::Ptr(new BranchInstruction($3, $5, $6))};
 }
 | WHILE LPAR expr RPAR LBRA basic_block {
+	if ($3->type() != Datatype(PrimitiveDatatype::Int) && !$3->type().is<Datatype::ClassName>())
+		throw SemanticError("Expression in if statement has to be either int or object type.");
 	$$ = {LoopInstruction::Ptr(new LoopInstruction($3, $6))};
 };
 
