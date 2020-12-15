@@ -697,40 +697,80 @@ class_body : function_definition class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	if ($1.size() != 1)
-		throw SyntaxError("Invalid syntax for attribute declaration.");
-	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($1.front())) {
-		curr->add(var, ir::Class::Visibility::Public);
+	bool first = true;
+	for (auto i: $1) {
+		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
+			if (first) {
+				curr->add(var, ir::Class::Visibility::Public);
+				first = false;
+			} else {
+				throw SyntaxError("Invalid syntax for attribute declaration.");
+			}
+		}
+		else {
+			//Initialization
+			curr->addImplicit(i);
+		}
 	}
 }
 | PUBLIC declaration class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	if ($2.size() != 1)
-		throw SyntaxError("Invalid syntax for attribute declaration.");
-	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
-		curr->add(var, ir::Class::Visibility::Public);
+	bool first = true;
+	for (auto i: $2) {
+		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
+			if (first) {
+				curr->add(var, ir::Class::Visibility::Public);
+				first = false;
+			} else {
+				throw SyntaxError("Invalid syntax for attribute declaration.");
+			}
+		}
+		else {
+			//Initialization
+			curr->addImplicit(i);
+		}
 	}
 }
 | PRIVATE declaration class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	if ($2.size() != 1)
-		throw SyntaxError("Invalid syntax for attribute declaration.");
-	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
-		curr->add(var, ir::Class::Visibility::Private);
+	bool first = true;
+	for (auto i: $2) {
+		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
+			if (first) {
+				curr->add(var, ir::Class::Visibility::Public);
+				first = false;
+			} else {
+				throw SyntaxError("Invalid syntax for attribute declaration.");
+			}
+		}
+		else {
+			//Initialization
+			curr->addImplicit(i);
+		}
 	}
 }
 | PROTECTED declaration class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	if ($2.size() != 1)
-		throw SyntaxError("Invalid syntax for attribute declaration.");
-	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
-		curr->add(var, ir::Class::Visibility::Protected);
+	bool first = true;
+	for (auto i: $2) {
+		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
+			if (first) {
+				curr->add(var, ir::Class::Visibility::Public);
+				first = false;
+			} else {
+				throw SyntaxError("Invalid syntax for attribute declaration.");
+			}
+		}
+		else {
+			//Initialization
+			curr->addImplicit(i);
+		}
 	}
 }
 | RBRA;

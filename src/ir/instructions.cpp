@@ -355,6 +355,17 @@ Class::Ptr Class::getBase() const
 	return _parent;
 }
 
+void Class::clear()
+{
+	_publicMethods.clear();
+	_privateMethods.clear();
+	_protectedMethods.clear();
+	_publicAttrs.clear();
+	_privateAttrs.clear();
+	_protectedAttrs.clear();
+	_implicit.clear();
+}
+
 void Class::add(Function::Ptr method, const Visibility& v)
 {
 	method->addPrefix(_name);
@@ -385,6 +396,16 @@ void Class::add(AllocaInstruction::Ptr attr, const Visibility& v)
 	default:
 		_publicAttrs.push_back(attr);
 	}
+}
+
+void Class::addImplicit(Instruction::Ptr inst)
+{
+	_implicit.push_back(inst);
+}
+
+std::vector<Instruction::Ptr> Class::implicit() const
+{
+	return _implicit;
 }
 
 Function::Ptr Class::getMethod(const std::string& name, const std::vector<Datatype>& argtypes, const Visibility& v) const
@@ -530,6 +551,13 @@ std::string Class::str(const std::string& prefix) const
 		out << m->str("  ");
 	}
 	if (_protectedAttrs.empty())
+		out << prefix << "  -- None" << std::endl;
+
+	out << "implicit instructions:" << std::endl;
+	for (auto& m: _implicit) {
+		out << m->str("  ");
+	}
+	if (_implicit.empty())
 		out << prefix << "  -- None" << std::endl;
 
 	return out.str();

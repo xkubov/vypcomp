@@ -143,6 +143,7 @@ Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& ba
 			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
 
 		auto cl = std::get<Class::Ptr>(*symbol);
+		cl->clear();
 		cl->setBase(getClass(base));
 		return cl;
         }

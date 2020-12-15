@@ -181,10 +181,15 @@ public:
 	using Ptr = std::shared_ptr<Class>;
 	Class(const std::string& name, Class::Ptr base);
 
+	void clear();
+
 	void setBase(Class::Ptr base);
 	Class::Ptr getBase() const;
 	void add(Function::Ptr methods, const Visibility& v = Visibility::Public);
 	void add(AllocaInstruction::Ptr attr, const Visibility& v = Visibility::Public);
+
+	void addImplicit(Instruction::Ptr inst);
+	std::vector<Instruction::Ptr> implicit() const;
 
 	// Visibility:
 	//  - Public: method that is available to public
@@ -225,6 +230,7 @@ private:
 	std::vector<AllocaInstruction::Ptr> _publicAttrs;
 	std::vector<AllocaInstruction::Ptr> _privateAttrs;
 	std::vector<AllocaInstruction::Ptr> _protectedAttrs;
+	std::vector<Instruction::Ptr> _implicit;
 };
 
 }
