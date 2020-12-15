@@ -349,9 +349,11 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
     }
     else if (auto binop = dynamic_cast<ir::BinaryOpExpression*>(input.get()))
     {
-        generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), "", variable_offsets, temporary_variables_mapping, out);
+        // TODO: replace "" with destination searched for here
         // search for it in temporary_variables_mapping
         // set destination to result in proper alloca
+        // As a result L370ish-400ish should get easier to read
+        generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), "", variable_offsets, temporary_variables_mapping, out);
     }
     else
     {
@@ -401,12 +403,12 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, Re
                 // op2 will be loaded right before the operation
                 op2_location = "$2";
             }
-
             
-            if (op1_location == "$1")
-                generate_expression(op1, "$1", variable_offsets, temporary_variables_mapping, out);
-            if (op2_location == "$2")
-                generate_expression(op2, "$2", variable_offsets, temporary_variables_mapping, out);
+            if (!op1->is_simple())
+                generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
+            generate_expression(op2, op2_location, variable_offsets, temporary_variables_mapping, out);
+            if (op1->is_simple())
+                generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
             // execute operation
             if (auto addop = dynamic_cast<ir::AddExpression*>(input.get()))
             {
@@ -529,7 +531,6 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
     else if (auto func_expr = dynamic_cast<ir::FunctionExpression*>(expr.get()))
     {
         auto arg_expressions = func_expr->getArgs();
-        std::size_t temporaries_required = 0;
         for (auto& arg_expression : arg_expressions)
         {
             auto temps = get_required_temporaries(arg_expression, exp_temporary_mapping);

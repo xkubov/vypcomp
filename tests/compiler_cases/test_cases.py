@@ -73,7 +73,7 @@ class AdditionTest(VYPaTestCase):
 class AdditionAdvTest(VYPaTestCase):
     input_file = "addition_complex.vl"
     test_stdin = b""
-    test_stdout = b"3893"
+    test_stdout = b"6987"
 
 
 # TODO: compiler error tests:
