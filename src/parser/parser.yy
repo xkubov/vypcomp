@@ -369,6 +369,8 @@ statement : return {
 	$$ = $1;
 }
 | IF LPAR expr RPAR if_body else {
+	if ($3->type() != Datatype(PrimitiveDatatype::Int) && !$3->type().is<Datatype::ClassName>())
+		throw SemanticError("Expression in if statement has to be either int or object type.");
 	$$ = {BranchInstruction::Ptr(new BranchInstruction($3, $5, $6))};
 }
 | WHILE LPAR expr RPAR LBRA basic_block {

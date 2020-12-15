@@ -134,6 +134,7 @@ public:
 	virtual std::string str(const std::string& prefix) const override;
 	BasicBlock::Ptr getIf() const;
 	BasicBlock::Ptr getElse() const;
+	Expression::ValueType getExpr() const;
 private:
 	Expression::ValueType _expr = nullptr;
 	BasicBlock::Ptr _if = nullptr;

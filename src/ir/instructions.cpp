@@ -207,6 +207,11 @@ BasicBlock::Ptr BranchInstruction::getElse() const
 	return _else;
 }
 
+Expression::ValueType BranchInstruction::getExpr() const
+{
+	return _expr;
+}
+
 // ------------------------------
 // Return
 // ------------------------------

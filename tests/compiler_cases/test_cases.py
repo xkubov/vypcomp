@@ -38,3 +38,15 @@ class HelloName(VYPaTestCase):
     input_file = "hello_io.vl"
     test_stdin = b"Richard"
     test_stdout = b"What's your name? Hello, Richard. Your name has length: 7"
+
+
+class IfTestTaken(VYPaTestCase):
+    input_file = "if_test1.vl"
+    test_stdin = b""
+    test_stdout = b"if takenif exited"
+
+
+class IfTestNotTaken(VYPaTestCase):
+    input_file = "if_test0.vl"
+    test_stdin = b""
+    test_stdout = b"else takenif exited"

@@ -1,0 +1,13 @@
+void main(void)
+{
+	if (0)
+	{
+		print("if taken");
+	}
+	else
+	{
+		print("else taken");
+	}
+	print("if exited");
+	return;
+}
