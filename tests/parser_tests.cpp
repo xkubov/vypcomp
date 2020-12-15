@@ -814,7 +814,7 @@ TEST_F(ParserTests, supportVisibility)
 		class Test : Object {
 			public void setFoo(void) {
 			}
-			private int foo = 0;
+			private int foo;
 		}
                 void main(void) {
                 }
@@ -832,7 +832,7 @@ TEST_F(ParserTests, supportVisibility2)
 			public void setFoo(int foo) {
 				this.foo = foo;
 			}
-			private int foo = 0;
+			private int foo;
 		}
                 void main(void) {
 			Test test;
@@ -852,7 +852,7 @@ TEST_F(ParserTests, supportVisibilityViolation)
 			public void setFoo(void) {
 				foo = 10;
 			}
-			private int foo = 0;
+			private int foo;
 		}
                 void main(void) {
 			Test test;

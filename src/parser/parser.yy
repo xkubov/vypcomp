@@ -51,7 +51,8 @@
 		Function::Ptr,
 		Class::Ptr,
 		Expression::ValueType,
-		std::vector<std::shared_ptr<Expression>>
+		std::vector<std::shared_ptr<Expression>>,
+		std::optional<std::pair<Datatype, std::string>>
 	>;
 
 	/**
@@ -192,11 +193,11 @@
 %locations
 
 %nterm <nonterminal<Datatype>()> datatype
-%nterm <nonterminal<PossibleDatatype>()> optional_type
 %nterm <nonterminal<Declaration>()> decl
 %nterm <nonterminal<Arglist>()> args
 %nterm <nonterminal<Arglist>()> more_args
 %nterm <nonterminal<Arglist>()> arg_list
+%nterm <nonterminal<Function::Ptr>()> function_definition
 %nterm <nonterminal<Function::Ptr>()> function_declaration
 %nterm <nonterminal<BasicBlock::Ptr>()> function_body
 %nterm <nonterminal<BasicBlock::Ptr>()> basic_block
@@ -210,10 +211,10 @@
 %nterm <nonterminal<Instruction::Ptr>()> return
 %nterm <nonterminal<Class::Ptr>()> class_declaration
 %nterm <nonterminal<std::vector<std::pair<std::string, Expression::ValueType>>>()> id2init
-%nterm <nonterminal<std::vector<std::pair<std::string, Expression::ValueType>>>()> at_least_one_id
 %nterm <nonterminal<std::shared_ptr<Expression>>()> expr
 %nterm <nonterminal<std::shared_ptr<Expression>>()> binary_operation
 %nterm <nonterminal<std::vector<std::shared_ptr<Expression>>>()> func_call_args
+%nterm <nonterminal<std::optional<std::pair<Datatype, std::string>>>()> named_data
 
 %%
 
@@ -270,6 +271,7 @@ function_definition : function_declaration function_body {
 	// might have as well delete the symbol table in this place
 	// but I found it to be dubious and all the logic is in parseEnd.
 	parser->parseFunctionEnd();
+	$$ = $1;
 };
 
 /**
@@ -281,9 +283,15 @@ function_definition : function_declaration function_body {
  * parseStart as well as other stuff that is needed on the start of the function.
  * -> like pushing new symbol table for local scope.
  */
-function_declaration : optional_type IDENTIFIER LPAR arg_list {
+function_declaration : named_data LPAR arg_list {
 	// Creates new funcion.
-	$$ = parser->newFunction({ $1, $2, $4 });
+	auto [t, i] = *$1;
+	$$ = parser->newFunction({ t, i, $3 });
+	parser->parseStart($$);
+};
+function_declaration : VOID IDENTIFIER LPAR arg_list {
+	// Creates new funcion.
+	$$ = parser->newFunction({ {}, $2, $4 });
 	parser->parseStart($$);
 };
 
@@ -592,13 +600,15 @@ return : RETURN SEMICOLON { $$ = parser->createReturn(nullptr); }
  * Declaration might be one or more declarations ( int a; int a,b,c;) and assignment
  * might be initialized (int a = 42;)
  */
-declaration : datatype at_least_one_id {
+declaration : named_data optional_assignment id2init {
 	std::vector<Instruction::Ptr> result;
+	auto [t, n] = *$1;
+	$3.insert($3.begin(), {n, $2});
 
-	for (auto [id, init]: $2) {
+	for (auto [id, init]: $3) {
 		// TODO: remove init from alloca instruction. Check init with parser.
 		// TODO: make init as method of declaration.
-		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({$1, id}));
+		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({t, id}));
 		parser->add(decl);
 		result.push_back(decl);
 		if (init) {
@@ -608,14 +618,6 @@ declaration : datatype at_least_one_id {
 
 	$$ = result;
 }
-
-/**
- * Parses at least one identifier.
- */
-at_least_one_id : IDENTIFIER optional_assignment id2init {
-	$3.insert($3.begin(), {$1, $2});
-	$$ = $3;
-};
 
 /**
  * Parses identifier with optional assignment.
@@ -667,23 +669,77 @@ class_declaration : CLASS IDENTIFIER COLON IDENTIFIER {
 	parser->parseStart($$);
 };
 
-class_body : function_definition class_body { parser->getCurrentClass(); }
-	   | PUBLIC function_definition class_body
-	   | PRIVATE function_definition class_body
-	   | PROTECTED function_definition class_body
-	   | declaration class_body
-	   | PUBLIC declaration class_body
-	   | PRIVATE declaration class_body
-	   | PROTECTED declaration class_body
-	   | RBRA;
-
-optional_type : datatype { $$ = $1; }
-	  | VOID { $$ = {}; }
-	  ;
+class_body : function_definition class_body { 
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	curr->add($1, ir::Class::Visibility::Public);
+}
+| PUBLIC function_definition class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	curr->add($2, ir::Class::Visibility::Public);
+}
+| PRIVATE function_definition class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	curr->add($2, ir::Class::Visibility::Private);
+}
+| PROTECTED function_definition class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	curr->add($2, ir::Class::Visibility::Protected);
+}
+| declaration class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	if ($1.size() != 1)
+		throw SyntaxError("Invalid syntax for attribute declaration.");
+	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($1.front())) {
+		curr->add(var, ir::Class::Visibility::Public);
+	}
+}
+| PUBLIC declaration class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	if ($2.size() != 1)
+		throw SyntaxError("Invalid syntax for attribute declaration.");
+	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
+		curr->add(var, ir::Class::Visibility::Public);
+	}
+}
+| PRIVATE declaration class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	if ($2.size() != 1)
+		throw SyntaxError("Invalid syntax for attribute declaration.");
+	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
+		curr->add(var, ir::Class::Visibility::Private);
+	}
+}
+| PROTECTED declaration class_body {
+	auto curr = parser->getCurrentClass();
+	if (curr == nullptr)
+		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
+	if ($2.size() != 1)
+		throw SyntaxError("Invalid syntax for attribute declaration.");
+	if (auto var = std::dynamic_pointer_cast<AllocaInstruction>($2.front())) {
+		curr->add(var, ir::Class::Visibility::Protected);
+	}
+}
+| RBRA;
 
 datatype : PRIMITIVE_DATA_TYPE { $$ = ir::Datatype($1); }
 	 | IDENTIFIER { $$ = parser->customDatatype($1); }
 	 ;
+
+named_data : datatype IDENTIFIER { $$ = {$1, $2}; };
 
 %%
 
