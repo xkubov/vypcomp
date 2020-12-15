@@ -165,6 +165,8 @@ public:
 	}
 
 	virtual std::string to_string() const = 0;
+	// simple expression means that it can be represented in a single register load
+	virtual bool is_simple() const { return false; }
 protected:
 	Datatype _type;
 };

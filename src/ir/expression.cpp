@@ -24,6 +24,10 @@ vypcomp::ir::Literal LiteralExpression::getValue() const
 {
 	return _value;
 }
+bool LiteralExpression::is_simple() const
+{
+	return true;
+}
 
 //
 // Symbol Expression
@@ -34,6 +38,10 @@ SymbolExpression::SymbolExpression(AllocaInstruction::Ptr value)
 std::string SymbolExpression::to_string() const
 {
 	return "(symbol: " + _value->name() + ")";
+}
+bool SymbolExpression::is_simple() const
+{
+	return true;
 }
 AllocaInstruction::Ptr SymbolExpression::getValue() const
 {
@@ -78,14 +86,30 @@ FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
 //
 // Binary operator expressions
 //
-AddExpression::AddExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(), _op1(std::move(op1)), _op2(std::move(op2))
+BinaryOpExpression::BinaryOpExpression(ValueType op1, ValueType op2)
+	: _op1(op1), _op2(op2)
 {
 	if (!_op1 || !_op2)
 	{
 		// Parser done a big bad! Should not happen once every expression type is implemented.
-		throw std::runtime_error("one of operands in AddExpression is null");
+		throw std::runtime_error("one of operands in BinaryOpExpression is null.");
 	}
+}
+BinaryOpExpression::BinaryOpExpression(Datatype dt, ValueType op1, ValueType op2)
+	: Expression(dt), _op1(op1), _op2(op2)
+{}
+BinaryOpExpression::ValueType BinaryOpExpression::getOp1() const
+{
+	return _op1;
+}
+BinaryOpExpression::ValueType BinaryOpExpression::getOp2() const
+{
+	return _op2;
+}
+
+AddExpression::AddExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(std::move(op1), std::move(op2))
+{
 	if (_op1->type().is<PrimitiveDatatype>() && _op2->type().is<PrimitiveDatatype>())
 	{
 		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
@@ -109,8 +133,8 @@ std::string AddExpression::to_string() const
 	return "(" + _op1->to_string() + " + " + _op2->to_string() + ")";
 }
 
-SubtractExpression::SubtractExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(), _op1(std::move(op1)), _op2(std::move(op2))
+SubtractExpression::SubtractExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(std::move(op1), std::move(op2))
 {
 	if (_op1->type().is<PrimitiveDatatype>() && _op2->type().is<PrimitiveDatatype>())
 	{
@@ -136,8 +160,8 @@ std::string SubtractExpression::to_string() const
 	return "(" + _op1->to_string() +" - " + _op2->to_string() + ")";
 }
 
-MultiplyExpression::MultiplyExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(), _op1(std::move(op1)), _op2(std::move(op2))
+MultiplyExpression::MultiplyExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(std::move(op1), std::move(op2))
 {
 	try
 	{
@@ -164,8 +188,8 @@ std::string MultiplyExpression::to_string() const
 	return "(" + _op1->to_string() + " * " + _op2->to_string() + ")";
 }
 
-DivideExpression::DivideExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(), _op1(std::move(op1)), _op2(std::move(op2))
+DivideExpression::DivideExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(std::move(op1), std::move(op2))
 {
 	try
 	{
@@ -192,8 +216,8 @@ std::string DivideExpression::to_string() const
 	return "(" + _op1->to_string() + " / " + _op2->to_string() + ")";
 }
 
-ComparisonExpression::ComparisonExpression(Operation operation, ValueType&& op1, ValueType&& op2)
-	: Expression(Datatype(PrimitiveDatatype::Int)), _operation(operation), _op1(std::move(op1)), _op2(std::move(op2))
+ComparisonExpression::ComparisonExpression(Operation operation, ValueType op1, ValueType op2)
+	: BinaryOpExpression(Datatype(PrimitiveDatatype::Int), std::move(op1), std::move(op2)), _operation(operation)
 {
 	if (_op1->type() != _op2->type())
 	{
@@ -233,8 +257,8 @@ std::string ComparisonExpression::op_string() const
 	throw std::runtime_error("Invalid operator.");
 }
 
-AndExpression::AndExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(Datatype(PrimitiveDatatype::Int)), _op1(std::move(op1)), _op2(std::move(op2))
+AndExpression::AndExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(Datatype(PrimitiveDatatype::Int), std::move(op1), std::move(op2))
 {
 	if (_op1->type() != _op2->type())
 	{
@@ -246,8 +270,8 @@ std::string AndExpression::to_string() const
 	return "(" + _op1->to_string() + " && " + _op2->to_string() + ")";
 }
 
-OrExpression::OrExpression(ValueType&& op1, ValueType&& op2)
-	: Expression(Datatype(PrimitiveDatatype::Int)), _op1(std::move(op1)), _op2(std::move(op2))
+OrExpression::OrExpression(ValueType op1, ValueType op2)
+	: BinaryOpExpression(Datatype(PrimitiveDatatype::Int), std::move(op1), std::move(op2))
 {
 	if (_op1->type() != _op2->type())
 	{

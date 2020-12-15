@@ -64,6 +64,18 @@ class WhileTest(VYPaTestCase):
     test_stdout = b"string is not empty\nstring is not empty\nstring is not empty\nstring is not empty\nstring empty"
 
 
+class AdditionTest(VYPaTestCase):
+    input_file = "addition_simple.vl"
+    test_stdin = b""
+    test_stdout = b"5"
+
+
+class AdditionAdvTest(VYPaTestCase):
+    input_file = "addition_complex.vl"
+    test_stdin = b""
+    test_stdout = b"3893"
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

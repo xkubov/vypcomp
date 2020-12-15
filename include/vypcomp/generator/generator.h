@@ -14,8 +14,11 @@ namespace vypcomp
     public:
         using OutputStream = std::ostream;
         using RegisterName = std::string;
+        using AllocaVector = std::vector<ir::AllocaInstruction::Ptr>;
         using AllocaRawPtr = vypcomp::ir::AllocaInstruction*;
+        using ExprRawPtr = vypcomp::ir::Expression*;
         using OffsetMap = std::unordered_map<AllocaRawPtr, std::int64_t>;
+        using TempVarMap = std::unordered_map<ExprRawPtr, AllocaRawPtr>;
     public:
         Generator(std::string out_filename, bool verbose);
         Generator(std::unique_ptr<std::ostream> out, bool verbose);
@@ -25,14 +28,21 @@ namespace vypcomp
         const OutputStream& get_output() const;
     private:
         void generate(vypcomp::ir::Function::Ptr input, OutputStream& out);
-        void generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, OutputStream& out);
-        void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets, OutputStream& out);
-        void generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets, OutputStream& out);
+        void generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
+        void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
+        void generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
+        void generate_binaryop(ir::BinaryOpExpression::Ptr input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_return(OutputStream& out);
-        std::vector<ir::AllocaInstruction::Ptr> get_alloca_instructions(vypcomp::ir::Instruction::Ptr block);
+
+        // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping
+        AllocaVector get_alloca_instructions(vypcomp::ir::Instruction::Ptr block, TempVarMap& exp_temporary_mapping);
+        std::vector<ir::AllocaInstruction::Ptr> get_temporary_allocas(vypcomp::ir::Expression::ValueType expr, TempVarMap& exp_temporary_mapping);
+        std::vector<ir::AllocaInstruction::Ptr> get_required_temporaries(ir::Expression::ValueType expr, TempVarMap& exp_temporary_mapping);
 
         bool is_alloca(vypcomp::ir::Instruction::Ptr instr) const;
         bool is_return(vypcomp::ir::Instruction::Ptr instr) const;
+
+        std::optional<std::size_t> find_offset(AllocaRawPtr alloca_ptr, OffsetMap& variable_offsets) const;
     private:
         std::unique_ptr<std::ostream> _main_out;
         bool verbose = false;

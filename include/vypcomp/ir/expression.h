@@ -18,6 +18,7 @@ public:
 	LiteralExpression(vypcomp::ir::Literal value);
 
 	virtual std::string to_string() const override;
+	virtual bool is_simple() const override;
 	vypcomp::ir::Literal getValue() const;
 private:
 	vypcomp::ir::Literal _value;
@@ -29,6 +30,7 @@ public:
 	SymbolExpression(AllocaInstruction::Ptr value);
 
 	virtual std::string to_string() const override;
+	virtual bool is_simple() const override;
 	AllocaInstruction::Ptr getValue() const;
 private:
 	AllocaInstruction::Ptr _value;
@@ -52,51 +54,54 @@ private:
 	ArgExpressions _args;
 };
 
-class AddExpression : public Expression 
+class BinaryOpExpression : public Expression
 {
 public:
-	AddExpression(ValueType&& op1, ValueType&& op2);
-
-	virtual std::string to_string() const override;
-private:
+	using Ptr = std::shared_ptr<BinaryOpExpression>;
+protected:
+	BinaryOpExpression(ValueType op1, ValueType op2);
+	BinaryOpExpression(Datatype dt, ValueType op1, ValueType op2);
+public:
+	ValueType getOp1() const;
+	ValueType getOp2() const;
+protected:
 	ValueType _op1;
 	ValueType _op2;
 };
 
-class SubtractExpression : public Expression
+class AddExpression : public BinaryOpExpression
 {
 public:
-	SubtractExpression(ValueType&& op1, ValueType&& op2);
+	AddExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
-private:
-	ValueType _op1;
-	ValueType _op2;
 };
 
-class MultiplyExpression : public Expression
+class SubtractExpression : public BinaryOpExpression
 {
 public:
-	MultiplyExpression(ValueType&& op1, ValueType&& op2);
+	SubtractExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
-private:
-	ValueType _op1;
-	ValueType _op2;
 };
 
-class DivideExpression : public Expression
+class MultiplyExpression : public BinaryOpExpression
 {
 public:
-	DivideExpression(ValueType&& op1, ValueType&& op2);
+	MultiplyExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
-private:
-	ValueType _op1;
-	ValueType _op2;
 };
 
-class ComparisonExpression : public Expression
+class DivideExpression : public BinaryOpExpression
+{
+public:
+	DivideExpression(ValueType op1, ValueType op2);
+
+	virtual std::string to_string() const override;
+};
+
+class ComparisonExpression : public BinaryOpExpression
 {
 public:
 	enum Operation : std::uint8_t
@@ -109,37 +114,29 @@ public:
 		NOTEQUALS
 	};
 
-	ComparisonExpression(Operation operation, ValueType&& op1, ValueType&& op2);
+	ComparisonExpression(Operation operation, ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
 private:
 	std::string op_string() const;
 private:
 	Operation _operation;
-	ValueType _op1;
-	ValueType _op2;
 };
 
-class AndExpression : public Expression
+class AndExpression : public BinaryOpExpression
 {
 public:
-	AndExpression(ValueType&& op1, ValueType&& op2);
+	AndExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
-private:
-	ValueType _op1;
-	ValueType _op2;
 };
 
-class OrExpression : public Expression
+class OrExpression : public BinaryOpExpression
 {
 public:
-	OrExpression(ValueType&& op1, ValueType&& op2);
+	OrExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
-private:
-	ValueType _op1;
-	ValueType _op2;
 };
 
 }
