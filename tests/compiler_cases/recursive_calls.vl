@@ -1,0 +1,21 @@
+void recursive(void)
+{
+	print("enter to cont, q to quit\n");
+	string input = readString();
+	if (length(input))
+	{
+		print("exiting");
+		return;
+	}
+	else
+	{
+		print("continue\n");
+		recursive();
+	}
+}
+
+void main(void)
+{
+	recursive();
+	return;
+}

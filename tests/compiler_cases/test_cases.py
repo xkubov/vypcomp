@@ -50,3 +50,9 @@ class IfTestNotTaken(VYPaTestCase):
     input_file = "if_test0.vl"
     test_stdin = b""
     test_stdout = b"else taken\nif exited"
+
+
+class RecursiveTest(VYPaTestCase):
+    input_file = "recursive_calls.vl"
+    test_stdin = b"\n\n\ny"
+    test_stdout = b"enter to cont, q to quit\ncontinue\nenter to cont, q to quit\ncontinue\nenter to cont, q to quit\ncontinue\nenter to cont, q to quit\nexiting"

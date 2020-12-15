@@ -32,7 +32,12 @@ class VYPaTestCase(unittest.TestCase):
 
         run_command = ["java", "-jar", self.interpret_path, self.output_file_path]
         interpret_subproc = subprocess.Popen(run_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (stdout, stderr) = interpret_subproc.communicate(self.test_stdin)
+        try:
+            (stdout, stderr) = interpret_subproc.communicate(self.test_stdin, timeout=2)
+        except subprocess.TimeoutExpired:
+            result.failures.append((self, "vypint process timed out on compiled {}".format(input_file_path)))
+            return
+
         self.real_stdout = stdout
         super().run(result)
 
