@@ -427,6 +427,42 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             throw std::runtime_error("Unexpected operand in add operation: "s + input->to_string());
         out << "SET " << destination << ", $0" << std::endl;
     }
+    else if (auto minop = dynamic_cast<ir::SubtractExpression*>(input.get()))
+    {
+        // TODO: test minus operation
+        if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+        {
+            out << "SUBI $0, " << op1_location << ", " << op2_location << "\n";
+        }
+        else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            out << "SUBF $0, " << op1_location << ", " << op2_location << "\n";
+        else
+        {
+            throw std::runtime_error("Unexpected operand in subtract opertaion: "s + input->to_string());
+        }
+    }
+    else if (auto eqop = dynamic_cast<ir::ComparisonExpression*>(input.get()))
+    {
+        switch (eqop->getOperation())
+        {
+        case ir::ComparisonExpression::EQUALS:
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+                out << "EQI $0, " << op1_location << ", " << op2_location << "\n";
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+                out << "EQF $0, " << op1_location << ", " << op2_location << "\n";
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+                out << "EQS $0, " << op1_location << ", " << op2_location << "\n";
+            else
+            {
+                // TODO: != and == should support object types as well for chunk comparison (see vypa20.pdf)
+                throw std::runtime_error("Unexpected operand type in subtract opertaion: "s + input->to_string());
+            }
+            break;
+        // TODO: all other cases
+        default:
+            throw std::runtime_error("Unexpected comparison type in comparison: "s + input->to_string());
+        }
+    }
     else
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
@@ -455,14 +491,18 @@ vypcomp::Generator::AllocaVector vypcomp::Generator::get_alloca_instructions(vyp
         }
         else if (auto branch_instr = std::dynamic_pointer_cast<ir::BranchInstruction>(current))
         {
+            auto allocas_cond = get_temporary_allocas(branch_instr->getExpr(), exp_temporary_mapping);
             auto allocas_if = get_alloca_instructions(branch_instr->getIf()->first(), exp_temporary_mapping);
             auto allocas_else = get_alloca_instructions(branch_instr->getElse()->first(), exp_temporary_mapping);
+            result.insert(result.end(), allocas_cond.begin(), allocas_cond.end());
             result.insert(result.end(), allocas_if.begin(), allocas_if.end());
             result.insert(result.end(), allocas_else.begin(), allocas_else.end());
         }
         else if (auto loop_instr = std::dynamic_pointer_cast<ir::LoopInstruction>(current))
         {
+            auto allocas_cond = get_temporary_allocas(loop_instr->getExpr(), exp_temporary_mapping);
             auto allocas_body = get_alloca_instructions(loop_instr->getBody()->first(), exp_temporary_mapping);
+            result.insert(result.end(), allocas_cond.begin(), allocas_cond.begin());
             result.insert(result.end(), allocas_body.begin(), allocas_body.end());
         }
         else if (auto assignment = std::dynamic_pointer_cast<ir::Assignment>(current))
@@ -512,6 +552,9 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
             auto temps = get_required_temporaries(arg_expression, exp_temporary_mapping);
             result.insert(result.end(), temps.begin(), temps.end());
         }
+        auto func_result_temp = std::make_shared<ir::AllocaInstruction>(std::make_pair(func_expr->type(), func_expr->to_string()));
+        exp_temporary_mapping[func_expr] = func_result_temp.get();
+        result.push_back(func_result_temp);
     }
     else if (auto binop_exp = dynamic_cast<ir::BinaryOpExpression*>(expr.get()))
     {

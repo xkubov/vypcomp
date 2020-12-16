@@ -256,6 +256,10 @@ std::string ComparisonExpression::op_string() const
 
 	throw std::runtime_error("Invalid operator.");
 }
+ComparisonExpression::Operation ComparisonExpression::getOperation() const
+{
+	return _operation;
+}
 
 AndExpression::AndExpression(ValueType op1, ValueType op2)
 	: BinaryOpExpression(Datatype(PrimitiveDatatype::Int), std::move(op1), std::move(op2))

@@ -117,6 +117,7 @@ public:
 	ComparisonExpression(Operation operation, ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
+	Operation getOperation() const;
 private:
 	std::string op_string() const;
 private:

@@ -76,6 +76,12 @@ class AdditionAdvTest(VYPaTestCase):
     test_stdout = b"6987"
 
 
+class FibRecursive(VYPaTestCase):
+    input_file = "fib_recursive.vl"
+    test_stdin = b""
+    test_stdout = b"fib(10) = 55\n"
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while
