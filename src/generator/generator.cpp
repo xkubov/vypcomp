@@ -239,11 +239,13 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         out << "JUMPZ " << label_else << ", $0\n";
 
         out << "LABEL " << label_if << "\n"; // TODO: this is not necessary
-        out << if_instruction_stream.rdbuf();
+        if (if_instruction_stream.rdbuf()->in_avail())
+            out << if_instruction_stream.rdbuf();
         out << "JUMP " << label_end << "\n";
 
         out << "LABEL " << label_else << "\n";
-        out << else_instruction_stream.rdbuf();
+        if (else_instruction_stream.rdbuf()->in_avail())
+            out << else_instruction_stream.rdbuf();
         out << "JUMP " << label_end << "\n"; // TODO: this is not necessary
 
         out << "LABEL " << label_end << std::endl;
@@ -263,7 +265,8 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         out << "LABEL " << condition_label << "\n";
         generate_expression(expr, "$0", variable_offsets, temporary_variables_mapping, out);
         out << "JUMPZ " << end_label << ", $0\n";
-        out << body_instruction_stream.rdbuf();
+        if (body_instruction_stream.rdbuf()->in_avail())
+            out << body_instruction_stream.rdbuf();
         out << "JUMP " << condition_label << "\n";
         out << "LABEL " << end_label << std::endl;
     }
