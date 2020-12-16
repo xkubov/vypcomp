@@ -274,7 +274,7 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
     }
 }
 
-void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out)
+void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out)
 {   
     if (auto lit_expr = dynamic_cast<ir::LiteralExpression*>(input.get()))
     {
@@ -353,7 +353,8 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
         // search for it in temporary_variables_mapping
         // set destination to result in proper alloca
         // As a result L370ish-400ish should get easier to read
-        generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), "", variable_offsets, temporary_variables_mapping, out);
+        auto result_destination = get_expr_destination(binop, temporary_variables_mapping, variable_offsets);
+        generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), result_destination, variable_offsets, temporary_variables_mapping, out);
     }
     else
     {
@@ -361,99 +362,71 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, Re
     }
 }
 
-void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out)
+void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out)
 {
-    if (auto exp_temp_mapping = temporary_variables_mapping.find(input.get()); exp_temp_mapping != temporary_variables_mapping.end())
+    // prepare operands
+    auto op1 = input->getOp1();
+    std::string op1_location;
+    if (op1->is_simple())
     {
-        auto& [_, alloca_dst] = *exp_temp_mapping;
-        if (auto opt_offset = find_offset(alloca_dst, variable_offsets))
-        {
-            std::size_t dst_offset = *opt_offset;
-            // prepare operands
-            auto op1 = input->getOp1();
-            std::string op1_location;
-            if (auto op1_result = temporary_variables_mapping.find(op1.get()); op1_result != temporary_variables_mapping.end())
-            {
-                // op1 will be in a stack variable
-                auto& [_, op1_alloca] = *op1_result;
-                auto op1_offset = find_offset(op1_alloca, variable_offsets);
-                if (!op1_offset) throw std::runtime_error("Missing offset of operand1 in expression: " + input->to_string());
-                generate_expression(op1, "", variable_offsets, temporary_variables_mapping, out);
-                op1_location = "[$SP-" + std::to_string(*op1_offset) + "]";
-            }
-            else
-            {
-                // op1 will be loaded right before the operation
-                op1_location = "$1";
-            }
-            
-            auto op2 = input->getOp2();
-            std::string op2_location;
-            if (auto op2_result = temporary_variables_mapping.find(op2.get()); op2_result != temporary_variables_mapping.end())
-            {
-                // op2 will be in a stack variable
-                auto& [_, op2_alloca] = *op2_result;
-                auto op2_offset = find_offset(op2_alloca, variable_offsets);
-                if (!op2_offset) throw std::runtime_error("Missing offset of operand2 in expression: " + input->to_string());
-                generate_expression(op2, "", variable_offsets, temporary_variables_mapping, out);
-                op2_location = "[$SP-" + std::to_string(*op2_offset) + "]";
-            }
-            else
-            {
-                // op2 will be loaded right before the operation
-                op2_location = "$2";
-            }
-            
-            if (!op1->is_simple())
-                generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
-            generate_expression(op2, op2_location, variable_offsets, temporary_variables_mapping, out);
-            if (op1->is_simple())
-                generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
-            // execute operation
-            if (auto addop = dynamic_cast<ir::AddExpression*>(input.get()))
-            {
-
-                if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
-                    out << "ADDI $0, " << op1_location << ", " << op2_location << "\n";
-                else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
-                    out << "ADDF $0, " << op1_location << ", " << op2_location << "\n";
-                else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
-                {
-                    // COPY dst, op1
-                    // GETSIZE sz1, op1
-                    // GETSIZE sz2, op2
-                    // ADDI sz, sz1, sz2
-                    // RESIZE dst, sz
-                    //
-                    // SET ctr, 0
-                    // LABEL strcpy_loop
-                    // LTI jmp, ctr, sz2
-                    // JUMPZ strcpy_end
-                    // ADDI off, sz1, ctr
-                    // GETWORD value, op2, ctr
-                    // SETWORD op1, off, value
-                    // ADDI ctr, ctr1, 1
-                    // JUMP strcpy_loop
-                    // LABEL strcpy_end
-                    throw std::runtime_error("String concat not implemented yet.");
-                }
-                else
-                    throw std::runtime_error("Unexpected operand in add operation: "s + input->to_string());
-                out << "SET [$SP-" << dst_offset << "], $0" << std::endl;
-            }
-            else
-            {
-                throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
-            }
-        }
-        else
-        {
-            throw std::runtime_error("Failed to search destination variable offset for operation: "s + input->to_string());
-        }
+        op1_location = "$1";
     }
     else
     {
-        throw std::runtime_error("Did not find destination for operation: "s + input->to_string());
+        op1_location = get_expr_destination(op1.get(), temporary_variables_mapping, variable_offsets);
+    }
+
+    auto op2 = input->getOp2();
+    std::string op2_location;
+    if (op2->is_simple())
+    {
+        op2_location = "$2";
+    }
+    else
+    {
+        op2_location = get_expr_destination(op2.get(), temporary_variables_mapping, variable_offsets);
+    }
+            
+    if (!op1->is_simple())
+        generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
+    generate_expression(op2, op2_location, variable_offsets, temporary_variables_mapping, out);
+    if (op1->is_simple()) // it's going to be just a simple register set, set it after computing op2, because it can utilize $1 register and overwrite the result
+        generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
+    // execute operation
+    if (auto addop = dynamic_cast<ir::AddExpression*>(input.get()))
+    {
+
+        if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            out << "ADDI $0, " << op1_location << ", " << op2_location << "\n";
+        else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            out << "ADDF $0, " << op1_location << ", " << op2_location << "\n";
+        else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+        {
+            // COPY dst, op1
+            // GETSIZE sz1, op1
+            // GETSIZE sz2, op2
+            // ADDI sz, sz1, sz2
+            // RESIZE dst, sz
+            //
+            // SET ctr, 0
+            // LABEL strcpy_loop
+            // LTI jmp, ctr, sz2
+            // JUMPZ strcpy_end
+            // ADDI off, sz1, ctr
+            // GETWORD value, op2, ctr
+            // SETWORD op1, off, value
+            // ADDI ctr, ctr1, 1
+            // JUMP strcpy_loop
+            // LABEL strcpy_end
+            throw std::runtime_error("String concat not implemented yet.");
+        }
+        else
+            throw std::runtime_error("Unexpected operand in add operation: "s + input->to_string());
+        out << "SET " << destination << ", $0" << std::endl;
+    }
+    else
+    {
+        throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
     }
 }
 
@@ -564,4 +537,23 @@ std::optional<std::size_t> vypcomp::Generator::find_offset(AllocaRawPtr alloca_p
         return search_result->second;
     }
     return std::nullopt;
+}
+
+std::optional<vypcomp::Generator::AllocaRawPtr> vypcomp::Generator::find_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping) const
+{
+    if (auto mapping_result = temporary_variables_mapping.find(expr); mapping_result != temporary_variables_mapping.end())
+    {
+        return mapping_result->second;
+    }
+    return std::nullopt;
+}
+
+// for non-simple expressions only, gets the stack position for given expression to store result into
+vypcomp::Generator::DestinationName vypcomp::Generator::get_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping, OffsetMap& variable_offsets) const
+{
+    auto exp_destination = find_expr_destination(expr, temporary_variables_mapping);
+    if (!exp_destination) throw std::runtime_error("Binary operation expression destination was not a temporary variable: "s + expr->to_string());
+    auto destination_offset = find_offset(exp_destination.value(), variable_offsets);
+    if (!destination_offset) throw std::runtime_error("Binary operation expression destination's offset not found: "s + expr->to_string());
+    return "[$SP-"s + std::to_string(destination_offset.value()) + "]"s;
 }

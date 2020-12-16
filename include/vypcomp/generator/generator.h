@@ -13,7 +13,7 @@ namespace vypcomp
     {
     public:
         using OutputStream = std::ostream;
-        using RegisterName = std::string;
+        using DestinationName = std::string;
         using AllocaVector = std::vector<ir::AllocaInstruction::Ptr>;
         using AllocaRawPtr = vypcomp::ir::AllocaInstruction*;
         using ExprRawPtr = vypcomp::ir::Expression*;
@@ -30,8 +30,8 @@ namespace vypcomp
         void generate(vypcomp::ir::Function::Ptr input, OutputStream& out);
         void generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
-        void generate_expression(ir::Expression::ValueType input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
-        void generate_binaryop(ir::BinaryOpExpression::Ptr input, RegisterName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
+        void generate_expression(ir::Expression::ValueType input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
+        void generate_binaryop(ir::BinaryOpExpression::Ptr input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_return(OutputStream& out);
 
         // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping
@@ -43,6 +43,8 @@ namespace vypcomp
         bool is_return(vypcomp::ir::Instruction::Ptr instr) const;
 
         std::optional<std::size_t> find_offset(AllocaRawPtr alloca_ptr, OffsetMap& variable_offsets) const;
+        std::optional<AllocaRawPtr> find_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping) const;
+        DestinationName get_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping, OffsetMap& variable_offsets) const;
     private:
         std::unique_ptr<std::ostream> _main_out;
         bool verbose = false;
