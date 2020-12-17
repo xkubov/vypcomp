@@ -465,7 +465,7 @@ vypcomp::Generator::AllocaVector vypcomp::Generator::get_alloca_instructions(vyp
         {
             auto allocas_cond = get_temporary_allocas(loop_instr->getExpr(), exp_temporary_mapping);
             auto allocas_body = get_alloca_instructions(loop_instr->getBody()->first(), exp_temporary_mapping);
-            result.insert(result.end(), allocas_cond.begin(), allocas_cond.begin());
+            result.insert(result.end(), allocas_cond.begin(), allocas_cond.end());
             result.insert(result.end(), allocas_body.begin(), allocas_body.end());
         }
         else if (auto assignment = std::dynamic_pointer_cast<ir::Assignment>(current))
