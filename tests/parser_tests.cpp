@@ -991,28 +991,6 @@ TEST_F(ParserTests, supportOverride)
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
-TEST_F(ParserTests, semanticErrorRedefinitionMethod)
-{
-        std::stringstream input(R"(
-		class Class : Object {
-			void foo(int a) {
-				this.c = a;
-			}
-			void foo(int a) {
-				this.c = c*a;
-			}
-			int ok;
-		}
-                void main(void) {
-			Class a = new Class;
-			a.foo(0);
-                }
-        )");
-
-        ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
-}
-
 TEST_F(ParserTests, supportCallParentConstructor)
 {
         std::stringstream input(R"(

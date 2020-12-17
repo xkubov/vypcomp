@@ -86,6 +86,10 @@ class FunctionRedefinition(VYPaTestCase):
     input_file = "fun_redef.vl"
     test_return = 19
 
+class MethodRedefinition(VYPaTestCase):
+    input_file = "meth_redef.vl"
+    test_return = 19
+
 
 # TODO: compiler error tests:
 #   - non-int/object type in if

@@ -1,0 +1,9 @@
+class Class : Object {
+	void foo(int a) {
+	}
+	void foo(int a) {
+	}
+	int ok;
+}
+void main(void) {
+}
