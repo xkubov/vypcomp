@@ -273,8 +273,19 @@ void ParserDriver::add(const ir::AllocaInstruction::Ptr &decl)
 
 void ParserDriver::ensureMainDefined() const
 {
-	if (searchTables("main"))
+	if (auto symbol = searchTables("main")) {
+		if (!std::holds_alternative<Function::Ptr>(*symbol)) {
+			throw SemanticError("main must be function");
+		}
+		auto main = std::get<Function::Ptr>(*symbol);
+		if (main->type())
+			throw SemanticError("main must be void");
+
+		if (main->args().size())
+			throw SemanticError("main must have no args");
+
 		return;
+	}
 
 	throw SemanticError("main not defined.");
 }
