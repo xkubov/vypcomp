@@ -9,6 +9,7 @@ class VYPaTestCase(unittest.TestCase):
     input_file = []
     test_stdin = b""
     test_stdout = b""
+    test_return = 0
 
     output_file_path = "testout.vc"
 
@@ -25,9 +26,10 @@ class VYPaTestCase(unittest.TestCase):
         compiler_subproc = subprocess.Popen(compile_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return_code = compiler_subproc.wait()
         (stdout, stderr) = compiler_subproc.communicate()
+        self.real_return = return_code
         
         if return_code != 0:
-            result.failures.append((self, "vypcomp failed with return code {} and stdout='{}' stderr='{}'".format(return_code, stdout.decode(), stderr.decode())))
+            super().run(result)
             return
 
         run_command = ["java", "-jar", self.interpret_path, self.output_file_path]
@@ -41,7 +43,10 @@ class VYPaTestCase(unittest.TestCase):
         self.real_stdout = stdout
         super().run(result)
 
-    def test00_check_output(self):
+    def test00_check_return_code(self):
+        self.assertEqual(self.test_return, self.real_return)
+
+    def test01_check_output(self):
         self.assertEqual(self.test_stdout, self.real_stdout)
 
     @classmethod

@@ -221,7 +221,7 @@ TEST_F(ParserTests, supportFunctionParameters)
                 void main(void) {
 			int a;
 			a = foo(0, "", 0);
-			foo_return0();
+			ok_return();
 
                         return;
                 }
@@ -262,41 +262,6 @@ TEST_F(ParserTests, semanticErrorParameters)
 
                         return;
                 }
-        )");
-
-        ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
-}
-
-TEST_F(ParserTests, supportDefinedAfterCall)
-{
-        std::stringstream input(R"(
-                void main(void) {
-			foo();
-                        return;
-                }
-		int foo(void) {
-			return 0;
-		}
-        )");
-
-        ParserDriver parser;
-	ASSERT_NO_THROW(parser.parse(input));
-}
-
-TEST_F(ParserTests, semanticErrorRedefinition)
-{
-        std::stringstream input(R"(
-		int foo(void) {
-			return 0;
-		}
-                void main(void) {
-			foo();
-                        return;
-                }
-		int foo(void) {
-			return 0;
-		}
         )");
 
         ParserDriver parser;
