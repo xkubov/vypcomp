@@ -1,0 +1,7 @@
+void main(void)
+{
+	string teta = "Ahoj";
+	string s = ", svete!";
+	print(teta + s);
+	return;
+}

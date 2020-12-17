@@ -1,0 +1,22 @@
+void main(void)
+{
+	string thestring = "And I say: ";
+	int i = 5;
+	while (i)
+	{
+		thestring = thestring + "Yeah! ";
+		i = i - 1;
+	}
+	print(thestring);
+	print("...\n");
+	i = 3;
+	thestring = "";
+	while (i)
+	{
+		thestring = thestring + "Yeah! ";
+		i = i - 1;
+	}
+	print(thestring, "\n");
+	print("I said: Yeah, what's going on?!");
+	return;
+}

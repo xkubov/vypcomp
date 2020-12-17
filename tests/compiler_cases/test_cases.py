@@ -86,9 +86,22 @@ class FunctionRedefinition(VYPaTestCase):
     input_file = "fun_redef.vl"
     test_return = 19
 
+
 class MethodRedefinition(VYPaTestCase):
     input_file = "meth_redef.vl"
     test_return = 19
+
+
+class StringConcatBasic(VYPaTestCase):
+    input_file = "string_concat.vl"
+    test_stdin = b""
+    test_stdout = b"Ahoj, svete!"
+
+
+class StringConcateAdv(VYPaTestCase):
+    input_file = "string_concat_adv.vl"
+    test_stdin = b""
+    test_stdout = b"And I say: Yeah! Yeah! Yeah! Yeah! Yeah! ...\nYeah! Yeah! Yeah! \nI said: Yeah, what's going on?!"
 
 
 # TODO: compiler error tests:
