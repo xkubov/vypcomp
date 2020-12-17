@@ -229,7 +229,7 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
     else if (auto instr = dynamic_cast<ir::LoopInstruction*>(input.get()))
     {
         static std::uint64_t while_label = 0;
-        auto str_while_label = std::to_string(while_label);
+        auto str_while_label = std::to_string(while_label++);
         auto expr = instr->getExpr();
         auto body_block = instr->getBody();
         auto condition_label = "while_cond_"s + str_while_label;
