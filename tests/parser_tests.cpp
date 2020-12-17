@@ -870,6 +870,52 @@ TEST_F(ParserTests, supportConstructor)
 	ASSERT_NO_THROW(parser.parse(input));
 }
 
+TEST_F(ParserTests, supportConstructorError)
+{
+        std::stringstream input(R"(
+		class parent : Object {
+			int parent(void) {
+				int ok;
+			}
+			void foo(void) {
+				int ok;
+			}
+		}
+		class derived : parent {
+			void foo(void) {
+			}
+		}
+                void main(void) {
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_THROW(parser.parse(input), SemanticError);
+}
+
+TEST_F(ParserTests, supportConstructorError2)
+{
+        std::stringstream input(R"(
+		class parent : Object {
+			void parent(int blu) {
+				int ok;
+			}
+			void foo(void) {
+				int ok;
+			}
+		}
+		class derived : parent {
+			void foo(void) {
+			}
+		}
+                void main(void) {
+                }
+        )");
+
+        ParserDriver parser;
+	ASSERT_THROW(parser.parse(input), SemanticError);
+}
+
 TEST_F(ParserTests, supportThisAccess)
 {
         std::stringstream input(R"(
