@@ -661,6 +661,18 @@ decl : datatype IDENTIFIER { $$ = {$1, $2}; }
      ;
 
 class_definition : class_declaration LBRA class_body {
+	if (auto c = $1->constructor()) {
+		if (c->args().size())
+			throw SemanticError(
+				"Cunstructor of class "+$1->name()+
+				" cannot have arguments."
+			);
+		if (c->type())
+			throw SemanticError(
+				"Cunstructor of class "+$1->name()+
+				" is not void."
+			);
+	}
 	parser->parseClassEnd();
 };
 

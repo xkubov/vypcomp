@@ -125,7 +125,9 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 	for (auto arg: fun->args()) {
 		add(arg);
 	}
-	if (_currClass) {
+	
+	// If method and not constructor add implicit parameter.
+	if (_currClass && _currClass->name() != fun->name()) {
 		auto& args = fun->args();
 		auto thisArg = AllocaInstruction::Ptr(new AllocaInstruction({
 					Datatype(_currClass->name()), "this"}));

@@ -182,6 +182,8 @@ public:
 	using Ptr = std::shared_ptr<Class>;
 	Class(const std::string& name, Class::Ptr base);
 
+	Function::Ptr constructor() const;
+
 	void clear();
 
 	void setBase(Class::Ptr base);
@@ -228,6 +230,7 @@ private:
 	std::vector<Function::Ptr> _publicMethods;
 	std::vector<Function::Ptr> _privateMethods;
 	std::vector<Function::Ptr> _protectedMethods;
+	Function::Ptr _constructor;
 	std::vector<AllocaInstruction::Ptr> _publicAttrs;
 	std::vector<AllocaInstruction::Ptr> _privateAttrs;
 	std::vector<AllocaInstruction::Ptr> _protectedAttrs;

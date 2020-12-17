@@ -362,6 +362,11 @@ Class::Class(const std::string& name, Class::Ptr parent):
 {
 }
 
+Function::Ptr Class::constructor() const
+{
+	return _constructor;
+}
+
 void Class::setBase(Class::Ptr base)
 {
 	_parent = base;
@@ -386,6 +391,11 @@ void Class::clear()
 void Class::add(Function::Ptr method, const Visibility& v)
 {
 	method->addPrefix(_name);
+	
+	if (method->name() == name()) {
+		_constructor = method;
+		return;
+	}
 
 	switch (v) {
 	case Visibility::Private:
