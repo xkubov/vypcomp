@@ -104,6 +104,12 @@ class StringConcateAdv(VYPaTestCase):
     test_stdout = b"And I say: Yeah! Yeah! Yeah! Yeah! Yeah! ...\nYeah! Yeah! Yeah! \nI said: Yeah, what's going on?!"
 
 
+class ComparisonCase(VYPaTestCase):
+    input_file = "comparison.vl"
+    test_stdin = b""
+    test_stdout = b"0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n"
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

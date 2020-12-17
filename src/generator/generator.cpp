@@ -371,6 +371,7 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     generate_expression(op2, op2_location, variable_offsets, temporary_variables_mapping, out);
     if (op1->is_simple()) // it's going to be just a simple register set, set it after computing op2, because it can utilize $1 register and overwrite the result
         generate_expression(op1, op1_location, variable_offsets, temporary_variables_mapping, out);
+    
     // execute operation
     if (auto addop = dynamic_cast<ir::AddExpression*>(input.get()))
     {
@@ -381,14 +382,14 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             out << "ADDF $0, " << op1_location << ", " << op2_location << "\n";
         else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
         {
+            // call addStr subroutine with the 2 operands
             out << "ADDI $SP, $SP, 3\n";
             out << "SET [$SP-2], " << op1_location << "\n";
             out << "SET [$SP-1], " << op2_location << "\n";
             out << "CALL [$SP], addStr" << std::endl;
         }
         else
-            throw std::runtime_error("Unexpected operand in add operation: "s + input->to_string());
-        out << "SET " << destination << ", $0" << std::endl;
+            throw std::runtime_error("Unexpected operand in + operation: "s + input->to_string());
     }
     else if (auto minop = dynamic_cast<ir::SubtractExpression*>(input.get()))
     {
@@ -401,15 +402,52 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             out << "SUBF $0, " << op1_location << ", " << op2_location << "\n";
         else
         {
-            throw std::runtime_error("Unexpected operand in subtract opertaion: "s + input->to_string());
+            throw std::runtime_error("Unexpected operand in - opertaion: "s + input->to_string());
         }
+    }
+    else if (auto mulop = dynamic_cast<ir::MultiplyExpression*>(input.get()))
+    {
+        if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+        {
+            out << "MULI $0, " << op1_location << ", " << op2_location << "\n";
+        }
+        else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            out << "MULF $0, " << op1_location << ", " << op2_location << "\n";
+        else
+        {
+            throw std::runtime_error("Unexpected operand in * opertaion: "s + input->to_string());
+        }
+    }
+    else if (auto divop = dynamic_cast<ir::DivideExpression*>(input.get()))
+    {
+        if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+        {
+            out << "DIVI $0, " << op1_location << ", " << op2_location << "\n";
+        }
+        else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            out << "DIVF $0, " << op1_location << ", " << op2_location << "\n";
+        else
+        {
+            throw std::runtime_error("Unexpected operand in / opertaion: "s + input->to_string());
+        }
+    }
+    else if (auto andop = dynamic_cast<ir::AndExpression*>(input.get()))
+    {
+        // TODO: check and expression works with int and object type only
+        out << "AND $0, " << op1_location << ", " << op2_location << "\n";
+    }
+    else if (auto orop = dynamic_cast<ir::OrExpression*>(input.get()))
+    {
+        // TODO: check or expression works with int and object type only
+        out << "OR $0, " << op1_location << ", " << op2_location << "\n";
     }
     else if (auto eqop = dynamic_cast<ir::ComparisonExpression*>(input.get()))
     {
         switch (eqop->getOperation())
         {
         case ir::ComparisonExpression::EQUALS:
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int) || input->type().is<ir::Datatype::ClassName>())
+                // for object type just compare the chunk ids as ints
                 out << "EQI $0, " << op1_location << ", " << op2_location << "\n";
             else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
                 out << "EQF $0, " << op1_location << ", " << op2_location << "\n";
@@ -417,11 +455,106 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
                 out << "EQS $0, " << op1_location << ", " << op2_location << "\n";
             else
             {
-                // TODO: != and == should support object types as well for chunk comparison (see vypa20.pdf)
-                throw std::runtime_error("Unexpected operand type in subtract opertaion: "s + input->to_string());
+                throw std::runtime_error("Unexpected operand type in == opertaion: "s + input->to_string());
             }
             break;
-        // TODO: all other cases
+        case ir::ComparisonExpression::NOTEQUALS:
+            // EQUALS and NOT the result
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int) || input->type().is<ir::Datatype::ClassName>())
+            {
+                // for object type just compare the chunk ids as ints
+                out << "EQI $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            {
+                out << "EQF $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            {
+                out << "EQS $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else
+            {
+                throw std::runtime_error("Unexpected operand type in != operation: "s + input->to_string());
+            }
+            out << "NOT $0, $0\n";
+            break;
+        case ir::ComparisonExpression::LESS:
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            {
+                out << "LTI $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            {
+                out << "LTF $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            {
+                out << "LTS $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else
+            {
+                throw std::runtime_error("Unexpected operand type in < operation: "s + input->to_string());
+            }
+            break;
+        case ir::ComparisonExpression::GREATER:
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            {
+                out << "GTI $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            {
+                out << "GTF $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            {
+                out << "GTS $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else
+            {
+                throw std::runtime_error("Unexpected operand type in > operation: "s + input->to_string());
+            }
+            break;
+        case ir::ComparisonExpression::LEQ:
+            // for <= do !(>)
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            {
+                out << "GTI $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            {
+                out << "GTF $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            {
+                out << "GTS $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else
+            {
+                throw std::runtime_error("Unexpected operand type in <= operation: "s + input->to_string());
+            }
+            out << "NOT $0, $0\n";
+            break;
+        case ir::ComparisonExpression::GEQ:
+            // for >= do !(<)
+            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            {
+                out << "LTI $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            {
+                out << "LTF $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            {
+                out << "LTS $0, " << op1_location << ", " << op2_location << "\n";
+            }
+            else
+            {
+                throw std::runtime_error("Unexpected operand type in >= operation: "s + input->to_string());
+            }
+            out << "NOT $0, $0\n";
+            break;
         default:
             throw std::runtime_error("Unexpected comparison type in comparison: "s + input->to_string());
         }
@@ -430,6 +563,7 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
     }
+    out << "SET " << destination << ", $0" << std::endl;
 }
 
 bool vypcomp::Generator::is_alloca(vypcomp::ir::Instruction::Ptr instr) const
@@ -521,6 +655,7 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
     }
     else if (auto binop_exp = dynamic_cast<ir::BinaryOpExpression*>(expr.get()))
     {
+        auto exp_str = binop_exp->to_string();
         auto op1 = binop_exp->getOp1();
         auto op2 = binop_exp->getOp2();
         auto op1_temps = get_required_temporaries(op1, exp_temporary_mapping);
