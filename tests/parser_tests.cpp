@@ -199,7 +199,7 @@ TEST_F(ParserTests, supportFunctions)
 		}
                 void main(void) {
 			foo();
-			foo_return0();
+			foo_return_0();
 
                         return;
                 }
