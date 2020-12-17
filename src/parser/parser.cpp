@@ -123,8 +123,7 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 
 	pushSymbolTable();
 	for (auto arg: fun->args()) {
-		//TODO: push args to bottom table.
-		_tables.back().insert({ arg->name(), arg });  // Richard's hotfix, maybe a better way possible
+		add(arg);
 		//TODO: if _currClass is not none provide implicit first param.
 	}
 	_currFunction = fun;
