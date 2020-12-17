@@ -255,7 +255,13 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (searchCurrent(decl->name())) {
-		throw SyntaxError("Redefinition of "+decl->name());
+		throw SemanticError("Redefinition of "+decl->name());
+	}
+	if (auto symbol = searchTables(decl->name())) {
+		if (std::holds_alternative<Function::Ptr>(*symbol))
+			throw SemanticError("redefinition: same name as function "+decl->name());
+		if (std::holds_alternative<Class::Ptr>(*symbol))
+			throw SemanticError("redefinition: same name as class "+decl->name());
 	}
 }
 

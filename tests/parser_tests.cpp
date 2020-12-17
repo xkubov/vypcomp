@@ -268,7 +268,7 @@ TEST_F(ParserTests, semanticErrorParameters)
 	ASSERT_THROW(parser.parse(input), SemanticError);
 }
 
-TEST_F(ParserTests, semanticErrorRedefinitionParameeter)
+TEST_F(ParserTests, semanticErrorRedefinitionParameter)
 {
         std::stringstream input(R"(
 		int foo(int foo) {
