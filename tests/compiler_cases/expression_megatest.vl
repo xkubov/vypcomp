@@ -1,0 +1,63 @@
+void main(void)
+{
+	int True = 1, False = 0;
+	
+	print("True: "); if (True) { print("True\n");} else { print("False\n"); }
+	print("False: "); if (False) { print("True\n");} else { print("False\n"); }
+	print("False || False: "); if (False || False) { print("True\n");} else { print("False\n"); }
+	print("True || False: "); if (True || False) { print("True\n");} else { print("False\n"); }
+	print("False || True: "); if (False || True) { print("True\n");} else { print("False\n"); }
+	print("True || True: "); if (True || True) { print("True\n");} else { print("False\n"); }
+	print("False && False: "); if (False && False) { print("True\n");} else { print("False\n"); }
+	print("True && False: "); if (True && False) { print("True\n");} else { print("False\n"); }
+	print("False && True: "); if (False && True) { print("True\n");} else { print("False\n"); }
+	print("True && True: "); if (True && True) { print("True\n");} else { print("False\n"); }
+	print("True == True: "); if (True == True) { print("True\n");} else { print("False\n"); }
+	print("True != True: "); if (True != True) { print("True\n");} else { print("False\n"); }
+	print("False == False: "); if (False == False) { print("True\n");} else { print("False\n"); }
+	print("False != False: "); if (False != False) { print("True\n");} else { print("False\n"); }
+	print("True == False: "); if (True == False) { print("True\n");} else { print("False\n"); }
+	print("True != False: "); if (True != False) { print("True\n");} else { print("False\n"); }
+	print("False == True: "); if (False == True) { print("True\n");} else { print("False\n"); }
+	print("False != True: "); if (False != True) { print("True\n");} else { print("False\n"); }
+	// ============================ //
+	print("1 < 2: "); if (1 < 2) { print("True\n");} else { print("False\n"); }
+	print("2 < 2: "); if (2 < 2) { print("True\n");} else { print("False\n"); }
+	print("2 <= 2: "); if (2 <= 2) { print("True\n");} else { print("False\n"); }
+	
+	string astring = "astring", bstring = "bstring", samestring = "astring";
+	print("astring < bstring: "); if (astring < bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring > astring: "); if (bstring > astring) { print("True\n");} else { print("False\n"); }
+	print("astring <= bstring: "); if (astring <= bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring >= astring: "); if (bstring >= astring) { print("True\n");} else { print("False\n"); }
+	print("astring == bstring: "); if (astring == bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring == astring: "); if (bstring == astring) { print("True\n");} else { print("False\n"); }
+	print("astring >= bstring: "); if (astring >= bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring <= astring: "); if (bstring <= astring) { print("True\n");} else { print("False\n"); }
+	print("astring > bstring: "); if (astring > bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring < astring: "); if (bstring < astring) { print("True\n");} else { print("False\n"); }
+	
+	print("astring != bstring: "); if (astring != bstring) { print("True\n");} else { print("False\n"); }
+	print("bstring != astring: "); if (bstring != astring) { print("True\n");} else { print("False\n"); }
+	print("astring != samestring: "); if (astring != samestring) { print("True\n");} else { print("False\n"); }
+	print("astring == samestring: "); if (astring == samestring) { print("True\n");} else { print("False\n"); }
+	
+	// for conversion for example python float.fromhex('0x1.999999999999ap-2')
+	float f1 = 2.0f, f2 = 5.0f;
+	print("f1 + f2 = 0x1.cp2: ", f1 + f2, "\n");
+	print("f1 - f2 = -0x1.8p1: ", f1 - f2, "\n");
+	print("f1 * f2 = 0x1.4p3: ", f1 * f2, "\n");
+	print("f1 / f2 = 0x1.999999999999ap-2: ", f1 / f2, "\n");
+	
+	print("astring+bstring = astringbstring: ", astring + bstring, "\n");
+	
+	int i = 9, j = 2;
+	print("i + j = 11: ", i + j, "\n");
+	print("i - j = 7: ", i - j, "\n");
+	print("i * j = 18: ", i * j, "\n");
+	print("i / j = 7: ", i / j, "\n");
+	print("j + i = 11: ", j + i, "\n");
+	print("j - i = -7: ", j - i, "\n");
+	print("j * i = 18: ", j * i, "\n");
+	print("j / i = 0: ", j / i, "\n");
+}

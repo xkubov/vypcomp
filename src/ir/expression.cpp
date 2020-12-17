@@ -140,8 +140,11 @@ SubtractExpression::SubtractExpression(ValueType op1, ValueType op2)
 	{
 		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
 		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
-		// TODO: FLOAT extension here needed
 		if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Int)
+		{
+			_type = _op1->type();
+		}
+		else if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Float)
 		{
 			_type = _op1->type();
 		}
@@ -165,22 +168,24 @@ MultiplyExpression::MultiplyExpression(ValueType op1, ValueType op2)
 {
 	try
 	{
-		// TODO: FLOAT support, modify type checks here
 		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
-		if (datatype1 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid first operand in * operation, must be int");
-		}
 		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
-		if (datatype2 != PrimitiveDatatype::Int)
+		if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Int)
 		{
-			throw SemanticError("invalid second operand in * operation, must be int");
+			_type = _op1->type();
 		}
-		_type = _op1->type();
+		else if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Float)
+		{
+			_type = _op1->type();
+		}
+		else
+		{
+			throw SemanticError("Unsupported type in * operation.");
+		}
 	}
 	catch (const std::bad_variant_access& e)
 	{
-		throw SemanticError("only int types are supported in * operation");
+		throw SemanticError("only int or float types are supported in * operation");
 	}
 }
 std::string MultiplyExpression::to_string() const
@@ -193,22 +198,24 @@ DivideExpression::DivideExpression(ValueType op1, ValueType op2)
 {
 	try
 	{
-		// TODO: FLOAT support, modify type checks here
 		auto datatype1 = _op1->type().get<PrimitiveDatatype>();
-		if (datatype1 != PrimitiveDatatype::Int)
-		{
-			throw SemanticError("invalid first operand in / operation, must be int");
-		}
 		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
-		if (datatype2 != PrimitiveDatatype::Int)
+		if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Int)
 		{
-			throw SemanticError("invalid second operand in / operation, must be int");
+			_type = _op1->type();
 		}
-		_type = _op1->type();
+		else if (datatype1 == datatype2 && datatype1 == PrimitiveDatatype::Float)
+		{
+			_type = _op1->type();
+		}
+		else
+		{
+			throw SemanticError("Unsupported type in / operation.");
+		}
 	}
 	catch (const std::bad_variant_access& e)
 	{
-		throw SemanticError("only int types are supported in / operation");
+		throw SemanticError("only int or float types are supported in / operation");
 	}
 }
 std::string DivideExpression::to_string() const
@@ -268,6 +275,10 @@ AndExpression::AndExpression(ValueType op1, ValueType op2)
 	{
 		throw SemanticError("types do not match in && operation");
 	}
+	if (_op1->type() == Datatype(PrimitiveDatatype::Float) || _op1->type() == Datatype(PrimitiveDatatype::String))
+	{
+		throw SemanticError("Only int and object types allowed in && operator.");
+	}
 }
 std::string AndExpression::to_string() const
 {
@@ -279,7 +290,11 @@ OrExpression::OrExpression(ValueType op1, ValueType op2)
 {
 	if (_op1->type() != _op2->type())
 	{
-		throw SemanticError("types do not match in && operation");
+		throw SemanticError("types do not match in || operation");
+	}
+	if (_op1->type() == Datatype(PrimitiveDatatype::Float) || _op1->type() == Datatype(PrimitiveDatatype::String))
+	{
+		throw SemanticError("Only int and object types allowed in || operator.");
 	}
 }
 std::string OrExpression::to_string() const

@@ -433,12 +433,10 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     }
     else if (auto andop = dynamic_cast<ir::AndExpression*>(input.get()))
     {
-        // TODO: check and expression works with int and object type only
         out << "AND $0, " << op1_location << ", " << op2_location << "\n";
     }
     else if (auto orop = dynamic_cast<ir::OrExpression*>(input.get()))
     {
-        // TODO: check or expression works with int and object type only
         out << "OR $0, " << op1_location << ", " << op2_location << "\n";
     }
     else if (auto eqop = dynamic_cast<ir::ComparisonExpression*>(input.get()))
@@ -446,12 +444,12 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
         switch (eqop->getOperation())
         {
         case ir::ComparisonExpression::EQUALS:
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int) || input->type().is<ir::Datatype::ClassName>())
+            if ((op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int)) || (op1->type().is<ir::Datatype::ClassName>() && op2->type().is<ir::Datatype::ClassName>()))
                 // for object type just compare the chunk ids as ints
                 out << "EQI $0, " << op1_location << ", " << op2_location << "\n";
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
                 out << "EQF $0, " << op1_location << ", " << op2_location << "\n";
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
                 out << "EQS $0, " << op1_location << ", " << op2_location << "\n";
             else
             {
@@ -460,35 +458,29 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             break;
         case ir::ComparisonExpression::NOTEQUALS:
             // EQUALS and NOT the result
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int) || input->type().is<ir::Datatype::ClassName>())
-            {
+            if ((op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int)) || (op1->type().is<ir::Datatype::ClassName>() && op2->type().is<ir::Datatype::ClassName>()))
                 // for object type just compare the chunk ids as ints
                 out << "EQI $0, " << op1_location << ", " << op2_location << "\n";
-            }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
-            {
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
                 out << "EQF $0, " << op1_location << ", " << op2_location << "\n";
-            }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
-            {
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
                 out << "EQS $0, " << op1_location << ", " << op2_location << "\n";
-            }
             else
             {
-                throw std::runtime_error("Unexpected operand type in != operation: "s + input->to_string());
+                throw std::runtime_error("Unexpected operand type in == opertaion: "s + input->to_string());
             }
             out << "NOT $0, $0\n";
             break;
         case ir::ComparisonExpression::LESS:
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
             {
                 out << "LTI $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
             {
                 out << "LTF $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
             {
                 out << "LTS $0, " << op1_location << ", " << op2_location << "\n";
             }
@@ -498,15 +490,15 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             }
             break;
         case ir::ComparisonExpression::GREATER:
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
             {
                 out << "GTI $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
             {
                 out << "GTF $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
             {
                 out << "GTS $0, " << op1_location << ", " << op2_location << "\n";
             }
@@ -517,15 +509,15 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             break;
         case ir::ComparisonExpression::LEQ:
             // for <= do !(>)
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
             {
                 out << "GTI $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
             {
                 out << "GTF $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
             {
                 out << "GTS $0, " << op1_location << ", " << op2_location << "\n";
             }
@@ -537,15 +529,15 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             break;
         case ir::ComparisonExpression::GEQ:
             // for >= do !(<)
-            if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
+            if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Int) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
             {
                 out << "LTI $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::Float) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::Float))
             {
                 out << "LTF $0, " << op1_location << ", " << op2_location << "\n";
             }
-            else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
+            else if (op1->type() == ir::Datatype(ir::PrimitiveDatatype::String) && op2->type() == ir::Datatype(ir::PrimitiveDatatype::String))
             {
                 out << "LTS $0, " << op1_location << ", " << op2_location << "\n";
             }
