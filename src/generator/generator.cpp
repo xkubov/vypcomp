@@ -97,7 +97,7 @@ void vypcomp::Generator::generate(vypcomp::ir::Function::Ptr input, OutputStream
     TempVarMap temporary_variables_mapping; 
     // local_variables consists of all possible local variables with variable in sub-scopes as well
     auto local_variables = get_alloca_instructions(first_block->first(), temporary_variables_mapping);
-    auto& args = input->args();
+    const auto& args = input->args();
     arg_count = args.size();
     variable_count = local_variables.size();
     OffsetMap variable_offsets{};

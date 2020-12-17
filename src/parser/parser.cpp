@@ -124,7 +124,12 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 	pushSymbolTable();
 	for (auto arg: fun->args()) {
 		add(arg);
-		//TODO: if _currClass is not none provide implicit first param.
+	}
+	if (_currClass) {
+		auto& args = fun->args();
+		auto thisArg = AllocaInstruction::Ptr(new AllocaInstruction({
+					Datatype(_currClass->name()), "this"}));
+		args.insert(args.begin(), thisArg);
 	}
 	_currFunction = fun;
 }

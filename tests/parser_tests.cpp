@@ -860,7 +860,6 @@ TEST_F(ParserTests, supportConstructor)
 		}
 		class derived : parent {
 			void foo(void) {
-				super.foo();
 			}
 		}
                 void main(void) {

@@ -146,7 +146,11 @@ PossibleDatatype Function::type() const
 	return _type;
 }
 
-const std::vector<AllocaInstruction::Ptr> Function::args() const
+const std::vector<AllocaInstruction::Ptr>& Function::args() const
+{
+	return _args;
+}
+std::vector<AllocaInstruction::Ptr>& Function::args()
 {
 	return _args;
 }
@@ -164,7 +168,20 @@ std::vector<Datatype> Function::argTypes() const
 std::string Function::str(const std::string& prefix) const
 {
 	std::ostringstream out;
-	out << prefix << "function: " << _name << std::endl;
+	out << prefix << "function: " << _name;
+	out << "(";
+	bool first = true;
+	for (auto& arg: args()) {
+		if (first) {
+			first = false;
+		}
+		else {
+			out << ", ";
+		}
+		out << arg->type().to_string() << " " << arg->name();
+
+	}
+	out << ")" << std::endl;
 	for (auto bb = _first; bb != nullptr; bb = bb->next()) {
 		out << bb->str(prefix+"  ");
 	}

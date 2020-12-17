@@ -110,7 +110,8 @@ public:
 
 	std::string name() const;
 	PossibleDatatype type() const;
-	const std::vector<AllocaInstruction::Ptr> args() const;
+	const std::vector<AllocaInstruction::Ptr>& args() const;
+	std::vector<AllocaInstruction::Ptr>& args();
 	std::vector<Datatype> argTypes() const;
 
 private:
