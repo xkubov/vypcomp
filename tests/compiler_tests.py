@@ -60,7 +60,7 @@ class VYPaTestLoader(unittest.TestLoader):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run vypcomp+vypint tests')
     parser.add_argument('vypcomp_path', metavar='vypcomp_path', type=str, help='path (relative or absolute) to vypcomp binary')
-    parser.add_argument('vypint_path', metavar='vypcomp_path', type=str, help='path (relative or absolute) to vypint jar file')
+    parser.add_argument('vypint_path', metavar='vypint_path', type=str, help='path (relative or absolute) to vypint jar file')
     args = parser.parse_args()
     loader = VYPaTestLoader(args.vypcomp_path, args.vypint_path)
     suite = loader.loadTestsFromModule(globals()['compiler_cases'].test_cases)
