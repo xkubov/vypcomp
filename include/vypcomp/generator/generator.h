@@ -33,6 +33,7 @@ namespace vypcomp
         void generate_expression(ir::Expression::ValueType input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_binaryop(ir::BinaryOpExpression::Ptr input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_return(OutputStream& out);
+        void generate_builtin_functions(OutputStream& out);
 
         // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping
         AllocaVector get_alloca_instructions(vypcomp::ir::Instruction::Ptr block, TempVarMap& exp_temporary_mapping);
@@ -41,6 +42,7 @@ namespace vypcomp
 
         bool is_alloca(vypcomp::ir::Instruction::Ptr instr) const;
         bool is_return(vypcomp::ir::Instruction::Ptr instr) const;
+        bool is_builtin_func(std::string func_name) const;
 
         std::optional<std::size_t> find_offset(AllocaRawPtr alloca_ptr, OffsetMap& variable_offsets) const;
         std::optional<AllocaRawPtr> find_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping) const;
