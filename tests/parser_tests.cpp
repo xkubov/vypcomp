@@ -1206,85 +1206,15 @@ TEST_F(ParserTests, testExpressionPrecedenceParentheses)
 	printf("finished");
 }
 
-//TEST_F(ParserTests, testExpressionCast)
-//{
-//	std::stringstream input("(Pear)  apple");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionIdentifiers)
-//{
-//	std::stringstream input("pear+apple");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionMemberAccess)
-//{
-//	std::stringstream input("this.member.another_member");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionMemberAccessPrecedence)
-//{
-//	std::stringstream input("this.member + another_obj.another_member");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionNewPrecedence)
-//{
-//	std::stringstream input("this.member + new Object");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionFuncCallEmpty)
-//{
-//	std::stringstream input("this.member()");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-//
-//TEST_F(ParserTests, testExpressionFuncCallArgs)
-//{
-//	std::stringstream input("this.member(ding, dong, 1337, \"test\")");
-//
-//	ParserDriver parser;
-//	parser.parseExpression(input, 0);
-//	printf("finished");
-//}
-
 TEST_F(ParserTests, literalExpressions)
 {
-	std::string inputs[] = { {"1337"}, {"\"hello string literal\""}, /*{"3.14159"} TODO: when floats are supported */ };
+	std::string inputs[] = { {"1337"}, {"\"hello string literal\""}, {"3.14159"} };
 	for (const auto& input_string : inputs)
 	{
 		ParserDriver parser;
 		std::stringstream input(input_string);
 		ASSERT_NO_THROW(parser.parseExpression(input, 0));
 	}
-}
-
-TEST_F(ParserTests, identifierExpressions)
-{
-	ParserDriver parser;
-	std::stringstream input("identifierTest");
-	ASSERT_NO_THROW(parser.parseExpression(input, 0));
 }
 
 TEST_F(ParserTests, binaryOpExpressions)

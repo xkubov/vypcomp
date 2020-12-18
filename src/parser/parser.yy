@@ -438,6 +438,13 @@ expr
 | binary_operation {
 	$$ = std::move($1);
 }
+| EXCLAMATION expr {
+	$$ = std::make_shared<NotExpression>(std::move($2));
+}
+| LPAR IDENTIFIER RPAR expr
+{
+	$$ = parser->createCastExpr($2, $4);
+}
 | THIS {
 	auto current_class = parser->getCurrentClass();
 	if (!current_class)

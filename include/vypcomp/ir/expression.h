@@ -36,6 +36,18 @@ private:
 	AllocaInstruction::Ptr _value;
 };
 
+class CastExpression : public Expression
+{
+public:
+	CastExpression(Class::Ptr target_class, ValueType operand);
+	virtual std::string to_string() const override;
+	Class::Ptr getTargetClass() const;
+	ValueType getOperand() const;
+private:
+	Class::Ptr _target_class;
+	ValueType _operand;
+};
+
 // This expression type has type Datatype::FunctionType when it is referenced by an identifier.
 // When a call operation with arguments is provided, the expression gets the proper type
 // from the function return type.
@@ -138,6 +150,20 @@ public:
 	OrExpression(ValueType op1, ValueType op2);
 
 	virtual std::string to_string() const override;
+};
+
+//
+// Logical Not Expression
+//
+class NotExpression : public Expression
+{
+public:
+	NotExpression(ValueType operand);
+
+	virtual std::string to_string() const override;
+	ValueType getOperand() const;
+private:
+	ValueType _operand;
 };
 
 }

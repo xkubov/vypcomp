@@ -61,6 +61,7 @@ public:
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
 	virtual std::vector<Instruction::Ptr> call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
+	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;
 
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);

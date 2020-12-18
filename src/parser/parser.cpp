@@ -259,6 +259,15 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 	return Return::Ptr(new Return(val));
 }
 
+std::shared_ptr<CastExpression> ParserDriver::createCastExpr(std::string class_name, Expression::ValueType expr) const
+{
+	auto target_search_result = searchTables(class_name);
+	if (!target_search_result) throw SemanticError("Target class " + class_name + " does not exist for cast expression.");
+	if (!std::holds_alternative<Class::Ptr>(target_search_result.value())) throw SemanticError("Target class name " + class_name + " is not a class in cast expression.");
+	auto class_ptr = std::get<Class::Ptr>(target_search_result.value());
+	return std::make_shared<CastExpression>(class_ptr, expr);
+}
+
 void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 {
 	if (searchCurrent(decl->name())) {

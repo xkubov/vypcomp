@@ -17,6 +17,7 @@ public:
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const override;
 	virtual Datatype customDatatype(const std::string& dt) const override;
 	virtual Instruction::Ptr assign(const std::string& ptr, const ir::Expression::ValueType& val) const override;
+	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const override;
 
 private:
 	std::vector<vypcomp::SymbolTable> _tables;

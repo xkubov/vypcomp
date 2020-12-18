@@ -49,6 +49,28 @@ AllocaInstruction::Ptr SymbolExpression::getValue() const
 }
 
 //
+// Cast expression
+//
+CastExpression::CastExpression(Class::Ptr target_class, ValueType operand) 
+	: Expression(Datatype(target_class->name())), _target_class(target_class), _operand(operand)
+{
+	if (!operand->type().is<Datatype::ClassName>())
+		throw SemanticError("Cast expression allowed only from object type: " + operand->to_string());
+}
+CastExpression::ValueType CastExpression::getOperand() const
+{
+	return _operand;
+}
+Class::Ptr CastExpression::getTargetClass() const
+{
+	return _target_class;
+}
+std::string CastExpression::to_string() const
+{
+	return "((" + _target_class->name() + ")" + _operand->to_string() + ")";
+}
+
+//
 // Function Expression
 //
 FunctionExpression::FunctionExpression(Function::Ptr value)
@@ -300,4 +322,18 @@ OrExpression::OrExpression(ValueType op1, ValueType op2)
 std::string OrExpression::to_string() const
 {
 	return "(" + _op1->to_string() + " || " + _op2->to_string() + ")";
+}
+
+//
+// Logical Not Expression
+//
+NotExpression::NotExpression(ValueType operand)
+	: Expression(Datatype(PrimitiveDatatype::Int)), _operand(operand)
+{
+	if (operand->type() != Datatype(PrimitiveDatatype::Int) && !operand->type().is<Datatype::ClassName>())
+		throw SemanticError("Only int and object type allowed in ! operator: " + operand->to_string());
+}
+std::string NotExpression::to_string() const
+{
+	return "(!" + _operand->to_string() + ")";
 }

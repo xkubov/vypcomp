@@ -123,6 +123,7 @@ string  { *yylval = PrimitiveDatatype::String; return token::PRIMITIVE_DATA_TYPE
 "<="  { return token::LEQ; }
 "||"  { return token::OR; }
 "&&"  { return token::AND; }
+"!"   { return token::EXCLAMATION; }
 
 .  {
 	// TODO: parse word and print it.
