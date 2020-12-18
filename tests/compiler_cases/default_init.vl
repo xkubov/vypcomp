@@ -1,0 +1,9 @@
+void main(void)
+{
+	int i;
+	float f;
+	string s;
+	print("i == 0: "); if (i == 0) { print("True"); } else { print("False"); } print("\n");
+	print("f == 0.0f: "); if (f == 0.0f) { print("True"); } else { print("False"); } print("\n");
+	print("s == \"\": "); if (s == "") { print("True"); } else { print("False"); } print("\n");
+}

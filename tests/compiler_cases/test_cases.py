@@ -116,6 +116,12 @@ class SubStrCase(VYPaTestCase):
     test_stdout = b'"llo, w"\n"llo, world!llll"\n""\n""\n""\n""\n'
 
 
+class DefaultInitCase(VYPaTestCase):
+    input_file = "default_init.vl"
+    test_stdin = b""
+    test_stdout = b'i == 0: True\nf == 0.0f: True\ns == "": True\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while
