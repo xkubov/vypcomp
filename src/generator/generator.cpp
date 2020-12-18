@@ -718,10 +718,66 @@ void vypcomp::Generator::generate_builtin_functions(OutputStream& out)
     out << "SUBI $SP, $SP, 2\n"; // length has one parameter
     out << "RETURN $1\n" << std::endl;
 
-    // subStr TODO
+    // subStr(string s, int i, int n)
+    constexpr std::string_view subStr_impl =
+R"vc(# [$SP-3] s
+# [$SP-2] i
+# [$SP-1] n
+# [$SP-0] ret_addr
+# $1 length(s)
+GETSIZE $1, [$SP-3] 
+# if length < 0, return s
+LTI $0, $1, 0
+JUMPZ subStr_s_check_cont, $0
+SET $0, [$SP-3]
+JUMP subStr_return
+LABEL subStr_s_check_cont
+# test i
+GTI $2, [$SP-2], 0
+LTI $3, [$SP-2], $1
+AND $0, $2, $3
+# if 0 < i < length(s)
+JUMPNZ subStr_i_check_cont, $0
+SET $0, ""
+JUMP subStr_return
+LABEL subStr_i_check_cont
+# test n
+LTI $0, [$SP-1], 0
+JUMPZ subst_n_check_cont, $0
+# if n < 0 return empty string
+SET $0, ""
+JUMP subStr_return
+LABEL subst_n_check_cont
+# execute subStr copy
+SET $2, 0 # loop counter
+CREATE $0, [$SP-1]
+LABEL subStr_loop_cond
+LTI $3, $2, [$SP-1]
+JUMPZ subStr_loop_end, $3
+# loop body
+ADDI $4, $2, [$SP-2] # offset in src
+# if offset in src is too big, get i'th
+LTI $5, $4, $1
+JUMPZ subStr_overflow_start, $5
+GETWORD $5, [$SP-3], $4
+JUMP subStr_overflow_end
+LABEL subStr_overflow_start
+GETWORD $5, [$SP-3], [$SP-2] # get i-th instead
+LABEL subStr_overflow_end
+SETWORD $0, $2, $5
+ADDI $2, $2, 1
+JUMP subStr_loop_cond
+# loop body end
+LABEL subStr_loop_end
+LABEL subStr_return
+SET $1, [$SP]
+SUBI $SP, $SP, 4
+RETURN $1)vc";
+    out << "LABEL " << VYPLANG_PREFIX << "subStr\n";
+    out << subStr_impl << std::endl;
 
     // addStr
-    std::string add_strings = 
+    constexpr std::string_view add_strings = 
 R"vc(LABEL addStr
 # $0 destination
 # $1 op1 string, later loop condition result

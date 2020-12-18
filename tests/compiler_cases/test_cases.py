@@ -110,6 +110,12 @@ class ComparisonCase(VYPaTestCase):
     test_stdout = b"0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n"
 
 
+class SubStrCase(VYPaTestCase):
+    input_file = "subStr.vl"
+    test_stdin = b""
+    test_stdout = b'"llo, w"\n"llo, world!llll"\n""\n""\n""\n""\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

@@ -1,0 +1,11 @@
+void main(void)
+{
+	string test_string = "Hello, world!";
+	string empty = "";
+	print("\"", subStr(test_string, 2, 6),   "\"\n"); // regular
+	print("\"", subStr(test_string, 2, 15),  "\"\n"); // n > length(s) - i
+	print("\"", subStr(test_string, 0-1, 5), "\"\n"); // i < 0
+	print("\"", subStr(test_string, 15, 5),  "\"\n"); // i > length(s)
+	print("\"", subStr(test_string, 2, 0-2), "\"\n"); // n < 0
+	print("\"", subStr(empty, 2, 2), "\"\n"); // empty string
+}
