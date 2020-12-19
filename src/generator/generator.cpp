@@ -98,7 +98,7 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     out << "CREATE $0, " << object_size << "\n";
     out << "SET [$SP], $0\n";
     // invoke all parent constructors here
-    generate_parent_constructor_chain(input, out);
+    generate_constructor_chain_invocation(input, out);
     out << "SET $0, [$SP]\n";
     out << "SUBI $SP, $SP, 1\n"; // clean up 1 local var
     out << "SET $1, [$SP]\n";
@@ -124,11 +124,11 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     out << "RETURN $1\n" << std::endl;
 }
 
-void vypcomp::Generator::generate_parent_constructor_chain(vypcomp::ir::Class::Ptr input, OutputStream& out)
+void vypcomp::Generator::generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out)
 {
     if (!input) return;
     auto parent = input->getBase();
-    generate_parent_constructor_chain(parent, out);
+    generate_constructor_chain_invocation(parent, out);
     if (input->constructor())
     {
         out << "ADDI $SP, $SP, 2\n";
