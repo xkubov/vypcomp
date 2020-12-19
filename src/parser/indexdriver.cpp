@@ -43,7 +43,12 @@ Datatype IndexParserDriver::customDatatype(const std::string& dt) const
 	return Datatype(Datatype::InvalidDatatype());
 }
 
-Instruction::Ptr IndexParserDriver::assign(const std::string &name, const ir::Expression::ValueType &val) const
+Instruction::Ptr IndexParserDriver::assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType &val) const
+{
+	return DummyInstruction::Ptr(new DummyInstruction);
+}
+
+Instruction::Ptr IndexParserDriver::assign(const std::string& name, const ir::Expression::ValueType& val) const
 {
 	return DummyInstruction::Ptr(new DummyInstruction);
 }
@@ -173,7 +178,7 @@ ir::Expression::ValueType IndexParserDriver::dotExpr(
 	return std::make_shared<DummyExpression>();
 }
 
-std::vector<Instruction::Ptr> IndexParserDriver::call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const
+std::vector<Instruction::Ptr> IndexParserDriver::call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const
 {
 	return {};
 }

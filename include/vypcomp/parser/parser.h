@@ -58,8 +58,9 @@ public:
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const;
 
 	virtual Datatype customDatatype(const std::string& dt) const;
+	virtual Instruction::Ptr assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
-	virtual std::vector<Instruction::Ptr> call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const;
+	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr createIf(
 		const ir::Expression::ValueType& val,

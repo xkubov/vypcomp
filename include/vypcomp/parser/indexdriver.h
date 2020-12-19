@@ -15,7 +15,7 @@ public:
 public:
 	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const override;
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const override;
-	virtual std::vector<Instruction::Ptr> call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const override;
+	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const override;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const override;
 	virtual Instruction::Ptr createIf(
 		const ir::Expression::ValueType& val,
@@ -26,6 +26,7 @@ public:
 		const ir::BasicBlock::Ptr& block) const override;
 	virtual Datatype customDatatype(const std::string& dt) const override;
 	virtual Instruction::Ptr assign(const std::string& ptr, const ir::Expression::ValueType& val) const override;
+	virtual Instruction::Ptr assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType& val) const override;
 	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const override;
 
 

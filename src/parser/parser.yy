@@ -367,11 +367,11 @@ else_action : ELSE LBRA {
 statement : return {
 	$$ = {$1};
 }
-| IDENTIFIER ASSIGNMENT expr SEMICOLON {
+| expr ASSIGNMENT expr SEMICOLON {
 	$$ = {parser->assign($1, $3)};
 }
-| IDENTIFIER LPAR func_call_args SEMICOLON {
-	$$ = parser->call_func($1, $3);
+| expr LPAR func_call_args SEMICOLON {
+	$$ = parser->call_func($1, $3);	
 }
 | declaration {
 	$$ = $1;

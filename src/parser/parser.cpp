@@ -171,9 +171,18 @@ Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) cons
         return Function::Ptr(new Function({type, name, args}));
 }
 
-Instruction::Ptr ParserDriver::assign(const std::string& name,
+Instruction::Ptr ParserDriver::assign(ir::Expression::ValueType dest_expr,
                        const ir::Expression::ValueType &val) const
 {
+		std::string name;
+		if (auto symbexp = std::dynamic_pointer_cast<SymbolExpression>(dest_expr))
+		{
+			name = symbexp->getValue()->name();
+		}
+		else
+		{
+			throw SemanticError("Only symbol expression allowed as assignment target: " + dest_expr->to_string());
+		}
         if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
 			throw SemanticError("Cannot assign to function.");
@@ -194,8 +203,40 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 	throw SemanticError("Assignment to undefined variable "+name);
 }
 
-std::vector<Instruction::Ptr> ParserDriver::call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const
+Instruction::Ptr ParserDriver::assign(const std::string& name,
+	const ir::Expression::ValueType& val) const
 {
+	if (auto symbol = searchTables(name)) {
+		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
+			throw SemanticError("Cannot assign to function.");
+
+		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
+		if (var->type() != val->type()) {
+			throw SemanticError("Invalid type.");
+		}
+
+		return Assignment::Ptr(
+			new Assignment(
+				std::get<AllocaInstruction::Ptr>(*symbol),
+				val
+			)
+		);
+	}
+
+	throw SemanticError("Assignment to undefined variable " + name);
+}
+
+std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const
+{
+	std::string name;
+	if (auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr))
+	{
+		name = funcexp->getFunction()->name();
+	}
+	else
+	{
+		throw SemanticError("Only function or assignment allowed on statement level, got: " + func_expr->to_string());
+	}
 	auto search_result = searchTables(name);
 	if (search_result)
 	{
