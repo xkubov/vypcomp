@@ -529,6 +529,11 @@ AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibi
 	return nullptr;
 }
 
+std::size_t vypcomp::ir::Class::getAttributeCount() const
+{
+	return _privateAttrs.size() + _protectedAttrs.size() + _publicAttrs.size();
+}
+
 std::string Class::name() const
 {
 	return _name;
@@ -538,6 +543,7 @@ std::string Class::str(const std::string& prefix) const
 {
 	std::ostringstream out;
 	out << prefix << "class: " << _name << " : " << (_parent ? _parent->name() : "nullptr") << std::endl;
+	out << "constructor: " << (constructor() ? "explicit" : "nullptr") << std::endl;
 	out << "public methods:" << std::endl;
 	for (auto& m: _publicMethods) {
 		out << m->str("  ");
@@ -588,4 +594,17 @@ std::string Class::str(const std::string& prefix) const
 		out << prefix << "  -- None" << std::endl;
 
 	return out.str();
+}
+
+const std::vector<Function::Ptr> Class::publicMethods() const
+{
+	return _publicMethods;
+}
+const std::vector<Function::Ptr> Class::privateMethods() const
+{
+	return _privateMethods;
+}
+const std::vector<Function::Ptr> Class::protectedMethods() const
+{
+	return _protectedMethods;
 }

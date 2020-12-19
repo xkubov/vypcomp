@@ -66,6 +66,21 @@ private:
 	ArgExpressions _args;
 };
 
+// This expression type represents function that does not exist in the symbol table (such as object creation routine preceding constructor)
+class ConstructorExpression : public FunctionExpression
+{
+public:
+	using ArgExpressions = std::vector<Expression::ValueType>;
+	ConstructorExpression(Class::Ptr class_ptr);
+
+	virtual std::string to_string() const override;
+	std::string getFunctionName() const;
+	ArgExpressions getArgs() const;
+private:
+	std::string _class_name;
+	ArgExpressions _args;
+};
+
 class BinaryOpExpression : public Expression
 {
 public:

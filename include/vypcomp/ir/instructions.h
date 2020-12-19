@@ -220,6 +220,7 @@ public:
 	const std::vector<AllocaInstruction::Ptr> publicAttributes() const;
 	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
 	const std::vector<AllocaInstruction::Ptr> protectedAttributes() const;
+	std::size_t getAttributeCount() const;
 
 	std::string name() const;
 	virtual std::string str(const std::string& prefix) const override;

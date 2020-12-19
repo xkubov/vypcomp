@@ -404,9 +404,6 @@ expr
 	else
 	{
 		auto function_expr = dynamic_cast<FunctionExpression*>($1.get());
-		// TODO: verify argument types and argument count, `print` will have a vararg flag
-		// excluding it from the count check (just verify that all types are primitive)
-		// probably use the same parser->call_func and take the first element of the vector
 		$$ = std::make_shared<FunctionExpression>(function_expr->getFunction(), $3);
 	}
 }
@@ -432,7 +429,8 @@ expr
 	}
 	else
 	{
-		throw SemanticError("Undeclared identifier in expression.");
+		// TODO: search function arguments as well 
+		throw SemanticError("Undeclared identifier \"" + $1 + "\" in expression.");
 	}
 }
 | binary_operation {
@@ -477,7 +475,14 @@ expr
 		}
 	}
 }
-;
+| NEW IDENTIFIER {
+	const auto class_name = $2;
+	auto search_result = parser->searchTables(class_name);
+	if (!search_result) throw SemanticError("class " + class_name + " in constructor not found.");
+	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw SemanticError("Identifier " + class_name + " is not a class.");
+	auto class_ptr = std::get<Class::Ptr>(search_result.value());
+	$$ = std::make_shared<ConstructorExpression>(class_ptr);
+};
 
 func_call_args 
 : expr COMMA func_call_args { 
@@ -486,10 +491,6 @@ func_call_args
 }
 | expr RPAR { $$ = { $1 }; }
 | RPAR { $$ = {}; };
-// TODO function call here
-// | expr LPAR args ...
-// TODO cast
-// TODO new
 
 binary_operation 
 : expr '+' expr {

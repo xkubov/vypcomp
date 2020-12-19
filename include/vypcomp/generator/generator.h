@@ -27,13 +27,19 @@ namespace vypcomp
 
         const OutputStream& get_output() const;
     private:
-        void generate(vypcomp::ir::Function::Ptr input, OutputStream& out);
+        void generate_function(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out);
+        void generate_function_body(vypcomp::ir::Function::Ptr input, OutputStream& out, const AllocaVector& args, const AllocaVector& local_variables, TempVarMap& temporary_variables_mapping);
         void generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_expression(ir::Expression::ValueType input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_binaryop(ir::BinaryOpExpression::Ptr input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_return(OutputStream& out);
         void generate_builtin_functions(OutputStream& out);
+        void generate_vtables(const vypcomp::SymbolTable& symbol_table, OutputStream& out);
+        void generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out);
+        void generate_constructor(vypcomp::ir::Class::Ptr input, OutputStream& out);
+        void generate_parent_constructor_chain(vypcomp::ir::Class::Ptr input, OutputStream& out);
+        std::size_t get_object_size(vypcomp::ir::Class::Ptr input);
 
         // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping
         AllocaVector get_alloca_instructions(vypcomp::ir::Instruction::Ptr block, TempVarMap& exp_temporary_mapping);

@@ -106,6 +106,37 @@ FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
 }
 
 //
+// Constructor Expression
+//
+ConstructorExpression::ConstructorExpression(Class::Ptr class_ptr)
+	: FunctionExpression(class_ptr->constructor()), _class_name(class_ptr->name()), _args()
+{
+	_type = Datatype(class_ptr->name());
+}
+std::string ConstructorExpression::getFunctionName() const
+{
+	return _class_name;
+}
+ConstructorExpression::ArgExpressions ConstructorExpression::getArgs() const
+{
+	return _args;
+}
+std::string ConstructorExpression::to_string() const
+{
+	std::ostringstream ss;
+	ss << "(constructor: " + _class_name + ")(";
+	for (auto i = 0ull; i < _args.size(); i++)
+	{
+		auto& arg_expr = _args[i];
+		ss << arg_expr->to_string();
+		if (i != _args.size() - 1)
+			ss << ", ";
+	}
+	ss << ")";
+	return ss.str();
+}
+
+//
 // Binary operator expressions
 //
 BinaryOpExpression::BinaryOpExpression(ValueType op1, ValueType op2)
