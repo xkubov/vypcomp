@@ -61,6 +61,13 @@ public:
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
 	virtual std::vector<Instruction::Ptr> call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
+	virtual Instruction::Ptr createIf(
+		const ir::Expression::ValueType& val,
+		const ir::BasicBlock::Ptr& if_block,
+		const ir::BasicBlock::Ptr& else_block) const;
+	virtual Instruction::Ptr createWhile(
+		const ir::Expression::ValueType& val,
+		const ir::BasicBlock::Ptr& block) const;
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);
 
@@ -81,6 +88,9 @@ public:
 	// Expressions
 
 	virtual ir::Expression::ValueType identifierExpr(const std::string& name) const;
+	virtual ir::Expression::ValueType functionCall(
+		const ir::Expression::ValueType& identifier,
+		const std::vector<ir::Expression::ValueType>& args) const;
 
 	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const;
 	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;

@@ -241,6 +241,26 @@ std::vector<Instruction::Ptr> ParserDriver::call_func(const std::string& name, c
 	}
 }
 
+Instruction::Ptr ParserDriver::createIf(
+	const ir::Expression::ValueType& val,
+	const ir::BasicBlock::Ptr& if_block,
+	const ir::BasicBlock::Ptr& else_block) const
+{
+	if (val->type() != Datatype(PrimitiveDatatype::Int) && !val->type().is<Datatype::ClassName>())
+		throw SemanticError("Expression in if statement has to be either int or object type.");
+	return BranchInstruction::Ptr(new BranchInstruction(val, if_block, else_block));
+}
+
+Instruction::Ptr ParserDriver::createWhile(
+	const ir::Expression::ValueType& val,
+	const ir::BasicBlock::Ptr& block) const
+{
+	if (val->type() != Datatype(PrimitiveDatatype::Int) && !val->type().is<Datatype::ClassName>())
+		throw SemanticError("Expression in while statement has to be either int or object type.");
+	return LoopInstruction::Ptr(new LoopInstruction(val, block));
+}
+
+
 Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) const
 {
 	if (_currFunction == nullptr) {
@@ -407,6 +427,25 @@ ir::Expression::ValueType ParserDriver::identifierExpr(const std::string& name) 
 	else
 	{
 		throw SemanticError("Undeclared identifier in expression.");
+	}
+}
+
+ir::Expression::ValueType ParserDriver::functionCall(
+	const ir::Expression::ValueType& identifier,
+	const std::vector<ir::Expression::ValueType>& args) const
+{
+	auto exp = identifier;
+	if (!exp->type().is<Datatype::FunctionType>())
+	{
+		throw SemanticError("Function call attempted on non-function expression.");
+	}
+	else
+	{
+		auto function_expr = dynamic_cast<FunctionExpression*>(identifier.get());
+		// TODO: verify argument types and argument count, `print` will have a vararg flag
+		// excluding it from the count check (just verify that all types are primitive)
+		// probably use the same parser->call_func and take the first element of the vector
+		return std::make_shared<FunctionExpression>(function_expr->getFunction(), args);
 	}
 }
 

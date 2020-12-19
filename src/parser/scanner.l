@@ -48,6 +48,7 @@ std::ostringstream buffer;
 <BLOCK_COMMENT>\n    { }
 <BLOCK_COMMENT>.     { }
 \/\/.*$   ;
+\/\/.*    ;
 
 \"                              { buffer.str(""); buffer.clear(); BEGIN(STRING_PARSE); }
 <STRING_PARSE>\\n               { buffer << "\\n"; }

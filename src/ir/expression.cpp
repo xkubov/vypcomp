@@ -10,6 +10,12 @@ using namespace vypcomp::ir;
 //
 // Expressions
 //
+
+std::string DummyExpression::to_string() const
+{
+	return "dummy_expr";
+}
+
 //
 // Literal Expression
 //

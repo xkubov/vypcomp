@@ -52,3 +52,148 @@ std::shared_ptr<CastExpression> IndexParserDriver::createCastExpr(std::string cl
 {
 	return nullptr;
 }
+
+// Expressions
+
+ir::Expression::ValueType IndexParserDriver::identifierExpr(const std::string& name) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::functionCall(
+	const ir::Expression::ValueType& identifier,
+	const std::vector<ir::Expression::ValueType>& args) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::notExpr(const ir::Expression::ValueType& expr) const
+{
+	return std::make_shared<NotExpression>(expr);
+}
+
+ir::Expression::ValueType IndexParserDriver::thisExpr() const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::superExpr() const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::addExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::subExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::mulExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::divExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::geqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::gtExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::leqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::ltExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::eqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::neqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::andExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::orExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+ir::Expression::ValueType IndexParserDriver::dotExpr(
+	const ir::Expression::ValueType& e1,
+	const std::string& identifier) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
+std::vector<Instruction::Ptr> IndexParserDriver::call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const
+{
+	return {};
+}
+
+Return::Ptr IndexParserDriver::createReturn(const ir::Expression::ValueType& val) const
+{
+	return Return::Ptr(new Return(val));
+}
+
+Instruction::Ptr IndexParserDriver::createIf(
+	const ir::Expression::ValueType& val,
+	const ir::BasicBlock::Ptr& if_block,
+	const ir::BasicBlock::Ptr& else_block) const
+{
+	return DummyInstruction::Ptr(new DummyInstruction);
+}
+
+Instruction::Ptr IndexParserDriver::createWhile(
+	const ir::Expression::ValueType& val,
+	const ir::BasicBlock::Ptr& block) const
+{
+	return DummyInstruction::Ptr(new DummyInstruction);
+}
