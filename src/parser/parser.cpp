@@ -380,3 +380,226 @@ Datatype ParserDriver::customDatatype(const std::string& dt) const
 
 	throw SemanticError("Invalid datatype.");
 }
+
+// Expressions
+
+ir::Expression::ValueType ParserDriver::identifierExpr(const std::string& name) const
+{
+	auto search_result = searchTables(name);
+	if (search_result)
+	{
+		SymbolTable::Symbol symbol = search_result.value();
+		if (std::holds_alternative<AllocaInstruction::Ptr>(symbol))
+		{
+			auto instruction = std::get<AllocaInstruction::Ptr>(symbol);
+			return std::make_shared<SymbolExpression>(instruction);
+		}
+		else if (std::holds_alternative<Function::Ptr>(symbol))
+		{
+			auto func = std::get<Function::Ptr>(symbol);
+			return std::make_shared<FunctionExpression>(func);
+		}
+		else
+		{
+			throw SemanticError("Unsupported identifier type in expression.");
+		}
+	}
+	else
+	{
+		throw SemanticError("Undeclared identifier in expression.");
+	}
+}
+
+ir::Expression::ValueType ParserDriver::notExpr(const ir::Expression::ValueType& expr) const
+{
+	return std::make_shared<NotExpression>(expr);
+}
+
+ir::Expression::ValueType ParserDriver::thisExpr() const
+{
+	auto current_class = getCurrentClass();
+	if (!current_class)
+	{
+		throw SemanticError("\"this\" used outside of a method context.");
+	}
+	else
+	{
+		// TODO: is `this` an AllocaInstruction in every method? (what are function params?)
+		throw std::runtime_error("this keyword unimplemented");
+	}
+}
+
+ir::Expression::ValueType ParserDriver::superExpr() const
+{
+	auto current_class = getCurrentClass();
+	if (!current_class)
+	{
+		throw SemanticError("\"super\" used outside of a method context.");
+	}
+	else
+	{
+		auto parent_class = current_class->getBase();
+		if (!parent_class)
+		{
+			throw SemanticError("\"super\" used in method context of parentless class.");
+		}
+		else
+		{
+			// TODO: super should be the same instruction as this with different type
+			throw std::runtime_error("super keyword not implemented");
+		}
+	}
+}
+
+ir::Expression::ValueType ParserDriver::addExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::AddExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::subExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::SubtractExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::mulExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::MultiplyExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::divExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::DivideExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::geqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::GEQ, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::gtExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::GREATER, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::leqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::LEQ, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::ltExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::LESS, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::eqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::EQUALS, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::neqExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::ComparisonExpression>(
+		ComparisonExpression::NOTEQUALS, e1, e2
+	);
+}
+
+ir::Expression::ValueType ParserDriver::andExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::AndExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::orExpr(
+	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& e2) const
+{
+	return std::make_shared<ir::OrExpression>(e1, e2);
+}
+
+ir::Expression::ValueType ParserDriver::dotExpr(
+	const ir::Expression::ValueType& e1,
+	const std::string& identifier) const
+{
+	if (!e1->type().is<ir::Datatype::ClassName>())
+	{
+		throw SemanticError("left hand operand of . operator is not an object variable");
+	}
+	auto class_name = e1->type().get<ir::Datatype::ClassName>();
+	std::optional<SymbolTable::Symbol> search_result = searchTables(class_name);
+	if (!search_result)
+	{
+		// Don't think this can happen since expression can only get a class type
+		// if the class search succeeded in the expr -> IDENTIFIER rule.
+		throw SemanticError("left hand operand of . operator has an undefined type");
+	}
+	else if (!std::holds_alternative<Class::Ptr>(*search_result))
+	{
+		throw SemanticError("left hand operand of . operator is not an object type");
+	}
+	else
+	{
+		Class::Ptr expr_class = std::get<Class::Ptr>(search_result.value());
+		// now determine whether identifier is a method or an attribute
+		// TODO - private extension: the decision to search private should be done depending
+		// on the current context (getClass()...). For now search only public.
+
+		// if (Class::Ptr current_class = parser->getCurrentClass(); 
+		// 	current_class && current_class->name() == expr_class->name())
+		// {
+		// 	// search for private as well
+		// }
+		// else
+		// we're in a method but expr is has a different type than the current class parsed
+		{
+			AllocaInstruction::Ptr attribute = expr_class->getAttribute(identifier, ir::Class::Visibility::Public); 
+			if (attribute)
+			{
+				return std::make_shared<SymbolExpression>(attribute);
+			}
+			else
+			{
+				// try method
+				Function::Ptr method = expr_class->getMethod(identifier, ir::Class::Visibility::Public);
+				if (method)
+				{
+					return std::make_shared<FunctionExpression>(method);
+				}
+				else
+				{
+					throw SemanticError("given object has not member named as " + identifier);
+				}
+			}
+		}
+	}
+}

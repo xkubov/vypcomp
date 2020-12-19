@@ -408,72 +408,23 @@ expr
 	}
 }
 | IDENTIFIER {
-	auto search_result  = parser->searchTables($1);
-	if (search_result)
-	{
-		SymbolTable::Symbol symbol = search_result.value();
-		if (std::holds_alternative<AllocaInstruction::Ptr>(symbol))
-		{
-			auto instruction = std::get<AllocaInstruction::Ptr>(symbol);
-			$$ = std::make_shared<SymbolExpression>(instruction);
-		}
-		else if (std::holds_alternative<Function::Ptr>(symbol))
-		{
-			auto func = std::get<Function::Ptr>(symbol);
-			$$ = std::make_shared<FunctionExpression>(func);
-		}
-		else
-		{
-				throw SemanticError("Unsupported identifier type in expression.");
-		}
-	}
-	else
-	{
-		// TODO: search function arguments as well 
-		throw SemanticError("Undeclared identifier \"" + $1 + "\" in expression.");
-	}
+	$$ = parser->identifierExpr($1);
 }
 | binary_operation {
 	$$ = std::move($1);
 }
 | EXCLAMATION expr {
-	$$ = std::make_shared<NotExpression>(std::move($2));
+	$$ = parser->notExpr($2);
 }
 | LPAR IDENTIFIER RPAR expr
 {
 	$$ = parser->createCastExpr($2, $4);
 }
 | THIS {
-	auto current_class = parser->getCurrentClass();
-	if (!current_class)
-	{
-		throw SemanticError("\"this\" used outside of a method context.");
-	}
-	else
-	{
-		// TODO: is `this` an AllocaInstruction in every method? (what are function params?)
-		throw std::runtime_error("this keyword unimplemented");
-	}
+	$$ = parser->thisExpr();
 }
 | SUPER {
-	auto current_class = parser->getCurrentClass();
-	if (!current_class)
-	{
-		throw SemanticError("\"super\" used outside of a method context.");
-	}
-	else
-	{
-		auto parent_class = current_class->getBase();
-		if (!parent_class)
-		{
-			throw SemanticError("\"super\" used in method context of parentless class.");
-		}
-		else
-		{
-			// TODO: super should be the same instruction as this with different type
-			throw std::runtime_error("super keyword not implemented");
-		}
-	}
+	$$ = parser->superExpr();
 }
 | NEW IDENTIFIER {
 	const auto class_name = $2;
@@ -494,105 +445,43 @@ func_call_args
 
 binary_operation 
 : expr '+' expr {
-	$$ = std::make_shared<AddExpression>(std::move($1), std::move($3));
+	$$ = parser->addExpr($1, $3);
 }
 | expr '-' expr {
-	$$ = std::make_shared<SubtractExpression>(std::move($1), std::move($3));
+	$$ = parser->subExpr($1, $3);
 }
 | expr '*' expr {
-	$$ = std::make_shared<MultiplyExpression>(std::move($1), std::move($3));
+	$$ = parser->mulExpr($1, $3);
 }
 | expr '/' expr {
-	$$ = std::make_shared<DivideExpression>(std::move($1), std::move($3));
+	$$ = parser->divExpr($1, $3);
 }
 | expr GEQ expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::GEQ, std::move($1), std::move($3)
-	);
+	$$ = parser->geqExpr($1, $3);
 }
 | expr '>' expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::GREATER, std::move($1), std::move($3)
-	);
+	$$ = parser->gtExpr($1, $3);
 }
 | expr LEQ expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::LEQ, std::move($1), std::move($3)
-	);
+	$$ = parser->leqExpr($1, $3);
 }
 | expr '<' expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::LESS, std::move($1), std::move($3)
-	);
+	$$ = parser->ltExpr($1, $3);
 }
 | expr EQUALS expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::EQUALS, std::move($1), std::move($3)
-	);
+	$$ = parser->eqExpr($1, $3);
 }
 | expr NOTEQUALS expr {
-	$$ = std::make_shared<ComparisonExpression>(
-		ComparisonExpression::NOTEQUALS, std::move($1), std::move($3)
-	);
+	$$ = parser->neqExpr($1, $3);
 }
 | expr AND expr {
-	$$ = std::make_shared<AndExpression>(std::move($1), std::move($3));
+	$$ = parser->andExpr($1, $3);
 }
 | expr OR expr {
-	$$ = std::make_shared<OrExpression>(std::move($1), std::move($3));
+	$$ = parser->orExpr($1, $3);
 }
 | expr '.' IDENTIFIER {
-	if (!$1->type().is<ir::Datatype::ClassName>())
-	{
-		throw SemanticError("left hand operand of . operator is not an object variable");
-	}
-	auto class_name = $1->type().get<ir::Datatype::ClassName>();
-	std::optional<SymbolTable::Symbol> search_result = parser->searchTables(class_name);
-	if (!search_result)
-	{
-		// Don't think this can happen since expression can only get a class type
-		// if the class search succeeded in the expr -> IDENTIFIER rule.
-		throw SemanticError("left hand operand of . operator has an undefined type");
-	}
-	else if (!std::holds_alternative<Class::Ptr>(*search_result))
-	{
-		throw SemanticError("left hand operand of . operator is not an object type");
-	}
-	else
-	{
-		Class::Ptr expr_class = std::get<Class::Ptr>(search_result.value());
-		// now determine whether identifier is a method or an attribute
-		// TODO - private extension: the decision to search private should be done depending
-		// on the current context (getClass()...). For now search only public.
-
-		// if (Class::Ptr current_class = parser->getCurrentClass(); 
-		// 	current_class && current_class->name() == expr_class->name())
-		// {
-		// 	// search for private as well
-		// }
-		// else
-		// we're in a method but expr is has a different type than the current class parsed
-		{
-			AllocaInstruction::Ptr attribute = expr_class->getAttribute($3, ir::Class::Visibility::Public); 
-			if (attribute)
-			{
-				$$ = std::make_shared<SymbolExpression>(attribute);
-			}
-			else
-			{
-				// try method
-				Function::Ptr method = expr_class->getMethod($3, ir::Class::Visibility::Public);
-				if (method)
-				{
-					$$ = std::make_shared<FunctionExpression>(method);
-				}
-				else
-				{
-					throw SemanticError("given object has not member named as " + $3);
-				}
-			}
-		}
-	}
+	$$ = parser->dotExpr($1, $3);
 };
 
 /**
@@ -702,7 +591,7 @@ class_body : function_definition class_body {
 	curr->add($2, ir::Class::Visibility::Public);
 }
 | PRIVATE function_definition class_body {
-	auto curr = parser->getCurrentClass();
+auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
 	curr->add($2, ir::Class::Visibility::Private);
