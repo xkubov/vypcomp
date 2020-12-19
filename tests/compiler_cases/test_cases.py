@@ -122,6 +122,30 @@ class DefaultInitCase(VYPaTestCase):
     test_stdout = b'i == 0: True\nf == 0.0f: True\ns == "": True\n'
 
 
+class FactorialIterCase(VYPaTestCase):
+    input_file = "factorial_iter.vl"
+    test_stdin = b"6"
+    test_stdout = b'Enter an integer to compute its factorial:\nThe result is: 720\n'
+
+
+class FactorialIterCaseNegative(VYPaTestCase):
+    input_file = "factorial_iter.vl"
+    test_stdin = b"-3"
+    test_stdout = b'Enter an integer to compute its factorial:\nFactorial of a negative integer is undefined!\n'
+
+
+class FactorialRecCase(VYPaTestCase):
+    input_file = "factorial_rec.vl"
+    test_stdin = b"6"
+    test_stdout = b'Enter an integer to compute its factorial:\nThe result is: 720\n'
+
+
+class FactorialRecCaseNegative(VYPaTestCase):
+    input_file = "factorial_rec.vl"
+    test_stdin = b"-3"
+    test_stdout = b'Enter an integer to compute its factorial:\nFactorial of a negative integer is undefined!\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while
