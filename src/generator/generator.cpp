@@ -475,6 +475,16 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
         auto result_destination = get_expr_destination(binop, temporary_variables_mapping, variable_offsets);
         generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), result_destination, variable_offsets, temporary_variables_mapping, out);
     }
+    else if (auto objattrexp = dynamic_cast<ir::ObjectAttributeExpression*>(input.get()))
+    {
+        auto result_destination = get_expr_destination(objattrexp, temporary_variables_mapping, variable_offsets);
+        auto attr_offset = get_object_attribute_offset(objattrexp->getClass(), objattrexp->getAttribute()->name());
+        auto object_alloca = objattrexp->getObject();
+        auto object_address = find_offset(object_alloca.get(), variable_offsets);
+        if (!object_address) throw std::runtime_error("Attempt to read from object whose stack address was not found: " + object_alloca->name());
+        out << "GETWORD $0, [$SP-" << object_address.value() << "], " << attr_offset << std::endl;
+        out << "SET " << result_destination << ", $0" << std::endl;
+    }
     else
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
@@ -816,8 +826,9 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
     }
     else if (auto object_access_attr = dynamic_cast<ir::ObjectAttributeExpression*>(expr.get()))
     {
-        // TODO
-        throw std::runtime_error("Unexpected expression type in get_required_temporaries. expr is "s + expr->to_string());
+        auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(object_access_attr->type(), object_access_attr->to_string()));
+        exp_temporary_mapping[object_access_attr] = new_temporary.get();
+        result.push_back(new_temporary);
     }
     else
     {
