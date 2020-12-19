@@ -353,6 +353,35 @@ Expression::ValueType Assignment::getExpr() const
 }
 
 // ------------------------------
+// ObjectAssignment
+// ------------------------------
+ObjectAssignment::ObjectAssignment(Expression::ValueType dest_object, Expression::ValueType expr) :
+	_dest_object(dest_object), _expr(expr)
+{
+}
+
+std::string ObjectAssignment::str(const std::string& prefix) const
+{
+	std::ostringstream out;
+
+	out << prefix << "object assignment: " << _expr->to_string() << std::endl;
+	out << _dest_object->to_string() << std::endl;
+	
+	return out.str();
+}
+
+Expression::ValueType ObjectAssignment::getTarget() const
+{
+	return _dest_object;
+}
+
+Expression::ValueType ObjectAssignment::getExpr() const
+{
+	return _expr;
+}
+
+
+// ------------------------------
 // Class
 // ------------------------------
 
@@ -607,4 +636,17 @@ const std::vector<Function::Ptr> Class::privateMethods() const
 const std::vector<Function::Ptr> Class::protectedMethods() const
 {
 	return _protectedMethods;
+}
+
+const std::vector<AllocaInstruction::Ptr>& Class::publicAttributes() const
+{
+	return _publicAttrs;
+}
+const std::vector<AllocaInstruction::Ptr>& Class::privateAttributes() const
+{
+	return _privateAttrs;
+}
+const std::vector<AllocaInstruction::Ptr>& Class::protectedAttributes() const
+{
+	return _protectedAttrs;
 }

@@ -179,9 +179,13 @@ Instruction::Ptr ParserDriver::assign(ir::Expression::ValueType dest_expr,
 		{
 			name = symbexp->getValue()->name();
 		}
+		else if (auto obj_attr = std::dynamic_pointer_cast<ObjectAttributeExpression>(dest_expr))
+		{
+			return std::make_shared<ObjectAssignment>(dest_expr, val);
+		}
 		else
 		{
-			throw SemanticError("Only symbol expression allowed as assignment target: " + dest_expr->to_string());
+			throw SemanticError("Only symbol expression or object attribute allowed as assignment target: " + dest_expr->to_string());
 		}
         if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
@@ -490,8 +494,7 @@ ir::Expression::ValueType ParserDriver::thisExpr() const
 	}
 	else
 	{
-		// TODO: is `this` an AllocaInstruction in every method? (what are function params?)
-		throw std::runtime_error("this keyword unimplemented");
+		return std::make_shared<SymbolExpression>(_currFunction->args()[0]);
 	}
 }
 
@@ -651,7 +654,14 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 			AllocaInstruction::Ptr attribute = expr_class->getAttribute(identifier, ir::Class::Visibility::Public); 
 			if (attribute)
 			{
-				return std::make_shared<ObjectAttributeExpression>(context_object, attribute, expr_class);
+				if (auto context_object_symexp = dynamic_cast<SymbolExpression*>(context_object.get()))
+				{
+					return std::make_shared<ObjectAttributeExpression>(context_object_symexp->getValue(), attribute, expr_class);
+				}
+				else
+				{
+					throw SemanticError("Object attribute access on a non-symbol expression: " + context_object->to_string());
+				}
 			}
 			else
 			{

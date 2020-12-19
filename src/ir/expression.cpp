@@ -436,10 +436,24 @@ std::string NotExpression::to_string() const
 //
 // Object Attribute Expression
 //
-ObjectAttributeExpression::ObjectAttributeExpression(ValueType object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr)
+ObjectAttributeExpression::ObjectAttributeExpression(AllocaInstruction::Ptr object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr)
 	: Expression(attribute->type()), _object(object), _attribute(attribute), _class(class_ptr)
-{}
+{
+	// TODO: check type, although may not be needed since it's only created by '.' operator
+}
 std::string ObjectAttributeExpression::to_string() const
 {
-	return "(attribute of " + _class->name() + ": " + _object->to_string() + "." + _attribute->name() + ")";
+	return "(attribute of " + _class->name() + ": " + _object->name() + "." + _attribute->name() + ")";
+}
+AllocaInstruction::Ptr ObjectAttributeExpression::getObject() const
+{
+	return _object;
+}
+Class::Ptr ObjectAttributeExpression::getClass() const
+{
+	return _class;
+}
+AllocaInstruction::Ptr ObjectAttributeExpression::getAttribute() const
+{
+	return _attribute;
 }

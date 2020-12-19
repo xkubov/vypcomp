@@ -35,11 +35,12 @@ namespace vypcomp
         void generate_binaryop(ir::BinaryOpExpression::Ptr input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_return(OutputStream& out);
         void generate_builtin_functions(OutputStream& out);
-        void generate_vtables(const vypcomp::SymbolTable& symbol_table, OutputStream& out);
+        void generate_vtables(const SymbolTable& symbol_table, OutputStream& out);
         void generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out);
         void generate_constructor(vypcomp::ir::Class::Ptr input, OutputStream& out);
         void generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out);
         std::size_t get_object_size(vypcomp::ir::Class::Ptr input);
+        std::size_t get_object_attribute_offset(vypcomp::ir::Class::Ptr class_ptr, const std::string& attribute_name);
 
         // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping
         AllocaVector get_alloca_instructions(vypcomp::ir::Instruction::Ptr block, TempVarMap& exp_temporary_mapping);

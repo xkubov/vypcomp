@@ -201,11 +201,14 @@ private:
 class ObjectAttributeExpression : public Expression
 {
 public:
-	ObjectAttributeExpression(ValueType object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr);
+	ObjectAttributeExpression(AllocaInstruction::Ptr object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr);
 
+	AllocaInstruction::Ptr getObject() const;
+	Class::Ptr getClass() const;
+	AllocaInstruction::Ptr getAttribute() const;
 	virtual std::string to_string() const override;
 private:
-	ValueType _object;
+	AllocaInstruction::Ptr _object;
 	Class::Ptr _class;
 	AllocaInstruction::Ptr _attribute;
 };

@@ -36,6 +36,7 @@ void vypcomp::Generator::generate(const vypcomp::SymbolTable& symbol_table)
     // proper call to main makes the order of functions meaningless
     out << "CALL [$SP] " << VYPLANG_PREFIX << "main" << "\n" << "JUMP ENDOFPROGRAM" << std::endl;
 
+    generate_vtables(symbol_table, out);
     for (auto [_, symbol] : symbol_table.data()) {
         if (std::holds_alternative<ir::Function::Ptr>(symbol))
         {
@@ -285,6 +286,22 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
             generate_expression(expr, result_register, variable_offsets, temporary_variables_mapping, out);
             out << "SET [$SP-" << variable_offset << "], " << result_register << std::endl;
         }
+    }
+    else if (auto instr = dynamic_cast<ir::ObjectAssignment*>(input.get()))
+    {
+        auto destination = instr->getTarget();
+        auto value_expr = instr->getExpr();
+        ir::ObjectAttributeExpression* target_expression = dynamic_cast<ir::ObjectAttributeExpression*>(destination.get());
+        if (!target_expression)
+        {
+            throw std::runtime_error("Target of object assignment is not an object attribute, but instead: " + destination->to_string());
+        }
+        auto object_alloca = target_expression->getObject();
+        auto object_stack_offset = find_offset(object_alloca.get(), variable_offsets);
+        if (!object_stack_offset) throw std::runtime_error("Target of object attribute assignment was not found: " + object_alloca->name());
+        auto attribute_chunk_offset = get_object_attribute_offset(target_expression->getClass(), target_expression->getAttribute()->name());;
+        generate_expression(value_expr, "$1", variable_offsets, temporary_variables_mapping, out);
+        out << "SETWORD [$SP-" << object_stack_offset.value() << "], " << attribute_chunk_offset << ", " << "$1" << std::endl;
     }
     else if (auto instr = dynamic_cast<ir::Return*>(input.get()))
     {
@@ -725,6 +742,15 @@ vypcomp::Generator::AllocaVector vypcomp::Generator::get_alloca_instructions(vyp
             auto allocas = get_temporary_allocas(expr, exp_temporary_mapping);
             result.insert(result.end(), allocas.begin(), allocas.end());
         }
+        else if (auto assignment = std::dynamic_pointer_cast<ir::ObjectAssignment>(current))
+        {
+            auto target = assignment->getTarget();
+            auto expr = assignment->getExpr();
+            //auto target_allocas = get_temporary_allocas(target, exp_temporary_mapping);
+            auto expr_allocas = get_temporary_allocas(expr, exp_temporary_mapping);
+            //result.insert(result.end(), target_allocas.begin(), target_allocas.end());
+            result.insert(result.end(), expr_allocas.begin(), expr_allocas.end());
+        }
         else if (auto ret_instr = std::dynamic_pointer_cast<ir::Return>(current))
         {
             if (!ret_instr->isVoid())
@@ -784,6 +810,11 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
         result.push_back(new_temporary);
     }
     else if (auto not_exp = dynamic_cast<ir::NotExpression*>(expr.get()))
+    {
+        // TODO
+        throw std::runtime_error("Unexpected expression type in get_required_temporaries. expr is "s + expr->to_string());
+    }
+    else if (auto object_access_attr = dynamic_cast<ir::ObjectAttributeExpression*>(expr.get()))
     {
         // TODO
         throw std::runtime_error("Unexpected expression type in get_required_temporaries. expr is "s + expr->to_string());
@@ -952,4 +983,31 @@ bool vypcomp::Generator::is_builtin_func(std::string func_name) const
         return true;
     }
     return false;
+}
+
+std::size_t vypcomp::Generator::get_object_attribute_offset(vypcomp::ir::Class::Ptr class_ptr, const std::string& attribute_name)
+{
+    if (!class_ptr) return 0;
+    auto parent_ptr = class_ptr->getBase();
+    std::size_t parent_offset = get_object_attribute_offset(parent_ptr, attribute_name);
+    if (parent_offset != 0)
+    {
+        return parent_offset;
+    }
+    else
+    {
+        // attribute is part of this class
+        auto parent_offset = parent_ptr ? get_object_size(parent_ptr) : 0;
+        std::size_t attr_offset = parent_offset;
+        // now search for the attribute in this class
+        for (auto& atrr_list : { class_ptr->publicAttributes(), class_ptr->protectedAttributes(), class_ptr->privateAttributes() })
+        {
+            for (auto& attr : atrr_list)
+            {
+                if (attr->name() == attribute_name) return attr_offset;
+                attr_offset += 1;
+            }
+        }
+        return attr_offset;
+    }
 }

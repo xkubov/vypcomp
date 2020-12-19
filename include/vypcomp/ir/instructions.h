@@ -92,6 +92,19 @@ private:
 	Expression::ValueType _expr;
 };
 
+class ObjectAssignment : public Instruction
+{
+public:
+	ObjectAssignment(Expression::ValueType dest_object, Expression::ValueType expr);
+
+	virtual std::string str(const std::string& prefix) const override;
+	Expression::ValueType getTarget() const;
+	Expression::ValueType getExpr() const;
+private:
+	Expression::ValueType _dest_object;
+	Expression::ValueType _expr;
+};
+
 class Function: public Instruction {
 public:
 	using Ptr = std::shared_ptr<Function>;
@@ -217,9 +230,9 @@ public:
 	const std::vector<Function::Ptr> privateMethods() const;
 	const std::vector<Function::Ptr> protectedMethods() const;
 
-	const std::vector<AllocaInstruction::Ptr> publicAttributes() const;
-	const std::vector<AllocaInstruction::Ptr> privateAttributes() const;
-	const std::vector<AllocaInstruction::Ptr> protectedAttributes() const;
+	const std::vector<AllocaInstruction::Ptr>& publicAttributes() const;
+	const std::vector<AllocaInstruction::Ptr>& privateAttributes() const;
+	const std::vector<AllocaInstruction::Ptr>& protectedAttributes() const;
 	std::size_t getAttributeCount() const;
 
 	std::string name() const;
