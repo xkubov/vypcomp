@@ -38,7 +38,7 @@ namespace vypcomp
         void generate_vtables(const vypcomp::SymbolTable& symbol_table, OutputStream& out);
         void generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out);
         void generate_constructor(vypcomp::ir::Class::Ptr input, OutputStream& out);
-        void generate_parent_constructor_chain(vypcomp::ir::Class::Ptr input, OutputStream& out);
+        void generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out);
         std::size_t get_object_size(vypcomp::ir::Class::Ptr input);
 
         // aggregates all alloca instructions from the whole function, these alloca locations are then assigned stack positions in variable_offsets mapping

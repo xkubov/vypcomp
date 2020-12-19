@@ -99,6 +99,9 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     out << "SET [$SP], $0\n";
     // invoke all parent constructors here
     generate_constructor_chain_invocation(input, out);
+    
+    // TODO: initialize attributes
+
     out << "SET $0, [$SP]\n";
     out << "SUBI $SP, $SP, 1\n"; // clean up 1 local var
     out << "SET $1, [$SP]\n";
@@ -108,7 +111,6 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     
     // generate constructor body
     out << "LABEL " << VYPLANG_PREFIX << input->name() << "_constructor_body\n";
-    // TODO: initialize attributes
     // TODO: set vtable
     out << "SETWORD [$SP-1], 0, \"" << "vtable_" + input->name() << "\"\n";
     // set classname for dynamic casts
