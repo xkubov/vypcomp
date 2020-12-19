@@ -92,7 +92,7 @@ string  { *yylval = PrimitiveDatatype::String; return token::PRIMITIVE_DATA_TYPE
 
 [_a-zA-Z][_a-zA-Z0-9]*  { *yylval = yytext; return token::IDENTIFIER; }
 
-[0-9]*\.([0-9]+f?|f) { *yylval = std::stod(yytext, nullptr); return token::FLOAT_LITERAL; }
+([0-9]*\.[0-9]+f?|[0-9]+\.f) { *yylval = std::stod(yytext, nullptr); return token::FLOAT_LITERAL; }
 [0-9]+([a-zA-Z])  {
 	throw LexicalError("invalid number: "+std::string(yytext));
 }
