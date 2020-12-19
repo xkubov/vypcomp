@@ -110,12 +110,43 @@ FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
 {
 	return _args;
 }
+void FunctionExpression::setArgs(const ArgExpressions& args)
+{
+	// function object was found, verify arguments
+	if (_value->name() == "print")
+	{
+		if (args.size() < 1) throw SemanticError("print has to have at least 1 parameter");
+		for (const ir::Expression::ValueType& argument : args)
+		{
+			auto arg_type = argument->type();
+			if (!arg_type.isPrimitive())
+			{
+				throw SemanticError("print called with non-primitive datatype parameter.");
+			}
+		}
+	}
+	else
+	{
+		if (args.size() != _value->args().size())
+			throw SemanticError("Provided argument count does not match the declared parameter count.");
+
+		for (std::size_t i = 0; i < args.size(); i++)
+		{
+			auto formal_type = _value->argTypes()[i];
+			auto actual_type = args[i]->type();
+			if (formal_type != actual_type)
+				throw SemanticError("Provided argument type does not match declared type.");
+		}
+	}
+	_args = args;
+	_type = _value->type() ? _value->type().value() : Datatype(Datatype::FunctionType());
+}
 
 //
 // Constructor Expression
 //
 ConstructorExpression::ConstructorExpression(Class::Ptr class_ptr)
-	: FunctionExpression(class_ptr->constructor()), _class_name(class_ptr->name()), _args()
+	: FunctionExpression(class_ptr->constructor()), _class_name(class_ptr->name())
 {
 	_type = Datatype(class_ptr->name());
 }
@@ -140,6 +171,33 @@ std::string ConstructorExpression::to_string() const
 	}
 	ss << ")";
 	return ss.str();
+}
+
+//
+// Object Method Call Expression
+//
+MethodExpression::MethodExpression(Function::Ptr function, ValueType context_object)
+	: FunctionExpression(function), _object(context_object)
+{
+	if (!context_object->type().is<Datatype::ClassName>()) throw SemanticError("Method call attempted at non-object type expression result.");
+}
+std::string MethodExpression::to_string() const
+{
+	std::ostringstream ss;
+	ss << "(method: " + _object->to_string() + "." + _value->name() + ")(";
+	for (auto i = 0ull; i < _args.size(); i++)
+	{
+		auto& arg_expr = _args[i];
+		ss << arg_expr->to_string();
+		if (i != _args.size() - 1)
+			ss << ", ";
+	}
+	ss << ")";
+	return ss.str();
+}
+MethodExpression::ValueType MethodExpression::getContextObj() const
+{
+	return _object;
 }
 
 //
@@ -373,4 +431,15 @@ NotExpression::NotExpression(ValueType operand)
 std::string NotExpression::to_string() const
 {
 	return "(!" + _operand->to_string() + ")";
+}
+
+//
+// Object Attribute Expression
+//
+ObjectAttributeExpression::ObjectAttributeExpression(ValueType object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr)
+	: Expression(attribute->type()), _object(object), _attribute(attribute), _class(class_ptr)
+{}
+std::string ObjectAttributeExpression::to_string() const
+{
+	return "(attribute of " + _class->name() + ": " + _object->to_string() + "." + _attribute->name() + ")";
 }

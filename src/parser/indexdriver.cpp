@@ -67,7 +67,7 @@ ir::Expression::ValueType IndexParserDriver::identifierExpr(const std::string& n
 
 ir::Expression::ValueType IndexParserDriver::functionCall(
 	const ir::Expression::ValueType& identifier,
-	const std::vector<ir::Expression::ValueType>& args) const
+	std::vector<ir::Expression::ValueType>& args) const
 {
 	return std::make_shared<DummyExpression>();
 }
@@ -178,7 +178,7 @@ ir::Expression::ValueType IndexParserDriver::dotExpr(
 	return std::make_shared<DummyExpression>();
 }
 
-std::vector<Instruction::Ptr> IndexParserDriver::call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const
+std::vector<Instruction::Ptr> IndexParserDriver::call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const
 {
 	return {};
 }

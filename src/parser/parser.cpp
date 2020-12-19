@@ -226,60 +226,44 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 	throw SemanticError("Assignment to undefined variable " + name);
 }
 
-std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const
+std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const
 {
 	std::string name;
-	if (auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr))
+	Function::Ptr function;
+	if (auto methodexp = std::dynamic_pointer_cast<MethodExpression>(func_expr))
+	{
+		function = methodexp->getFunction();
+		// push the preceding expression as the implicit `this` argument
+		args.insert(args.begin(), methodexp->getContextObj());
+	}
+	else if (auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr))
 	{
 		name = funcexp->getFunction()->name();
+		auto search_result = searchTables(name);
+		if (search_result)
+		{
+			SymbolTable::Symbol symbol = search_result.value();
+			if (std::holds_alternative<Function::Ptr>(symbol))
+			{
+				function = std::get<Function::Ptr>(symbol);
+			}
+			else
+			{
+				throw SemanticError("Identifier in function call is not a function.");
+			}
+		}
+		else
+		{
+			throw SemanticError("Identifier does not exist.");
+		}
 	}
 	else
 	{
 		throw SemanticError("Only function or assignment allowed on statement level, got: " + func_expr->to_string());
 	}
-	auto search_result = searchTables(name);
-	if (search_result)
-	{
-		SymbolTable::Symbol symbol = search_result.value();
-		if (std::holds_alternative<Function::Ptr>(symbol))
-		{
-			auto function = std::get<Function::Ptr>(symbol);
-			if (function->name() == "print")
-			{
-				if (args.size() < 1) throw SemanticError("print has to have at least 1 parameter");
-				for (const ir::Expression::ValueType& argument : args)
-				{
-					auto arg_type = argument->type();
-					if (!arg_type.isPrimitive())
-					{
-						throw SemanticError("print called with non-primitive datatype parameter.");
-					}
-				}
-			}
-			else
-			{
-				if (args.size() != function->args().size()) 
-					throw SemanticError("Provided argument count does not match the declared parameter count.");
-
-				for (std::size_t i = 0; i < args.size(); i++)
-				{
-					auto formal_type = function->argTypes()[i];
-					auto actual_type = args[i]->type();
-					if (formal_type != actual_type)
-						throw SemanticError("Provided argument type does not match declared type.");
-				}
-			}
-			return { std::make_shared<Assignment>(nullptr, std::make_shared<FunctionExpression>(function, args)) };
-		}
-		else
-		{
-			throw SemanticError("Identifier in function call is not a function.");
-		}
-	}
-	else
-	{
-		throw SemanticError("Identifier does not exist.");
-	}
+	auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr);
+	funcexp->setArgs(args);
+	return { std::make_shared<Assignment>(nullptr, func_expr) };
 }
 
 Instruction::Ptr ParserDriver::createIf(
@@ -472,21 +456,23 @@ ir::Expression::ValueType ParserDriver::identifierExpr(const std::string& name) 
 }
 
 ir::Expression::ValueType ParserDriver::functionCall(
-	const ir::Expression::ValueType& identifier,
-	const std::vector<ir::Expression::ValueType>& args) const
+	const ir::Expression::ValueType& function_expr,
+	std::vector<ir::Expression::ValueType>& args) const
 {
-	auto exp = identifier;
-	if (!exp->type().is<Datatype::FunctionType>())
+	if (!function_expr->type().is<Datatype::FunctionType>())
 	{
 		throw SemanticError("Function call attempted on non-function expression.");
 	}
 	else
 	{
-		auto function_expr = dynamic_cast<FunctionExpression*>(identifier.get());
-		// TODO: verify argument types and argument count, `print` will have a vararg flag
-		// excluding it from the count check (just verify that all types are primitive)
-		// probably use the same parser->call_func and take the first element of the vector
-		return std::make_shared<FunctionExpression>(function_expr->getFunction(), args);
+		if (auto methodexp = dynamic_cast<MethodExpression*>(function_expr.get()))
+		{
+			// push the preceding expression as the implicit `this` argument
+			args.insert(args.begin(), methodexp->getContextObj());
+		}
+		auto function_expr_childptr = dynamic_cast<FunctionExpression*>(function_expr.get());
+		function_expr_childptr->setArgs(args);
+		return function_expr;
 	}
 }
 
@@ -628,14 +614,14 @@ ir::Expression::ValueType ParserDriver::orExpr(
 }
 
 ir::Expression::ValueType ParserDriver::dotExpr(
-	const ir::Expression::ValueType& e1,
+	const ir::Expression::ValueType& context_object,
 	const std::string& identifier) const
 {
-	if (!e1->type().is<ir::Datatype::ClassName>())
+	if (!context_object->type().is<ir::Datatype::ClassName>())
 	{
 		throw SemanticError("left hand operand of . operator is not an object variable");
 	}
-	auto class_name = e1->type().get<ir::Datatype::ClassName>();
+	auto class_name = context_object->type().get<ir::Datatype::ClassName>();
 	std::optional<SymbolTable::Symbol> search_result = searchTables(class_name);
 	if (!search_result)
 	{
@@ -665,7 +651,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 			AllocaInstruction::Ptr attribute = expr_class->getAttribute(identifier, ir::Class::Visibility::Public); 
 			if (attribute)
 			{
-				return std::make_shared<SymbolExpression>(attribute);
+				return std::make_shared<ObjectAttributeExpression>(context_object, attribute, expr_class);
 			}
 			else
 			{
@@ -673,7 +659,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 				Function::Ptr method = expr_class->getMethod(identifier, ir::Class::Visibility::Public);
 				if (method)
 				{
-					return std::make_shared<FunctionExpression>(method);
+					return std::make_shared<MethodExpression>(method, context_object);
 				}
 				else
 				{

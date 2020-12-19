@@ -60,7 +60,7 @@ public:
 	virtual Datatype customDatatype(const std::string& dt) const;
 	virtual Instruction::Ptr assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
-	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const;
+	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr createIf(
 		const ir::Expression::ValueType& val,
@@ -91,7 +91,7 @@ public:
 	virtual ir::Expression::ValueType identifierExpr(const std::string& name) const;
 	virtual ir::Expression::ValueType functionCall(
 		const ir::Expression::ValueType& identifier,
-		const std::vector<ir::Expression::ValueType>& args) const;
+		std::vector<ir::Expression::ValueType>& args) const;
 
 	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const;
 	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;

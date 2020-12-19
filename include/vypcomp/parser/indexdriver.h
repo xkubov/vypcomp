@@ -15,7 +15,7 @@ public:
 public:
 	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const override;
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const override;
-	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, const std::vector<ir::Expression::ValueType>& args) const override;
+	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const override;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const override;
 	virtual Instruction::Ptr createIf(
 		const ir::Expression::ValueType& val,
@@ -35,7 +35,7 @@ public:
 	virtual ir::Expression::ValueType identifierExpr(const std::string& name) const override;
 	virtual ir::Expression::ValueType functionCall(
 		const ir::Expression::ValueType& identifier,
-		const std::vector<ir::Expression::ValueType>& args) const override;
+		std::vector<ir::Expression::ValueType>& args) const override;
 
 	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const override;
 	virtual ir::Expression::ValueType thisExpr() const override;

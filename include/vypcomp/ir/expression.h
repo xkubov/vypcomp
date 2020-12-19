@@ -67,7 +67,8 @@ public:
 	virtual std::string to_string() const override;
 	Function::Ptr getFunction() const;
 	ArgExpressions getArgs() const;
-private:
+	void setArgs(const ArgExpressions& args);
+protected:
 	Function::Ptr _value;
 	ArgExpressions _args;
 };
@@ -84,7 +85,17 @@ public:
 	ArgExpressions getArgs() const;
 private:
 	std::string _class_name;
-	ArgExpressions _args;
+};
+
+class MethodExpression : public FunctionExpression
+{
+public:
+	MethodExpression(Function::Ptr function, ValueType context_object);
+
+	virtual std::string to_string() const override;
+	ValueType getContextObj() const;
+private:
+	ValueType _object;
 };
 
 class BinaryOpExpression : public Expression
@@ -185,6 +196,18 @@ public:
 	ValueType getOperand() const;
 private:
 	ValueType _operand;
+};
+
+class ObjectAttributeExpression : public Expression
+{
+public:
+	ObjectAttributeExpression(ValueType object, AllocaInstruction::Ptr attribute, Class::Ptr class_ptr);
+
+	virtual std::string to_string() const override;
+private:
+	ValueType _object;
+	Class::Ptr _class;
+	AllocaInstruction::Ptr _attribute;
 };
 
 }

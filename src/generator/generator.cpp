@@ -313,7 +313,7 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         generate_expression(expr, "$0", variable_offsets, temporary_variables_mapping, out);
         out << "JUMPZ " << label_else << ", $0\n";
 
-        out << "LABEL " << label_if << "\n"; // TODO: this is not necessary
+        out << "LABEL " << label_if << "\n";
         if (if_instruction_stream.rdbuf()->in_avail())
             out << if_instruction_stream.rdbuf();
         out << "JUMP " << label_end << "\n";
@@ -321,7 +321,7 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         out << "LABEL " << label_else << "\n";
         if (else_instruction_stream.rdbuf()->in_avail())
             out << else_instruction_stream.rdbuf();
-        out << "JUMP " << label_end << "\n"; // TODO: this is not necessary
+        out << "JUMP " << label_end << "\n";
 
         out << "LABEL " << label_end << std::endl;
     }
@@ -379,7 +379,18 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
     }
     else if (auto func_expr = dynamic_cast<ir::FunctionExpression*>(input.get()))
     {
-        auto func_name = func_expr->getFunction()->name();
+        std::string label_name;
+        std::string func_name = func_expr->getFunction()->name();
+
+        if (auto method_expr = dynamic_cast<ir::MethodExpression*>(input.get()))
+        {
+            label_name = VYPLANG_PREFIX.data() + method_expr->getContextObj()->type().get<ir::Datatype::ClassName>() + "_"s + func_name;
+        }
+        else
+        {
+            label_name = VYPLANG_PREFIX.data() + func_name;
+        }
+
         auto function_args = func_expr->getArgs();
         const auto args_count = function_args.size();
         if (func_name == "print")
@@ -425,7 +436,7 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
                 std::int64_t offset = args_count - i; // first argument has lowest stack address, last is $SP-1
                 out << "SET " << "[$SP-" << offset << "], $0" << std::endl;
             }
-            out << "CALL [$SP], " << VYPLANG_PREFIX << func_name << std::endl;
+            out << "CALL [$SP], " << label_name << std::endl;
             // return value register is always $0
             if (destination.size() && destination != "$0")
                 out << "SET " << destination << ", $0" << std::endl;
@@ -444,10 +455,6 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
     }
     else if (auto binop = dynamic_cast<ir::BinaryOpExpression*>(input.get()))
     {
-        // TODO: replace "" with destination searched for here
-        // search for it in temporary_variables_mapping
-        // set destination to result in proper alloca
-        // As a result L370ish-400ish should get easier to read
         auto result_destination = get_expr_destination(binop, temporary_variables_mapping, variable_offsets);
         generate_binaryop(std::dynamic_pointer_cast<ir::BinaryOpExpression>(input), result_destination, variable_offsets, temporary_variables_mapping, out);
     }
@@ -509,7 +516,6 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     }
     else if (auto minop = dynamic_cast<ir::SubtractExpression*>(input.get()))
     {
-        // TODO: test minus operation
         if (input->type() == ir::Datatype(ir::PrimitiveDatatype::Int))
         {
             out << "SUBI $0, " << op1_location << ", " << op2_location << "\n";
@@ -669,6 +675,8 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     }
     else
     {
+        // TODO: NOT ! expression
+        // TODO: ObjectAtributeExpression
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
     }
     out << "SET " << destination << ", $0" << std::endl;
@@ -774,6 +782,11 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
         auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(binop_exp->type(), binop_exp->to_string()));
         exp_temporary_mapping[binop_exp] = new_temporary.get();
         result.push_back(new_temporary);
+    }
+    else if (auto not_exp = dynamic_cast<ir::NotExpression*>(expr.get()))
+    {
+        // TODO
+        throw std::runtime_error("Unexpected expression type in get_required_temporaries. expr is "s + expr->to_string());
     }
     else
     {
