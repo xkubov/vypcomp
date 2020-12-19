@@ -12,6 +12,12 @@ namespace vypcomp
 namespace ir
 {
 
+class DummyExpression : public Expression
+{
+public:
+	virtual std::string to_string() const override;
+};
+
 class LiteralExpression : public Expression 
 {
 public:

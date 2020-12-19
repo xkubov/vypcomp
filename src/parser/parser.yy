@@ -377,14 +377,10 @@ statement : return {
 	$$ = $1;
 }
 | IF LPAR expr RPAR if_body else {
-	if ($3->type() != Datatype(PrimitiveDatatype::Int) && !$3->type().is<Datatype::ClassName>())
-		throw SemanticError("Expression in if statement has to be either int or object type.");
-	$$ = {BranchInstruction::Ptr(new BranchInstruction($3, $5, $6))};
+	$$ = {parser->createIf($3, $5, $6)};
 }
 | WHILE LPAR expr RPAR LBRA basic_block {
-	if ($3->type() != Datatype(PrimitiveDatatype::Int) && !$3->type().is<Datatype::ClassName>())
-		throw SemanticError("Expression in if statement has to be either int or object type.");
-	$$ = {LoopInstruction::Ptr(new LoopInstruction($3, $6))};
+	$$ = {parser->createWhile($3, $6)};
 };
 
 expr 
@@ -395,17 +391,7 @@ expr
 	$$ = std::make_shared<LiteralExpression>($1.value());
 }
 | expr LPAR func_call_args {
-	auto exp = $1;
-	auto args = $3;
-	if (!exp->type().is<Datatype::FunctionType>())
-	{
-		throw SemanticError("Function call attempted on non-function expression.");
-	}
-	else
-	{
-		auto function_expr = dynamic_cast<FunctionExpression*>($1.get());
-		$$ = std::make_shared<FunctionExpression>(function_expr->getFunction(), $3);
-	}
+	$$ = parser->functionCall($1, $3);
 }
 | IDENTIFIER {
 	$$ = parser->identifierExpr($1);
