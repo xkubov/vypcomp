@@ -61,8 +61,6 @@ public:
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
 	virtual std::vector<Instruction::Ptr> call_func(const std::string& name, const std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
-	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;
-
 	void verify(const ir::AllocaInstruction::Ptr& decl);
 	void add(const ir::AllocaInstruction::Ptr& decl);
 
@@ -79,6 +77,68 @@ public:
 	std::optional<SymbolTable::Symbol> searchCurrent(const SymbolTable::Key& key) const;
 
 	Class::Ptr getCurrentClass() const;
+
+	// Expressions
+
+	virtual ir::Expression::ValueType identifierExpr(const std::string& name) const;
+
+	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const;
+	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;
+	virtual ir::Expression::ValueType thisExpr() const;
+	virtual ir::Expression::ValueType superExpr() const;
+
+	virtual ir::Expression::ValueType addExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType subExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType mulExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType divExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType geqExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType gtExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType leqExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType ltExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType eqExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType neqExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType andExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType orExpr(
+		const ir::Expression::ValueType& e1,
+		const ir::Expression::ValueType& e2) const;
+
+	virtual ir::Expression::ValueType dotExpr(
+		const ir::Expression::ValueType& e1,
+		const std::string& id) const;
+
 private:
 	std::unique_ptr<vypcomp::Parser> _parser;
 	std::unique_ptr<vypcomp::Scanner> _scanner;
