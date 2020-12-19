@@ -1,0 +1,25 @@
+class A : Object
+{
+	int x;
+	int y;
+	int z;
+	void A(void)
+	{
+		print("constructed A\n");
+	}
+}
+
+class B : A
+{
+	int w;
+	void B(void)
+	{
+		print("constructed B\n");
+	}
+}
+
+void main(void)
+{
+	A obja = new A;
+	B objb = new B;
+}

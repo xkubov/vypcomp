@@ -1,0 +1,26 @@
+class A : Object
+{
+	int x;
+	int y;
+	int z;
+	void A(void)
+	{
+	}
+	public void foo(int a) 
+	{
+		print("foo called on A with ", a, "\n");
+	}
+	public int bar(int a)
+	{
+		print("bar called on A with ", a, "\n");
+		return a + 1;
+	}
+}
+
+void main(void)
+{
+	A obja = new A;
+	obja.foo(4);
+	int res = obja.bar(8);
+	print("result of bar call ", res, "\n");
+}

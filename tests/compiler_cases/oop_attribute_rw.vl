@@ -1,0 +1,31 @@
+class A : Object
+{
+	int x;
+	int y;
+	int z;
+	void A(void)
+	{
+	}
+}
+
+class B : A
+{
+	int w;
+	void B(void)
+	{
+	}
+}
+
+void main(void)
+{
+	A obja = new A;
+	obja.x = 13;
+	obja.y = 42;
+	obja.z = 69;
+	B objb = new B;
+	objb.w = 44;
+	print("obja.x is ", obja.x, "\n");
+	print("obja.y is ", obja.y, "\n");
+	print("obja.z is ", obja.z, "\n");
+	print("objb.w is ", objb.w, "\n");
+}

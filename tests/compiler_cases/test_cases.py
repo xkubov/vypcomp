@@ -146,6 +146,24 @@ class FactorialRecCaseNegative(VYPaTestCase):
     test_stdout = b'Enter an integer to compute its factorial:\nFactorial of a negative integer is undefined!\n'
 
 
+class OopConstructors(VYPaTestCase):
+    input_file = "oop_constructors.vl"
+    test_stdin = b""
+    test_stdout = b'constructed A\nconstructed A\nconstructed B\n'
+
+
+class OopAttributes(VYPaTestCase):
+    input_file = "oop_attribute_rw.vl"
+    test_stdin = b""
+    test_stdout = b'obja.x is 13\nobja.y is 42\nobja.z is 69\nobjb.w is 44\n'
+
+
+class OopBasicMethods(VYPaTestCase):
+    input_file = "oop_methods_basic.vl"
+    test_stdin = b""
+    test_stdout = b'foo called on A with 4\nbar called on A with 8\nresult of bar call 9\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while
