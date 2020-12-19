@@ -625,7 +625,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 		throw SemanticError("left hand operand of . operator is not an object variable");
 	}
 	auto class_name = context_object->type().get<ir::Datatype::ClassName>();
-	std::optional<SymbolTable::Symbol> search_result = searchTables(class_name);
+	std::optional<SymbolTable::Symbol> search_result = searchGlobal(class_name);
 	if (!search_result)
 	{
 		// Don't think this can happen since expression can only get a class type
