@@ -586,8 +586,10 @@ AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibi
 		auto pit = std::find_if(_protectedAttrs.begin(), _protectedAttrs.end(), [name](const auto& attr) {
 			return attr->name() == name;
 		});
-		if (pit != _protectedAttrs.end())
-			return *it;
+		if (pit != _protectedAttrs.end()) {
+			return *pit;
+		}
+
 	}
 
 	auto it = std::find_if(_publicAttrs.begin(), _publicAttrs.end(), [name](const auto& attr) {
