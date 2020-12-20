@@ -1,0 +1,53 @@
+class Init: Object {
+	protected int foo;
+	void start(void) {
+		print("prd");
+	}
+}
+
+class First: Init {
+	public void setFoo(void) {
+		this.foo = 42;
+	}
+}
+
+class Second: First {
+	protected void callSetFoo(void) {
+		this.setFoo();
+	}
+}
+
+class Third: Second {
+	public void callCallSetFoo(void) {
+		this.callSetFoo();
+	}
+}
+
+class Forth: Third {
+	protected void callCallCallSetFoo(void) {
+		this.callCallSetFoo();
+	}
+}
+
+class Final: Forth {
+	void start(void) {
+		this.foo = 82;
+		this.callCallCallSetFoo();
+		print(this.foo);
+		this.foo = 82;
+		this.callCallSetFoo();
+		print(this.foo);
+		this.foo = 82;
+		this.callSetFoo();
+		print(this.foo);
+		this.foo = 82;
+		this.setFoo();
+		print(this.foo);
+	}
+}
+
+void main(void) {
+	Init test = new Final;
+	test.start();
+	return;
+}

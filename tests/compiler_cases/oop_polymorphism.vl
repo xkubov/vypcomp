@@ -1,0 +1,17 @@
+class Parent: Object {
+	int ok;
+	void foo(int ok) {
+		this.ok = 13+ok;
+	}
+}
+class Class: Parent {
+	void foo(int ok) {
+		this.ok = ok;
+	}
+}
+
+void main(void) {
+	Parent test = new Class;
+	test.foo(42);
+	print(test.ok);
+}

@@ -1,0 +1,14 @@
+class Base: Object {
+	void Base(void) {
+		this.ok = 42;
+	}
+	int ok = 0;
+}
+
+class Derived: Base {
+}
+
+void main(void) {
+	Derived cool = new Derived;
+	print(cool.ok);
+}

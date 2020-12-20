@@ -1,0 +1,23 @@
+int bla(Class b) {
+	print(b.foo(0));
+	return b.foo(0);
+}
+
+class Class: Object {
+	int foo(int nok) {
+		return nok+42;
+	}
+}
+
+class ClassB: Class {
+}
+
+class ClassC: ClassB {
+}
+
+void main(void) {
+	Class a = new Class;
+	ClassB b = new ClassB;
+	ClassC c = new ClassC;
+	bla(a); bla(b); bla(c);
+}
