@@ -65,6 +65,7 @@ struct Literal {
 public:
 	using Impl = std::variant<std::string, unsigned long long, double>;
 	Literal(const Impl& val);
+	Literal(const Datatype& def);
 
 	template<PrimitiveDatatype = PrimitiveDatatype::String>
 	std::string get() const;

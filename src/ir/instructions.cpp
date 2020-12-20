@@ -413,12 +413,6 @@ Class::Ptr Class::getBase() const
 
 void Class::clear()
 {
-	_publicMethods.clear();
-	_privateMethods.clear();
-	_protectedMethods.clear();
-	_publicAttrs.clear();
-	_privateAttrs.clear();
-	_protectedAttrs.clear();
 	_implicit.clear();
 }
 

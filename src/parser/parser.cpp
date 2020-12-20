@@ -144,6 +144,7 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 	pushSymbolTable(true);
 	_currClass = cl;
 
+	cl->clear();
 	for (auto a: cl->publicMethods()) {
 		_tables.back().insert({a->name(), a});
 	}

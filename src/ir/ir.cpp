@@ -113,3 +113,22 @@ Literal::Literal(const Literal::Impl &val):
 	_val(val)
 {
 }
+
+Literal::Literal(const Datatype& dt)
+{
+	if (!dt.isPrimitive())
+		throw std::runtime_error("literal can be only primitve");
+
+	auto strPrimitive = Datatype(PrimitiveDatatype::String);
+	auto intPrimitive = Datatype(PrimitiveDatatype::Int);
+	auto floatPrimitive = Datatype(PrimitiveDatatype::Float);
+
+	if (dt == strPrimitive)
+		_val = Literal::Impl("");
+	else if (dt == intPrimitive)
+		_val = Literal::Impl(0ull);
+	else if (dt == floatPrimitive)
+		_val = Literal::Impl(0.0);
+	else
+		throw std::runtime_error("invalid use of literal");
+}

@@ -494,6 +494,10 @@ declaration : named_data optional_assignment id2init {
 		if (init) {
 			result.push_back(parser->assign(id, init));
 		}
+		else if (decl->type().isPrimitive()) {
+			auto literal = LiteralExpression::ValueType(new LiteralExpression(ir::Literal(decl->type())));
+			result.push_back(parser->assign(id, literal));
+		}
 	}
 
 	$$ = result;
