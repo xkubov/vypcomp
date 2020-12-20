@@ -170,6 +170,12 @@ class OopObjectBuiltins(VYPaTestCase):
     test_stdout = b'o.getClass(): Object\no.toString(): 15\n'
 
 
+class OopThisKeyword(VYPaTestCase):
+    input_file = "oop_this_usage.vl"
+    test_stdin = b""
+    test_stdout = b'getX called on A 1\nresult of getX call 1\nbar called on A with 8\nresult of bar call 9\ngetXincr called on A 1\nresult of getXincr call 2\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

@@ -1,0 +1,38 @@
+class A : Object
+{
+	int x;
+	int y;
+	int z;
+	void A(void)
+	{
+		this.x = 1;
+		this.y = 2;
+		this.z = 3;
+	}
+	public int getX(void) 
+	{
+		print("getX called on A ", this.x, "\n");
+		return this.x;
+	}
+	public int getXincr(void) 
+	{
+		print("getXincr called on A ", this.x, "\n");
+		return this.x + 1;
+	}
+	public int bar(int a)
+	{
+		print("bar called on A with ", a, "\n");
+		return a + 1;
+	}
+}
+
+void main(void)
+{
+	A obja = new A;
+	int ax = obja.getX();
+	print("result of getX call ", ax, "\n");
+	int res = obja.bar(8);
+	print("result of bar call ", res, "\n");
+	int axi = obja.getXincr();
+	print("result of getXincr call ", axi, "\n");
+}
