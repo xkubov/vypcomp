@@ -167,13 +167,19 @@ class OopBasicMethods(VYPaTestCase):
 class OopObjectBuiltins(VYPaTestCase):
     input_file = "oop_object_builtins.vl"
     test_stdin = b""
-    test_stdout = b'o.getClass(): Object\no.toString(): 15\n'
+    test_stdout = b'o.getClass(): Object\no.toString(): worked\n'
 
 
 class OopThisKeyword(VYPaTestCase):
     input_file = "oop_this_usage.vl"
     test_stdin = b""
     test_stdout = b'getX called on A 1\nresult of getX call 1\nbar called on A with 8\nresult of bar call 9\ngetXincr called on A 1\nresult of getXincr call 2\n'
+
+
+class OopSubsumption(VYPaTestCase):
+    input_file = "oop_subsumption.vl"
+    test_stdin = b""
+    test_stdout = b'o.getClass(): A\no.toString(): worked\n'
 
 
 # TODO: compiler error tests:

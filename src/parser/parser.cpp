@@ -260,9 +260,7 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 			throw SemanticError("Cannot assign to function.");
 
 		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
-		if (var->type() != val->type()) {
-			throw SemanticError("Invalid type.");
-		}
+		checkAssignmentTypes(var->type(), val->type());
 
 		return Assignment::Ptr(
 			new Assignment(
@@ -273,6 +271,45 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 	}
 
 	throw SemanticError("Assignment to undefined variable " + name);
+}
+
+void ParserDriver::checkAssignmentTypes(const Datatype& dest_type, const Datatype& value_type) const
+{
+	if (dest_type != value_type) 
+	{
+		// value_type is an object type, test whether dest_type is not a parent of value_type
+		if (dest_type.is<Datatype::ClassName>() && value_type.is<Datatype::ClassName>())
+		{
+			auto dest_class_name = dest_type.get<Datatype::ClassName>();
+			auto value_class_name = value_type.get<Datatype::ClassName>();
+			auto dest_class_search_result = searchGlobal(dest_class_name);
+			if (!dest_class_search_result) throw std::runtime_error("Destination in assignment of type \"" + dest_class_name + "\" has class type of class that is missing from SymbolTable");
+			auto value_class_search_result = searchGlobal(value_class_name);
+			if (!value_class_search_result) throw std::runtime_error("Value in assignment of type \"" + value_class_name + "\" has class type of class that is missing from SymbolTable");
+			if (!std::holds_alternative<Class::Ptr>(dest_class_search_result.value()) || !std::holds_alternative<Class::Ptr>(value_class_search_result.value()))
+				throw std::runtime_error("Type of destination or value in assignment is not a class.");
+			auto dest_class_ptr = std::get<Class::Ptr>(dest_class_search_result.value());
+			auto val_class_ptr = std::get<Class::Ptr>(value_class_search_result.value());
+			if (canAssign(dest_class_ptr, val_class_ptr))
+				return;
+		}
+		throw SemanticError("Invalid type, can't assign " + value_type.to_string() + " to " + dest_type.to_string());
+	}
+}
+
+bool ParserDriver::canAssign(Class::Ptr dest_class, Class::Ptr val_class) const
+{
+	if (!val_class)
+		return false;
+	auto value_parent = val_class->getBase();
+	if (dest_class == value_parent)
+	{
+		return true;
+	}
+	else
+	{
+		return canAssign(dest_class, value_parent);
+	}
 }
 
 std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const

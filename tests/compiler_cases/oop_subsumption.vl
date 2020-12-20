@@ -14,6 +14,11 @@ class A : Object
 		print("getX called on A ", this.x, "\n");
 		return this.x;
 	}
+	public int getXincr(void) 
+	{
+		print("getXincr called on A ", this.x, "\n");
+		return this.x + 1;
+	}
 	public int bar(int a)
 	{
 		print("bar called on A with ", a, "\n");
@@ -23,7 +28,7 @@ class A : Object
 
 void main(void)
 {
-	Object o = new Object;
+	Object o = new A;
 	print("o.getClass(): ", o.getClass(), "\n");
 	string obj_tostring = o.toString();
 	print("o.toString(): worked\n");
