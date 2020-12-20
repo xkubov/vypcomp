@@ -290,25 +290,39 @@ void ParserDriver::checkAssignmentTypes(const Datatype& dest_type, const Datatyp
 				throw std::runtime_error("Type of destination or value in assignment is not a class.");
 			auto dest_class_ptr = std::get<Class::Ptr>(dest_class_search_result.value());
 			auto val_class_ptr = std::get<Class::Ptr>(value_class_search_result.value());
-			if (canAssign(dest_class_ptr, val_class_ptr))
+			if (Class::canAssign(dest_class_ptr, val_class_ptr))
 				return;
 		}
 		throw SemanticError("Invalid type, can't assign " + value_type.to_string() + " to " + dest_type.to_string());
 	}
 }
 
-bool ParserDriver::canAssign(Class::Ptr dest_class, Class::Ptr val_class) const
+void ParserDriver::checkArgTypes(const Function::Ptr& function_ptr, const FunctionExpression::ArgExpressions& real_args) const
 {
-	if (!val_class)
-		return false;
-	auto value_parent = val_class->getBase();
-	if (dest_class == value_parent)
+	// function object was found, verify arguments
+	if (function_ptr->name() == "print")
 	{
-		return true;
+		if (real_args.size() < 1) throw SemanticError("print has to have at least 1 parameter");
+		for (const ir::Expression::ValueType& argument : real_args)
+		{
+			auto arg_type = argument->type();
+			if (!arg_type.isPrimitive())
+			{
+				throw SemanticError("print called with non-primitive datatype parameter.");
+			}
+		}
 	}
 	else
 	{
-		return canAssign(dest_class, value_parent);
+		if (real_args.size() != function_ptr->args().size())
+			throw SemanticError("Provided argument count does not match the declared parameter count.");
+
+		for (std::size_t i = 0; i < real_args.size(); i++)
+		{
+			auto formal_type = function_ptr->argTypes()[i];
+			auto actual_type = real_args[i]->type();
+			checkAssignmentTypes(formal_type, actual_type);
+		}
 	}
 }
 
@@ -348,6 +362,7 @@ std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType 
 		throw SemanticError("Only function or assignment allowed on statement level, got: " + func_expr->to_string());
 	}
 	auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr);
+	checkArgTypes(funcexp->getFunction(), args);
 	funcexp->setArgs(args);
 	return { std::make_shared<Assignment>(nullptr, func_expr) };
 }
@@ -582,6 +597,7 @@ ir::Expression::ValueType ParserDriver::functionCall(
 			args.insert(args.begin(), methodexp->getContextObj());
 		}
 		auto function_expr_childptr = dynamic_cast<FunctionExpression*>(function_expr.get());
+		checkArgTypes(function_expr_childptr->getFunction(), args);
 		function_expr_childptr->setArgs(args);
 		return function_expr;
 	}

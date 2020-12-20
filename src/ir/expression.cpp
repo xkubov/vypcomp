@@ -112,32 +112,6 @@ FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
 }
 void FunctionExpression::setArgs(const ArgExpressions& args)
 {
-	// function object was found, verify arguments
-	if (_value->name() == "print")
-	{
-		if (args.size() < 1) throw SemanticError("print has to have at least 1 parameter");
-		for (const ir::Expression::ValueType& argument : args)
-		{
-			auto arg_type = argument->type();
-			if (!arg_type.isPrimitive())
-			{
-				throw SemanticError("print called with non-primitive datatype parameter.");
-			}
-		}
-	}
-	else
-	{
-		if (args.size() != _value->args().size())
-			throw SemanticError("Provided argument count does not match the declared parameter count.");
-
-		for (std::size_t i = 0; i < args.size(); i++)
-		{
-			auto formal_type = _value->argTypes()[i];
-			auto actual_type = args[i]->type();
-			if (formal_type != actual_type)
-				throw SemanticError("Provided argument type does not match declared type.");
-		}
-	}
 	_args = args;
 	_type = _value->type() ? _value->type().value() : Datatype(Datatype::FunctionType());
 }

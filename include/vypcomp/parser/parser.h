@@ -63,7 +63,7 @@ public:
 	virtual Instruction::Ptr assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr assign(const std::string& name, const ir::Expression::ValueType& val) const;
 	void checkAssignmentTypes(const Datatype& dest_type, const Datatype& value_type) const;
-	bool ParserDriver::canAssign(Class::Ptr dest_class, Class::Ptr val_class) const;
+	void checkArgTypes(const Function::Ptr& function_ptr, const FunctionExpression::ArgExpressions& real_args) const;
 	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const;
 	virtual Return::Ptr createReturn(const ir::Expression::ValueType& val) const;
 	virtual Instruction::Ptr createIf(
