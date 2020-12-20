@@ -182,6 +182,12 @@ class OopSubsumption(VYPaTestCase):
     test_stdout = b'o.getClass(): A\no.toString(): worked\n'
 
 
+class OopOverride(VYPaTestCase):
+    input_file = "oop_override.vl"
+    test_stdin = b""
+    test_stdout = b'foo called on A\nfoo called on B\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while
