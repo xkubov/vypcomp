@@ -316,6 +316,12 @@ class ExpressionMegatest(VYPaTestCase):
     test_stdout = megatest_out
 
 
+class ObjectComparisons(VYPaTestCase):
+    input_file = "object_comparison.vl"
+    test_stdin = b""
+    test_stdout = b'false\ntrue\nfalse\ntrue\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

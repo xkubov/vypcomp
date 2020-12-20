@@ -1,0 +1,9 @@
+void main(void) {
+	Object a = new Object;
+	Object b = new Object;
+	Object c;
+	if (!a) { print("true\n"); } else { print("false\n"); }
+	if (!c){ print("true\n"); } else { print("false\n"); }
+	if (a == b) { print("true\n"); } else { print("false\n"); }
+	if (a != b) { print("true\n"); } else { print("false\n"); }
+}
