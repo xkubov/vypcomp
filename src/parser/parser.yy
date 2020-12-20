@@ -402,9 +402,13 @@ expr
 | EXCLAMATION expr {
 	$$ = parser->notExpr($2);
 }
+| LPAR PRIMITIVE_DATA_TYPE RPAR expr
+{
+	$$ = parser->createCastExpr(Datatype($2), $4);
+}
 | LPAR IDENTIFIER RPAR expr
 {
-	$$ = parser->createCastExpr($2, $4);
+	$$ = parser->createCastExpr(Datatype($2), $4);
 }
 | THIS {
 	$$ = parser->thisExpr();

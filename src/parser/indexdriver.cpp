@@ -60,7 +60,7 @@ Instruction::Ptr IndexParserDriver::assign(const std::string& name, const ir::Ex
 	return DummyInstruction::Ptr(new DummyInstruction);
 }
 
-std::shared_ptr<CastExpression> IndexParserDriver::createCastExpr(std::string class_name, Expression::ValueType expr) const
+std::shared_ptr<CastExpression> IndexParserDriver::createCastExpr(const Datatype& dt, Expression::ValueType expr) const
 {
 	return nullptr;
 }

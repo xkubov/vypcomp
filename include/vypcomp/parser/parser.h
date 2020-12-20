@@ -98,7 +98,7 @@ public:
 		std::vector<ir::Expression::ValueType>& args) const;
 
 	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const;
-	virtual std::shared_ptr<CastExpression> createCastExpr(std::string class_name, Expression::ValueType expr) const;
+	virtual std::shared_ptr<CastExpression> createCastExpr(const Datatype& dest_datatype, Expression::ValueType expr) const;
 	virtual ir::Expression::ValueType thisExpr() const;
 	virtual ir::Expression::ValueType superExpr() const;
 
