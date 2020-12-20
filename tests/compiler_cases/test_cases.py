@@ -200,6 +200,17 @@ class OopSuperKeyword(VYPaTestCase):
     test_stdout = b'toString called on A\nresult of a.toString(): "the super toString returned: 17"'
 
 
+class OopVisibility(VYPaTestCase):
+    input_file = "oop_visibility.vl"
+    test_stdin = b""
+    test_stdout = b'69'
+
+
+class OopVisibilityPrivateFail(VYPaTestCase):
+    input_file = "oop_visibility_fail.vl"
+    test_return = 19
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

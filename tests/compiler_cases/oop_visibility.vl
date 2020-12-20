@@ -1,0 +1,15 @@
+class A : Object
+{
+	private int x;
+	void A(void)
+	{ this.x = 69; }
+	public int getX(void)
+	{ return this.x; }
+}
+
+void main(void)
+{
+	A a = new A;
+	print(a.getX());
+	return;
+}	
