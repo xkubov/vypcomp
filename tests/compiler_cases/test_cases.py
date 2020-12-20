@@ -84,12 +84,12 @@ class FibRecursive(VYPaTestCase):
 
 class FunctionRedefinition(VYPaTestCase):
     input_file = "fun_redef.vl"
-    test_return = 19
+    test_return = 14
 
 
 class MethodRedefinition(VYPaTestCase):
     input_file = "meth_redef.vl"
-    test_return = 19
+    test_return = 14
 
 
 class StringConcatBasic(VYPaTestCase):
@@ -214,7 +214,7 @@ class OopVisibility(VYPaTestCase):
 
 class OopVisibilityPrivateFail(VYPaTestCase):
     input_file = "oop_visibility_fail.vl"
-    test_return = 19
+    test_return = 14
 
 
 class OopAssignmentExample(VYPaTestCase):

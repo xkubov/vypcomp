@@ -32,4 +32,13 @@ private:
 	std::string msg;
 };
 
+class IncompabilityError: public std::exception {
+public:
+	IncompabilityError(const std::string& msg);
+	const char * what() const throw() override;
+
+private:
+	std::string msg;
+};
+
 }
