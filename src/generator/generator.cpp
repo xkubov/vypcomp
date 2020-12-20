@@ -643,6 +643,23 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
         out << "INT2STRING $0, " << operand_location << "\n";
         out << "SET " << expr_destination << ", $0" << std::endl;
     }
+    else if (auto not_expr = dynamic_cast<ir::NotExpression*>(input.get()))
+    {
+        auto operand = not_expr->getOperand();
+        std::string operand_location;
+        if (operand->is_simple())
+        {
+            operand_location = "$1";
+        }
+        else
+        {
+            operand_location = get_expr_destination(operand.get(), temporary_variables_mapping, variable_offsets);
+        }
+        auto expr_destination = get_expr_destination(not_expr, temporary_variables_mapping, variable_offsets);
+        generate_expression(operand, operand_location, variable_offsets, temporary_variables_mapping, out);
+        out << "NOT $0, " << operand_location << "\n";
+        out << "SET " << expr_destination << ", $0" << std::endl;
+    }
     else
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
@@ -880,8 +897,6 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
     }
     else
     {
-        // TODO: NOT ! expression
-        // TODO: ObjectAtributeExpression
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
     }
     out << "SET " << destination << ", $0" << std::endl;
@@ -997,8 +1012,11 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
     }
     else if (auto not_exp = dynamic_cast<ir::NotExpression*>(expr.get()))
     {
-        // TODO
-        throw std::runtime_error("Unexpected expression type in get_required_temporaries. expr is "s + expr->to_string());
+        auto operand_temporaries = get_required_temporaries(not_exp->getOperand(), exp_temporary_mapping);
+        result.insert(result.end(), operand_temporaries.begin(), operand_temporaries.end());
+        auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(not_exp->type(), not_exp->to_string()));
+        exp_temporary_mapping[not_exp] = new_temporary.get();
+        result.push_back(new_temporary);
     }
     else if (auto object_access_attr = dynamic_cast<ir::ObjectAttributeExpression*>(expr.get()))
     {
@@ -1044,9 +1062,9 @@ std::optional<vypcomp::Generator::AllocaRawPtr> vypcomp::Generator::find_expr_de
 vypcomp::Generator::DestinationName vypcomp::Generator::get_expr_destination(ExprRawPtr expr, TempVarMap& temporary_variables_mapping, OffsetMap& variable_offsets) const
 {
     auto exp_destination = find_expr_destination(expr, temporary_variables_mapping);
-    if (!exp_destination) throw std::runtime_error("Binary operation expression destination was not a temporary variable: "s + expr->to_string());
+    if (!exp_destination) throw std::runtime_error("Expression destination was not a temporary variable: "s + expr->to_string());
     auto destination_offset = find_offset(exp_destination.value(), variable_offsets);
-    if (!destination_offset) throw std::runtime_error("Binary operation expression destination's offset not found: "s + expr->to_string());
+    if (!destination_offset) throw std::runtime_error("Expression destination's offset not found: "s + expr->to_string());
     return "[$SP-"s + std::to_string(destination_offset.value()) + "]"s;
 }
 

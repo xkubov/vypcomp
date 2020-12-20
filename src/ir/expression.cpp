@@ -429,6 +429,10 @@ NotExpression::NotExpression(ValueType operand)
 	if (operand->type() != Datatype(PrimitiveDatatype::Int) && !operand->type().is<Datatype::ClassName>())
 		throw SemanticError("Only int and object type allowed in ! operator: " + operand->to_string());
 }
+NotExpression::ValueType NotExpression::getOperand() const
+{
+	return _operand;
+}
 std::string NotExpression::to_string() const
 {
 	return "(!" + _operand->to_string() + ")";

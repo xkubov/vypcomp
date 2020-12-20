@@ -81,7 +81,7 @@ ir::Expression::ValueType IndexParserDriver::functionCall(
 
 ir::Expression::ValueType IndexParserDriver::notExpr(const ir::Expression::ValueType& expr) const
 {
-	return std::make_shared<NotExpression>(expr);
+	return std::make_shared<DummyExpression>();
 }
 
 ir::Expression::ValueType IndexParserDriver::thisExpr() const

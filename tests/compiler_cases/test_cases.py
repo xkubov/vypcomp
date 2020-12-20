@@ -76,6 +76,12 @@ class AdditionAdvTest(VYPaTestCase):
     test_stdout = b"6987"
 
 
+class NotExpressionTest(VYPaTestCase):
+    input_file = "notexp.vl"
+    test_stdin = b""
+    test_stdout = b'TrueFalse'
+
+
 class FibRecursive(VYPaTestCase):
     input_file = "fib_recursive.vl"
     test_stdin = b""

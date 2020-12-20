@@ -1,0 +1,7 @@
+void main(void)
+{
+	int False = 0; int True = 1;
+	if (!False) { print("True"); } else { print("False"); }
+	if (!True) { print("True"); } else { print("False"); }
+	return;
+}
