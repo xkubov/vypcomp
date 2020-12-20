@@ -198,6 +198,13 @@ Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& ba
 		auto cl = std::get<Class::Ptr>(*symbol);
 		
 		cl->setBase(getClass(base));
+		auto parent = getClass(base);
+		while (parent->name() != "Object") {
+			if (parent->name() == name) {
+				throw SemanticError("cyclic derivation of class "+name);
+			}
+			parent = parent->getBase();
+		}
 		return cl;
         }
 
@@ -642,6 +649,15 @@ ir::Expression::ValueType ParserDriver::superExpr() const
 			return std::make_shared<SuperExpression>(_currFunction->args()[0], current_class);
 		}
 	}
+}
+
+ir::Expression::ValueType ParserDriver::newExpr(const std::string& class_name) const
+{
+	auto search_result = searchTables(class_name);
+	if (!search_result) throw SemanticError("class " + class_name + " in constructor not found.");
+	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw SemanticError("Identifier " + class_name + " is not a class.");
+	auto class_ptr = std::get<Class::Ptr>(search_result.value());
+	return std::make_shared<ConstructorExpression>(class_ptr);
 }
 
 ir::Expression::ValueType ParserDriver::addExpr(
