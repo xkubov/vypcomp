@@ -185,7 +185,7 @@ private:
 	BasicBlock::Ptr _body = nullptr;
 };
 
-class Class: public Instruction {
+class Class : public Instruction {
 public:
 	enum class Visibility {
 		Public,
@@ -239,6 +239,38 @@ public:
 	std::string name() const;
 	virtual std::string str(const std::string& prefix) const override;
 
+	static bool canAssign(Class::Ptr dest_class, Class::Ptr val_class);
+	class MethodIterator
+	{
+	public:
+		MethodIterator(Class* base_class)
+			: is_end(false), base_class(base_class)
+		{
+			current_class = base_class;
+			while (auto parent_class = current_class->getBase())
+				current_class = parent_class.get();
+		}
+		MethodIterator() = default;
+		MethodIterator& operator+=(std::int64_t i);
+		const Function::Ptr& operator*();
+		bool operator==(const MethodIterator& rhs) const;
+		bool operator!=(const MethodIterator& rhs) const;
+	private:
+		Class* base_class = nullptr;
+		Class* current_class = nullptr;
+		std::size_t index = 0;
+		bool is_end = true;
+		std::size_t level = 0;
+	};
+	MethodIterator methods_begin()
+	{
+		return MethodIterator(this);
+	}
+	MethodIterator methods_end()
+	{
+		return MethodIterator();
+	}
+	friend MethodIterator;
 private:
 	std::string _name;
 	Class::Ptr _parent;

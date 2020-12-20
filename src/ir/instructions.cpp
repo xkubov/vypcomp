@@ -478,14 +478,14 @@ std::vector<Instruction::Ptr> Class::implicit() const
 Function::Ptr Class::getMethod(const std::string& name, const std::vector<Datatype>& argtypes, const Visibility& v) const
 {
 	switch (v) {
-		case Visibility::Protected:
 		case Visibility::Private: {
 			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name, argtypes](const auto& method) {
 				return method->name() == name && method->argTypes() == argtypes;
-			});
+				});
 			if (it != _privateMethods.end())
 				return *it;
-
+		}
+		case Visibility::Protected: {
 			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name, argtypes](const auto& method) {
 				return method->name() == name && method->argTypes() == argtypes;
 			});
@@ -501,7 +501,7 @@ Function::Ptr Class::getMethod(const std::string& name, const std::vector<Dataty
 				return *it;
 
 			if (_parent)
-				return _parent->getMethod(name, argtypes, v);
+				return _parent->getMethod(name, argtypes, v == Visibility::Private ? Visibility::Protected : v);
 		}
 	}
 
@@ -511,14 +511,14 @@ Function::Ptr Class::getMethod(const std::string& name, const std::vector<Dataty
 Function::Ptr Class::getMethod(const std::string& name, const Visibility& v) const
 {
 	switch (v) {
-		case Visibility::Protected:
 		case Visibility::Private: {
 			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name](const auto& method) {
 				return method->name() == name;
-			});
+				});
 			if (it != _privateMethods.end())
 				return *it;
-
+		}
+		case Visibility::Protected: {
 			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name](const auto& method) {
 				return method->name() == name;
 			});
@@ -534,7 +534,7 @@ Function::Ptr Class::getMethod(const std::string& name, const Visibility& v) con
 				return *it;
 
 			if (_parent)
-				return _parent->getMethod(name, v);
+				return _parent->getMethod(name, v == Visibility::Private ? Visibility::Protected : v);
 		}
 	}
 
@@ -663,4 +663,91 @@ const std::vector<AllocaInstruction::Ptr>& Class::privateAttributes() const
 const std::vector<AllocaInstruction::Ptr>& Class::protectedAttributes() const
 {
 	return _protectedAttrs;
+}
+
+bool Class::canAssign(Class::Ptr dest_class, Class::Ptr val_class)
+{
+	if (!val_class)
+		return false;
+	auto value_parent = val_class->getBase();
+	if (dest_class == value_parent)
+	{
+		return true;
+	}
+	else
+	{
+		return canAssign(dest_class, value_parent);
+	}
+}
+
+Class::MethodIterator& Class::MethodIterator::operator+=(std::int64_t i)
+{
+	index += i;
+	if (index >= (current_class->publicMethods().size() + current_class->protectedMethods().size() + current_class->privateMethods().size()))
+	{
+		index = 0;
+		do
+		{
+			if (current_class == base_class)
+			{
+				is_end = true;
+				break;
+			}
+			else
+			{
+				Class* new_current_class = base_class;
+				while (true)
+				{
+					auto parent_class = new_current_class->getBase();
+					if (parent_class && parent_class.get() != current_class)
+						new_current_class = parent_class.get();
+					else
+						break;
+				}
+				if (new_current_class != current_class)
+				{
+					current_class = new_current_class;
+				}
+				else
+				{
+					is_end = true;
+
+				}
+			}
+		} while (current_class->publicMethods().size() + current_class->protectedMethods().size() + current_class->privateMethods().size() == 0);
+	}
+	return *this;
+}
+
+const Function::Ptr& Class::MethodIterator::operator*()
+{
+	auto reduced_index = index;
+	if (reduced_index < current_class->publicMethods().size())
+	{
+		return current_class->publicMethods()[reduced_index];
+	}
+	reduced_index -= current_class->publicMethods().size();
+	if (reduced_index < current_class->protectedMethods().size())
+	{
+		return current_class->protectedMethods()[reduced_index];
+	}
+	reduced_index -= current_class->protectedMethods().size();
+	if (reduced_index < current_class->privateMethods().size())
+	{
+		return current_class->privateMethods()[reduced_index];
+	}
+	throw std::runtime_error("MethodIterator index out of range");
+}
+
+bool Class::MethodIterator::operator==(const MethodIterator& rhs) const
+{
+	if (is_end)
+		return rhs.is_end;
+	else
+		return index == rhs.index && current_class == rhs.current_class && !rhs.is_end;
+}
+
+bool Class::MethodIterator::operator!=(const MethodIterator& rhs) const
+{
+	return !(*this == rhs);
 }

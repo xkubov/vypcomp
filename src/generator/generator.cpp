@@ -69,7 +69,27 @@ void vypcomp::Generator::generate(const vypcomp::SymbolTable& symbol_table)
 
 void vypcomp::Generator::generate_vtables(const vypcomp::SymbolTable& symbol_table, OutputStream& out)
 {
+    std::vector<std::string> vtables;
+    for (auto [_, symbol] : symbol_table.data()) {
+        if (std::holds_alternative<ir::Class::Ptr>(symbol))
+        {
+            auto class_symbol = std::get<ir::Class::Ptr>(symbol);
+            std::stringstream class_vtable_init;
+            //generate_vtable(class_symbol, class_vtable_init);
 
+            std::cout << "iterating: " << class_symbol->name() << std::endl;
+            for (auto i = class_symbol->methods_begin(), end = class_symbol->methods_end(); i != end; i += 1)
+            {
+                auto method = *i;
+                std::cout << method->argTypes()[0].to_string() << " " << method->name() << std::endl;
+            }
+
+            vtables.push_back(class_vtable_init.str());
+        }
+    }
+    // generate the vtables before calling main probably
+    // assign unique vtable id for each class which it then uses in constructor
+    // TODO: make method call use vtable
 }
 
 void vypcomp::Generator::generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out)
