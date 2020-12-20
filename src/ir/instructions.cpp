@@ -599,7 +599,7 @@ AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibi
 		return *it;
 
 	if (_parent)
-		return _parent->getAttribute(name, v);
+		return _parent->getAttribute(name, v == Visibility::Private ? Visibility::Protected : v);
 
 	return nullptr;
 }
