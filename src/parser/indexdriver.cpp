@@ -12,6 +12,13 @@ IndexParserDriver::IndexParserDriver(const SymbolTable &global):
 {
 }
 
+AllocaInstruction::Ptr IndexParserDriver::newDeclaration(const Datatype& t, const std::string& id)
+{
+	auto decl = AllocaInstruction::Ptr(new AllocaInstruction({t, id}));
+	add(decl);
+	return decl;
+}
+
 Class::Ptr IndexParserDriver::newClass(const std::string& name, const std::string& base) const
 {
         if (searchGlobal(name)) {

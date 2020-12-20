@@ -123,6 +123,7 @@ public:
 
 	std::string name() const;
 	PossibleDatatype type() const;
+	void setArgs(const std::vector<AllocaInstruction::Ptr>& args);
 	const std::vector<AllocaInstruction::Ptr>& args() const;
 	std::vector<AllocaInstruction::Ptr>& args();
 	std::vector<Datatype> argTypes() const;
@@ -226,9 +227,9 @@ public:
 	//  - Protected/Private: attribute that is available to the class too.
 	AllocaInstruction::Ptr getAttribute(const std::string& name, const Visibility& v = Visibility::Public) const;
 
-	const std::vector<Function::Ptr> publicMethods() const;
-	const std::vector<Function::Ptr> privateMethods() const;
-	const std::vector<Function::Ptr> protectedMethods() const;
+	const std::vector<Function::Ptr>& publicMethods() const;
+	const std::vector<Function::Ptr>& privateMethods() const;
+	const std::vector<Function::Ptr>& protectedMethods() const;
 
 	const std::vector<AllocaInstruction::Ptr>& publicAttributes() const;
 	const std::vector<AllocaInstruction::Ptr>& privateAttributes() const;

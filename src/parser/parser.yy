@@ -489,10 +489,7 @@ declaration : named_data optional_assignment id2init {
 	$3.insert($3.begin(), {n, $2});
 
 	for (auto [id, init]: $3) {
-		// TODO: remove init from alloca instruction. Check init with parser.
-		// TODO: make init as method of declaration.
-		auto decl = AllocaInstruction::Ptr(new AllocaInstruction({t, id}));
-		parser->add(decl);
+		auto decl = parser->newDeclaration(t, id);
 		result.push_back(decl);
 		if (init) {
 			result.push_back(parser->assign(id, init));

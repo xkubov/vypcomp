@@ -141,6 +141,25 @@ void ParserDriver::parseStart(ir::Class::Ptr cl)
 	_tables.back().insert({cl->name(), cl});
 	pushSymbolTable(true);
 	_currClass = cl;
+
+	for (auto a: cl->publicMethods()) {
+		_tables.back().insert({a->name(), a});
+	}
+	for (auto a: cl->privateMethods()) {
+		_tables.back().insert({a->name(), a});
+	}
+	for (auto a: cl->protectedMethods()) {
+		_tables.back().insert({a->name(), a});
+	}
+	for (auto a: cl->publicAttributes()) {
+		_tables.back().insert({a->name(), a});
+	}
+	for (auto a: cl->privateAttributes()) {
+		_tables.back().insert({a->name(), a});
+	}
+	for (auto a: cl->protectedAttributes()) {
+		_tables.back().insert({a->name(), a});
+	}
 }
 
 Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& base) const
@@ -150,7 +169,7 @@ Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& ba
 			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
 
 		auto cl = std::get<Class::Ptr>(*symbol);
-		cl->clear();
+		
 		cl->setBase(getClass(base));
 		return cl;
         }
@@ -317,7 +336,7 @@ std::shared_ptr<CastExpression> ParserDriver::createCastExpr(std::string class_n
 	return std::make_shared<CastExpression>(class_ptr, expr);
 }
 
-void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
+void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl) const
 {
 	if (searchCurrent(decl->name())) {
 		throw SemanticError("Redefinition of "+decl->name());
@@ -330,10 +349,24 @@ void ParserDriver::verify(const ir::AllocaInstruction::Ptr& decl)
 	}
 }
 
-void ParserDriver::add(const ir::AllocaInstruction::Ptr &decl)
+void ParserDriver::add(const AllocaInstruction::Ptr& decl)
 {
 	verify(decl);
 	_tables.back().insert({decl->name(), decl});
+}
+
+ir::AllocaInstruction::Ptr ParserDriver::newDeclaration(const Datatype& t, const std::string& id)
+{
+	if (auto symbol = searchTables(id)) {
+		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
+			throw std::runtime_error("Invalid state of parser.");
+
+		return std::get<AllocaInstruction::Ptr>(*symbol);
+	}
+
+	auto decl = AllocaInstruction::Ptr(new AllocaInstruction({t, id}));
+	_tables.back().insert({decl->name(), decl});
+	return decl;
 }
 
 void ParserDriver::ensureMainDefined() const

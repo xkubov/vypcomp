@@ -50,6 +50,8 @@ public:
 	 */
 	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const;
 
+	virtual AllocaInstruction::Ptr newDeclaration(const ir::Datatype& t, const std::string& name);
+
 	/**
 	 * Creates new function based on provided signature. This function does not perform
 	 * redefinition check. This is left for index run and expects that all names are behaving
@@ -69,7 +71,7 @@ public:
 	virtual Instruction::Ptr createWhile(
 		const ir::Expression::ValueType& val,
 		const ir::BasicBlock::Ptr& block) const;
-	void verify(const ir::AllocaInstruction::Ptr& decl);
+	void verify(const ir::AllocaInstruction::Ptr& decl) const;
 	void add(const ir::AllocaInstruction::Ptr& decl);
 
 	void ensureMainDefined() const;

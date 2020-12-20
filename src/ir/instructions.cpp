@@ -146,6 +146,11 @@ PossibleDatatype Function::type() const
 	return _type;
 }
 
+void Function::setArgs(const std::vector<AllocaInstruction::Ptr>& args)
+{
+	_args = args;
+}
+
 const std::vector<AllocaInstruction::Ptr>& Function::args() const
 {
 	return _args;
@@ -419,6 +424,9 @@ void Class::clear()
 
 void Class::add(Function::Ptr method, const Visibility& v)
 {
+	if (auto mymethod = getMethod(method->name(), method->argTypes(), v)) {
+		return;
+	}
 	method->addPrefix(_name);
 	
 	if (method->name() == name()) {
@@ -440,6 +448,9 @@ void Class::add(Function::Ptr method, const Visibility& v)
 
 void Class::add(AllocaInstruction::Ptr attr, const Visibility& v)
 {
+	if (auto mymethod = getAttribute(attr->name(), v)) {
+		return;
+	}
 	attr->addPrefix(_name);
 
 	switch (v) {
@@ -625,15 +636,16 @@ std::string Class::str(const std::string& prefix) const
 	return out.str();
 }
 
-const std::vector<Function::Ptr> Class::publicMethods() const
+const std::vector<Function::Ptr>& Class::publicMethods() const
 {
 	return _publicMethods;
 }
-const std::vector<Function::Ptr> Class::privateMethods() const
+
+const std::vector<Function::Ptr>& Class::privateMethods() const
 {
 	return _privateMethods;
 }
-const std::vector<Function::Ptr> Class::protectedMethods() const
+const std::vector<Function::Ptr>& Class::protectedMethods() const
 {
 	return _protectedMethods;
 }
@@ -642,10 +654,12 @@ const std::vector<AllocaInstruction::Ptr>& Class::publicAttributes() const
 {
 	return _publicAttrs;
 }
+
 const std::vector<AllocaInstruction::Ptr>& Class::privateAttributes() const
 {
 	return _privateAttrs;
 }
+
 const std::vector<AllocaInstruction::Ptr>& Class::protectedAttributes() const
 {
 	return _protectedAttrs;

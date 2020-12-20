@@ -13,6 +13,7 @@ public:
 	IndexParserDriver(const SymbolTable &global);
 
 public:
+	virtual AllocaInstruction::Ptr newDeclaration(const ir::Datatype& t, const std::string& name) override;
 	virtual Class::Ptr newClass(const std::string& name, const std::string& base) const override;
 	virtual Function::Ptr newFunction(const ir::Function::Signature& sig) const override;
 	virtual std::vector<Instruction::Ptr> call_func(ir::Expression::ValueType func_expr, std::vector<ir::Expression::ValueType>& args) const override;
