@@ -32,3 +32,13 @@ const char* SemanticError::what() const throw()
 {
 	return msg.c_str();
 }
+
+IncompabilityError::IncompabilityError(const std::string& msg):
+	msg(msg)
+{
+}
+
+const char* IncompabilityError::what() const throw()
+{
+	return msg.c_str();
+}

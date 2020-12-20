@@ -210,8 +210,10 @@ Function::Ptr ParserDriver::newFunction(const ir::Function::Signature& sig) cons
         if (auto symbol = searchCurrent(name)) {
 		if (!std::holds_alternative<Function::Ptr>(*symbol))
 			throw std::runtime_error("Invalid state in ParserDriver:"+std::to_string(__LINE__));
+		auto fun = std::get<Function::Ptr>(*symbol);
+		fun->setSignature(sig);
 
-		return std::get<Function::Ptr>(*symbol);
+		return fun;
         }
 
         return Function::Ptr(new Function({type, name, args}));

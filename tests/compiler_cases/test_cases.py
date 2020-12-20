@@ -90,12 +90,12 @@ class FibRecursive(VYPaTestCase):
 
 class FunctionRedefinition(VYPaTestCase):
     input_file = "fun_redef.vl"
-    test_return = 19
+    test_return = 14
 
 
 class MethodRedefinition(VYPaTestCase):
     input_file = "meth_redef.vl"
-    test_return = 19
+    test_return = 14
 
 
 class StringConcatBasic(VYPaTestCase):
@@ -217,10 +217,38 @@ class OopVisibility(VYPaTestCase):
     test_stdin = b""
     test_stdout = b'69'
 
+class OopPolymorphism(VYPaTestCase):
+    input_file = "oop_polymorphism.vl"
+    test_stdin = b""
+    test_stdout = b'42'
+
+class OopPolymorphismReturn(VYPaTestCase):
+    input_file = "oop_polymorphism_return.vl"
+    test_stdin = b""
+    test_stdout = b'42'
+
+class OopSubsumptionAndIndirectness(VYPaTestCase):
+    input_file = "oop_sub_indi.vl"
+    test_stdin = b""
+    test_stdout = b'424242'
+
+class OopParentConstructor(VYPaTestCase):
+    input_file = "oop_parent_constr.vl"
+    test_stdin = b""
+    test_stdout = b'42'
 
 class OopVisibilityPrivateFail(VYPaTestCase):
     input_file = "oop_visibility_fail.vl"
-    test_return = 19
+    test_return = 14
+
+class OopVisibilityComplex(VYPaTestCase):
+    input_file = "oop_visibility_complex.vl"
+    test_stdin = b""
+    test_stdout = b'42424242'
+
+class RedefinitionError(VYPaTestCase):
+    input_file = "redefinition_error.vl"
+    test_return = 14
 
 
 class OopAssignmentExample(VYPaTestCase):

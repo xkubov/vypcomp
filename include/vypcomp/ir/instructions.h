@@ -111,6 +111,7 @@ public:
 	using Signature = std::tuple<PossibleDatatype, std::string, Arglist>;
 
 	Function(const Signature& sig);
+	void setSignature(const Signature& sig);
 
 	void addPrefix(const std::string& prefix);
 	void setFirst(const BasicBlock::Ptr body);

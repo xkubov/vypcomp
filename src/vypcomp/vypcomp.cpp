@@ -62,6 +62,12 @@ int main(int argc, char** argv)
 	} catch (const SyntaxError &pe) {
 		std::cerr << "syntax error: " << pe.what() << std::endl;
 		return 12;
+	} catch (const IncompabilityError &pe) {
+		std::cerr << "semantic error: " << pe.what() << std::endl;
+		return 13;
+	} catch (const SemanticError &pe) {
+		std::cerr << "semantic error: " << pe.what() << std::endl;
+		return 14;
 	} catch (const std::exception &e) {
 		std::cerr << "error: " << e.what() << std::endl;
 		return 19;
