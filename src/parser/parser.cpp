@@ -238,9 +238,7 @@ Instruction::Ptr ParserDriver::assign(ir::Expression::ValueType dest_expr,
 			throw SemanticError("Cannot assign to function.");
 
 		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
-		if (var->type() != val->type()) {
-			throw SemanticError("Invalid type.");
-		}
+		checkAssignmentTypes(var->type(), val->type());
 
 		return Assignment::Ptr(
 			new Assignment(
