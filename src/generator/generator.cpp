@@ -109,22 +109,9 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     out << "SUBI $SP, $SP, 1\n"; // clean up return address space
     out << "RETURN $1\n" << std::endl;
 
-    
-    // generate constructor body
-    out << "LABEL " << VYPLANG_PREFIX << input->name() << "_constructor_body\n";
-    // TODO: set vtable
-    out << "SETWORD [$SP-1], 0, \"" << "vtable_" + input->name() << "\"\n";
-    // set classname for dynamic casts
-    out << "SETWORD [$SP-1], 1, \"" << input->name() << "\"\n";
+    // generate code for user-defined constructor if it exists
     if (input->constructor())
-    {
-        OffsetMap variable_offsets{};
-        TempVarMap temporary_variables_mapping{};
-        generate_block(input->constructor()->first(), variable_offsets, temporary_variables_mapping, out);
-    }   
-    out << "SET $1, [$SP]\n";
-    out << "SUBI $SP, $SP, 2\n";
-    out << "RETURN $1\n" << std::endl;
+        generate_constructor_body(input->constructor(), VYPLANG_PREFIX.data() + input->name() + "_constructor_body", out);
 }
 
 void vypcomp::Generator::generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out)
@@ -171,6 +158,27 @@ void vypcomp::Generator::generate_function(vypcomp::ir::Function::Ptr input, std
     arg_count = args.size();
     variable_count = local_variables.size();
     
+    generate_function_body(input, out, args, local_variables, temporary_variables_mapping);
+}
+
+void vypcomp::Generator::generate_constructor_body(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out)
+{
+    if (!input) return;
+    auto first_block = input->first();
+    out << "LABEL " << label_name << std::endl;
+    // TODO: set vtable
+    out << "SETWORD [$SP-1], 0, \"" << "vtable_" + input->name() << "\"\n";
+    // set classname for dynamic casts
+    out << "SETWORD [$SP-1], 1, \"" << input->name() << "\"\n";
+    // TempVarMap holds destination for each expression result 
+    // (currently each expression producing new value gets separate stack location aka "local variable" with lifetime of the whole function execution)
+    TempVarMap temporary_variables_mapping;
+    // local_variables consists of all possible local variables with variable in sub-scopes as well
+    auto local_variables = get_alloca_instructions(first_block->first(), temporary_variables_mapping);
+    const auto& args = input->args();
+    arg_count = args.size();
+    variable_count = local_variables.size();
+
     generate_function_body(input, out, args, local_variables, temporary_variables_mapping);
 }
 
@@ -299,7 +307,7 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         auto object_alloca = target_expression->getObject();
         auto object_stack_offset = find_offset(object_alloca.get(), variable_offsets);
         if (!object_stack_offset) throw std::runtime_error("Target of object attribute assignment was not found: " + object_alloca->name());
-        auto attribute_chunk_offset = get_object_attribute_offset(target_expression->getClass(), target_expression->getAttribute()->name());;
+        auto attribute_chunk_offset = get_object_attribute_offset(target_expression->getClass(), target_expression->getAttribute()->name());
         generate_expression(value_expr, "$1", variable_offsets, temporary_variables_mapping, out);
         out << "SETWORD [$SP-" << object_stack_offset.value() << "], " << attribute_chunk_offset << ", " << "$1" << std::endl;
     }

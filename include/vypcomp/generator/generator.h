@@ -29,6 +29,7 @@ namespace vypcomp
     private:
         void generate_function(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out);
         void generate_function_body(vypcomp::ir::Function::Ptr input, OutputStream& out, const AllocaVector& args, const AllocaVector& local_variables, TempVarMap& temporary_variables_mapping);
+        void generate_constructor_body(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out);
         void generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_instruction(vypcomp::ir::Instruction::Ptr input, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
         void generate_expression(ir::Expression::ValueType input, DestinationName destination, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out);
