@@ -217,6 +217,12 @@ class OopVisibilityPrivateFail(VYPaTestCase):
     test_return = 19
 
 
+class OopAssignmentExample(VYPaTestCase):
+    input_file = "oop_assignment_example4.vl"
+    test_stdin = b"60\n70\n"
+    test_stdout = b'constructor of Shapeinstance of Shape 42 - rectangle 4200'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

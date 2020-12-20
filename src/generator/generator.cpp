@@ -385,7 +385,8 @@ void vypcomp::Generator::generate_instruction(vypcomp::ir::Instruction::Ptr inpu
         auto object_alloca = target_expression->getObject();
         auto object_stack_offset = find_offset(object_alloca.get(), variable_offsets);
         if (!object_stack_offset) throw std::runtime_error("Target of object attribute assignment was not found: " + object_alloca->name());
-        auto attribute_chunk_offset = get_object_attribute_offset(target_expression->getClass(), target_expression->getAttribute()->name());
+        auto attribute_name = target_expression->getAttribute()->name();
+        auto attribute_chunk_offset = get_object_attribute_offset(target_expression->getClass(), attribute_name);
         generate_expression(value_expr, "$1", variable_offsets, temporary_variables_mapping, out);
         out << "SETWORD [$SP-" << object_stack_offset.value() << "], " << attribute_chunk_offset << ", " << "$1" << std::endl;
     }
@@ -1203,6 +1204,6 @@ std::size_t vypcomp::Generator::get_object_attribute_offset(vypcomp::ir::Class::
                 attr_offset += 1;
             }
         }
-        return attr_offset;
+        return 0;
     }
 }
