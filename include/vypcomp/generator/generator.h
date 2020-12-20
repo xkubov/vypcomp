@@ -19,6 +19,15 @@ namespace vypcomp
         using ExprRawPtr = vypcomp::ir::Expression*;
         using OffsetMap = std::unordered_map<AllocaRawPtr, std::int64_t>;
         using TempVarMap = std::unordered_map<ExprRawPtr, AllocaRawPtr>;
+        using ClassName = std::string;
+        using MethodName = std::string;
+        using LabelName = std::string;
+        using VtableMapping = std::unordered_map<MethodName, LabelName>;
+        using MethodVector = std::vector<MethodName>;
+        using VtableIndexLookup = std::unordered_map<MethodName, std::size_t>;
+        using VtableIndexLookupPtr = std::shared_ptr<VtableIndexLookup>;
+        using ClassVtableLookup = std::unordered_map<ClassName, VtableIndexLookupPtr>;
+        using VtableAddressMapping = std::unordered_map<ClassName, std::uint64_t>;
     public:
         Generator(std::string out_filename, bool verbose);
         Generator(std::unique_ptr<std::ostream> out, bool verbose);
@@ -37,6 +46,7 @@ namespace vypcomp
         void generate_return(OutputStream& out);
         void generate_builtin_functions(OutputStream& out);
         void generate_vtables(const SymbolTable& symbol_table, OutputStream& out);
+        std::string generate_method_label(const ir::Function::Ptr& method);
         void generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out);
         void generate_constructor(vypcomp::ir::Class::Ptr input, OutputStream& out);
         void generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out);
@@ -58,6 +68,10 @@ namespace vypcomp
     private:
         std::unique_ptr<std::ostream> _main_out;
         bool verbose = false;
+        // assigns vtable id for each class
+        VtableAddressMapping class_vtable_addr_mapping;
+        // maps class name to a table that maps methods to method ids
+        ClassVtableLookup class_method_vtable_mapping;
         // These variables are needed when the generator jumps into an instruction stream from generate(function)
         // so that it can properly generate return statements
         std::size_t arg_count = 0;
