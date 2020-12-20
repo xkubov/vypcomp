@@ -64,6 +64,7 @@ public:
 	void addPrefix(const std::string& prefix);
 	virtual std::string str(const std::string& prefix) const override;
 
+	void setType(const Datatype& t);
 	Datatype type() const;
 	std::string name() const;
 

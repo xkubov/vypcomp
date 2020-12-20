@@ -451,7 +451,9 @@ ir::AllocaInstruction::Ptr ParserDriver::newDeclaration(const Datatype& t, const
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
 			throw std::runtime_error("Invalid state of parser.");
 
-		return std::get<AllocaInstruction::Ptr>(*symbol);
+		auto al = std::get<AllocaInstruction::Ptr>(*symbol);
+		al->setType(t);
+		return al;
 	}
 
 	auto decl = AllocaInstruction::Ptr(new AllocaInstruction({t, id}));

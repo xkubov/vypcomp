@@ -316,6 +316,11 @@ Datatype AllocaInstruction::type() const
 	return _type;
 }
 
+void AllocaInstruction::setType(const Datatype &t)
+{
+	_type = t;
+}
+
 std::string AllocaInstruction::name() const
 {
 	return _varName;
