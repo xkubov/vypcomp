@@ -97,8 +97,14 @@ std::string DummyInstruction::str(const std::string& prefix) const
 
 Function::Function(const Function::Signature& sig)
 {
+	setSignature(sig);
+}
+
+void Function::setSignature(const Function::Signature& sig)
+{
 	Arglist args;
 	std::tie(_type, _name, args) = sig;
+	_args.clear();
 	for (auto decl: args) {
 		_args.push_back(
 			AllocaInstruction::Ptr(new AllocaInstruction(decl))
