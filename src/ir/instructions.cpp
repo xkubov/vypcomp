@@ -541,6 +541,45 @@ Function::Ptr Class::getMethod(const std::string& name, const Visibility& v) con
 	return nullptr;
 }
 
+Function::Ptr Class::getOriginalMethod(const std::string& name, const Visibility& v) const
+{
+	Function::Ptr result;
+	if (_parent)
+	{
+		result = _parent->getOriginalMethod(name, v == Visibility::Private ? Visibility::Protected : v);
+		if (result)
+			return result;
+	}
+	
+	switch (v) {
+	case Visibility::Private: {
+		auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name](const auto& method) {
+			return method->name() == name;
+			});
+		if (it != _privateMethods.end())
+			return *it;
+	}
+	case Visibility::Protected: {
+		auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name](const auto& method) {
+			return method->name() == name;
+			});
+		if (pit != _protectedMethods.end())
+			return *pit;
+	}
+	case Visibility::Public:
+	default: {
+		auto it = std::find_if(_publicMethods.begin(), _publicMethods.end(), [name](const auto& method) {
+			return method->name() == name;
+			});
+		if (it != _publicMethods.end())
+			return *it;
+
+	}
+	}
+
+	return nullptr;
+}
+
 AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibility& v) const
 {
 	if ((v == Visibility::Protected) || (v == Visibility::Private)) {

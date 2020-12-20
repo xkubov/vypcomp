@@ -54,6 +54,14 @@ AllocaInstruction::Ptr SymbolExpression::getValue() const
 	return _value;
 }
 
+SuperExpression::SuperExpression(AllocaInstruction::Ptr value, Class::Ptr child_ptr)
+	: SymbolExpression(value), _child_ptr(child_ptr)
+{}
+Class::Ptr SuperExpression::getClass() const
+{
+	return _child_ptr;
+}
+
 //
 // Cast expression
 //

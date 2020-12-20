@@ -637,8 +637,7 @@ ir::Expression::ValueType ParserDriver::superExpr() const
 		}
 		else
 		{
-			// TODO: super should be the same instruction as this with different type
-			throw std::runtime_error("super keyword not implemented");
+			return std::make_shared<SuperExpression>(_currFunction->args()[0], current_class);
 		}
 	}
 }

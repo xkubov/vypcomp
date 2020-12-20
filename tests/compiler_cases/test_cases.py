@@ -188,6 +188,12 @@ class OopOverride(VYPaTestCase):
     test_stdout = b'foo called on A\nfoo called on B\n'
 
 
+class OopSuperKeyword(VYPaTestCase):
+    input_file = "oop_super.vl"
+    test_stdin = b""
+    test_stdout = b'toString called on A\nresult of a.toString(): "the super toString returned: 17"'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

@@ -38,9 +38,19 @@ public:
 	virtual std::string to_string() const override;
 	virtual bool is_simple() const override;
 	AllocaInstruction::Ptr getValue() const;
-private:
+protected:
 	AllocaInstruction::Ptr _value;
 };
+
+class SuperExpression : public SymbolExpression
+{
+public:
+	SuperExpression(AllocaInstruction::Ptr value, Class::Ptr child_ptr);
+	Class::Ptr getClass() const;
+private:
+	Class::Ptr _child_ptr;
+};
+
 
 class CastExpression : public Expression
 {

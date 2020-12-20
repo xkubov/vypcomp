@@ -220,6 +220,10 @@ public:
 		const std::string& name,
 		const Visibility& v = Visibility::Public
 	) const;
+	Function::Ptr getOriginalMethod(
+		const std::string& name,
+		const Visibility& v = Visibility::Public
+	) const;
 
 	//
 	// Visibility:

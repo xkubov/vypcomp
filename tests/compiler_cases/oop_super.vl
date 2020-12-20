@@ -1,0 +1,19 @@
+class A : Object
+{
+	void foo(void) 
+	{
+		print("foo called on A\n");
+	}
+	string toString(void)
+	{
+		print("toString called on A\n");
+		return "the super toString returned: " + super.toString();
+	}
+}
+
+void main(void)
+{
+	A a = new A;
+	string ats = a.toString();
+	print("result of a.toString(): \"", ats, "\"");
+}

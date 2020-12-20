@@ -486,6 +486,7 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
     {
         auto function_args = method_exp->getArgs();
         const auto args_count = function_args.size();
+        auto context_object = method_exp->getContextObj();
         // reserve stack space
         out << "ADDI $SP, $SP, " << args_count + 1; // at least one for return address, last arg is $SP-1
         if (verbose)
@@ -503,17 +504,38 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
             out << "SET " << "[$SP-" << offset << "], $0" << std::endl;
             if (i == 0)
             {
-                // first argument is the object being having the method called
-                out << "GETWORD $1, $0, 0\n"; // get vtable chunk id
-                auto method_offset_map = class_method_vtable_mapping[method_exp->getContextObj()->type().get<ir::Datatype::ClassName>()];
-                auto method_offset = (*method_offset_map)[method_exp->getFunction()->name()];
-                out << "GETWORD $2, $1, " << method_offset << "\n"; // $2 now should now have chunk id of chunk with label name
-                // store the chunk id of label in the to-be return address
-                out << "SET [$SP], $2" << std::endl;
+                if (auto superexp = dynamic_cast<ir::SuperExpression*>(context_object.get()))
+                {
+                    // super suppresses lookup of method in vtable and hardcodes the first implementation of such method
+                    continue;
+                }
+                else
+                {
+                    // first argument is the object being having the method called
+                    out << "GETWORD $1, $0, 0\n"; // get vtable chunk id
+                    auto method_offset_map = class_method_vtable_mapping[context_object->type().get<ir::Datatype::ClassName>()];
+                    auto method_offset = (*method_offset_map)[method_exp->getFunction()->name()];
+                    out << "GETWORD $2, $1, " << method_offset << "\n"; // $2 now should now have chunk id of chunk with label name
+                    // store the chunk id of label in the to-be return address
+                    out << "SET [$SP], $2" << std::endl;
+                }
             }
         }
-        // jump into subroutine, [$SP] holds the chunk id of the label to be jumped to
-        out << "CALL [$SP], [$SP]" << std::endl;
+        // jump into subroutine
+        if (auto superexp = dynamic_cast<ir::SuperExpression*>(context_object.get()))
+        {
+            auto child_class = superexp->getClass();
+            // find the first occurence of the method
+            auto original_method = child_class->getOriginalMethod(method_exp->getFunction()->name());
+            std::string label_name = generate_method_label(original_method);
+            // in case it was accessed through super object, ignore vtables and get the first implementation
+            out << "CALL [$SP], " << label_name << std::endl;
+        }
+        else
+        {
+            // [$SP] holds the chunk id of the label to be jumped to in case the jump resolution is vtable based
+            out << "CALL [$SP], [$SP]" << std::endl;
+        }
 
         // return value register is always $0
         if (destination.size() && destination != "$0")
