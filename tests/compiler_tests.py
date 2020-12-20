@@ -24,8 +24,8 @@ class VYPaTestCase(unittest.TestCase):
         input_file_path = os.path.join(os.path.abspath("."), "compiler_cases", self.input_file)
         compile_command = [self.compiler_path, '-v', input_file_path, self.output_file_path]
         compiler_subproc = subprocess.Popen(compile_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (stdout, stderr) = compiler_subproc.communicate(timeout=2)
         return_code = compiler_subproc.wait()
-        (stdout, stderr) = compiler_subproc.communicate()
         self.real_return = return_code
         
         if return_code != 0:

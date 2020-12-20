@@ -229,6 +229,65 @@ class OopAssignmentExample(VYPaTestCase):
     test_stdout = b'constructor of Shapeinstance of Shape 42 - rectangle 4200'
 
 
+megatest_out = b'''True: True
+False: False
+!True: False
+!False: True
+False || False: False
+True || False: True
+False || True: True
+True || True: True
+False && False: False
+True && False: False
+False && True: False
+True && True: True
+True == True: True
+True != True: False
+False == False: True
+False != False: False
+True == False: False
+True != False: True
+False == True: False
+False != True: True
+1 < 2: True
+2 < 2: False
+2 <= 2: True
+astring < bstring: True
+bstring > astring: True
+astring <= bstring: True
+bstring >= astring: True
+astring == bstring: False
+bstring == astring: False
+astring >= bstring: False
+bstring <= astring: False
+astring > bstring: False
+bstring < astring: False
+astring != bstring: True
+bstring != astring: True
+astring != samestring: False
+astring == samestring: True
+f1 + f2 = 0x1.cp2: 0x1.cp2
+f1 - f2 = -0x1.8p1: -0x1.8p1
+f1 * f2 = 0x1.4p3: 0x1.4p3
+f1 / f2 = 0x1.999999999999ap-2: 0x1.999999999999ap-2
+astring+bstring = astringbstring: astringbstring
+i + j = 11: 11
+i - j = 7: 7
+i * j = 18: 18
+i / j = 7: 4
+j + i = 11: 11
+j - i = -7: -7
+j * i = 18: 18
+j / i = 0: 0
+'''
+
+
+class ExpressionMegatest(VYPaTestCase):
+    input_file = "expression_megatest.vl"
+    test_stdin = b""
+    test_stdout = megatest_out
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

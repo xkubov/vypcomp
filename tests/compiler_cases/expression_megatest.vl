@@ -4,6 +4,8 @@ void main(void)
 	
 	print("True: "); if (True) { print("True\n");} else { print("False\n"); }
 	print("False: "); if (False) { print("True\n");} else { print("False\n"); }
+	print("!True: "); if (!True) { print("True\n");} else { print("False\n"); }
+	print("!False: "); if (!False) { print("True\n");} else { print("False\n"); }
 	print("False || False: "); if (False || False) { print("True\n");} else { print("False\n"); }
 	print("True || False: "); if (True || False) { print("True\n");} else { print("False\n"); }
 	print("False || True: "); if (False || True) { print("True\n");} else { print("False\n"); }
