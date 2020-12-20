@@ -164,6 +164,12 @@ class OopBasicMethods(VYPaTestCase):
     test_stdout = b'foo called on A with 4\nbar called on A with 8\nresult of bar call 9\n'
 
 
+class OopObjectBuiltins(VYPaTestCase):
+    input_file = "oop_object_builtins.vl"
+    test_stdin = b""
+    test_stdout = b'o.getClass(): Object\no.toString(): 15\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

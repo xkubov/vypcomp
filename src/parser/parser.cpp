@@ -12,7 +12,31 @@ SymbolTable initSymbolTable()
 	auto table = SymbolTable(true);
 	auto object = ir::Class::Ptr(new ir::Class("Object", nullptr));
 	table.insert({ "Object", object });
-	// add functions here
+	// Object built-in functions
+	// string toString(void)
+	{
+		auto toString_fn = Function::Ptr(new Function(Function::Signature(
+			PrimitiveDatatype::String,
+			std::string("toString"),
+			Arglist{ {
+				std::make_pair(Datatype(object->name()), "this"s),
+			} }
+		)));
+		object->add(toString_fn);
+	}
+	// string getClass(void)
+	{
+		auto getClass_fn = Function::Ptr(new Function(Function::Signature(
+			PrimitiveDatatype::String,
+			std::string("getClass"),
+			Arglist{ {
+				std::make_pair(Datatype(object->name()), "this"s),
+			} }
+		)));
+		object->add(getClass_fn);
+	}
+	
+	// free built-in functions
 	// int readInt(void)
 	table.insert({ "readInt", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Int), "readInt", Arglist())) });
 	// string readString(void)

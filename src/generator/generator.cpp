@@ -74,15 +74,34 @@ void vypcomp::Generator::generate_vtables(const vypcomp::SymbolTable& symbol_tab
 
 void vypcomp::Generator::generate_class(vypcomp::ir::Class::Ptr input, OutputStream& out)
 {
-    // generate vtable init code
-    
     generate_constructor(input, out);
 
     for (auto& method_list : { input->publicMethods(), input->protectedMethods(), input->privateMethods() })
     {
         for (auto& method : method_list)
         {
-            generate_function(method, std::string(VYPLANG_PREFIX) + input->name() + "_"s + method->name(), out);
+            if (input->name() == "Object" && method->name() == "toString")
+            {
+                out << "LABEL " << VYPLANG_PREFIX << input->name() << "_" << method->name() << std::endl;
+                out << "SET $1, [$SP-1]\n";
+                out << "INT2STRING $0, $1\n";
+                out << "SET $1, [$SP]\n";
+                out << "SUBI $SP, $SP, 2\n"; // clean up return address space + this arg
+                out << "RETURN $1\n" << std::endl;
+            }
+            else if (input->name() == "Object" && method->name() == "getClass")
+            {
+                out << "LABEL " << VYPLANG_PREFIX << input->name() << "_" << method->name() << std::endl;
+                out << "SET $1, [$SP-1]\n"; // $1 now has object chunk id
+                out << "GETWORD $0, $1, 1\n"; // type name string has offset 1
+                out << "SET $1, [$SP]\n";
+                out << "SUBI $SP, $SP, 2\n"; // clean up return address space + this arg
+                out << "RETURN $1\n" << std::endl;
+            }
+            else
+            {
+                generate_function(method, std::string(VYPLANG_PREFIX) + input->name() + "_"s + method->name(), out);
+            }
         }
     }
 }
@@ -101,6 +120,10 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
     // invoke all parent constructors here
     generate_constructor_chain_invocation(input, out);
     
+    // TODO: set vtable
+    out << "SETWORD [$SP], 0, \"" << "vtable_" + input->name() << "\"\n";
+    // set classname for dynamic casts
+    out << "SETWORD [$SP], 1, \"" << input->name() << "\"\n";
     // TODO: initialize attributes
 
     out << "SET $0, [$SP]\n";
@@ -111,7 +134,7 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
 
     // generate code for user-defined constructor if it exists
     if (input->constructor())
-        generate_constructor_body(input->constructor(), VYPLANG_PREFIX.data() + input->name() + "_constructor_body", out);
+        generate_function(input->constructor(), VYPLANG_PREFIX.data() + input->name() + "_constructor_body", out);
 }
 
 void vypcomp::Generator::generate_constructor_chain_invocation(vypcomp::ir::Class::Ptr input, OutputStream& out)
@@ -161,15 +184,11 @@ void vypcomp::Generator::generate_function(vypcomp::ir::Function::Ptr input, std
     generate_function_body(input, out, args, local_variables, temporary_variables_mapping);
 }
 
-void vypcomp::Generator::generate_constructor_body(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out)
+void vypcomp::Generator::generate_constructor_body(vypcomp::ir::Function::Ptr input, std::string label_name, OutputStream& out) // TODO: OBSOLETE
 {
     if (!input) return;
     auto first_block = input->first();
     out << "LABEL " << label_name << std::endl;
-    // TODO: set vtable
-    out << "SETWORD [$SP-1], 0, \"" << "vtable_" + input->name() << "\"\n";
-    // set classname for dynamic casts
-    out << "SETWORD [$SP-1], 1, \"" << input->name() << "\"\n";
     // TempVarMap holds destination for each expression result 
     // (currently each expression producing new value gets separate stack location aka "local variable" with lifetime of the whole function execution)
     TempVarMap temporary_variables_mapping;

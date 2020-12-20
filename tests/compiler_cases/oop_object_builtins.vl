@@ -1,0 +1,29 @@
+class A : Object
+{
+	int x;
+	int y;
+	int z;
+	void A(void)
+	{
+		this.x = 1;
+		this.y = 2;
+		this.z = 3;
+	}
+	public int getX(void) 
+	{
+		print("getX called on A ", this.x, "\n");
+		return this.x;
+	}
+	public int bar(int a)
+	{
+		print("bar called on A with ", a, "\n");
+		return a + 1;
+	}
+}
+
+void main(void)
+{
+	Object o = new Object;
+	print("o.getClass(): ", o.getClass(), "\n");
+	print("o.toString(): ", o.toString(), "\n");
+}
