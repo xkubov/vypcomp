@@ -1,0 +1,6 @@
+void main(void)
+{
+	string s = "super " + "duper " + "test " + "of " + "strings";
+	print(s);
+	return;
+}
