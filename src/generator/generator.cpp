@@ -89,7 +89,7 @@ void vypcomp::Generator::generate_vtables(const vypcomp::SymbolTable& symbol_tab
                 auto method = *i;
                 std::cout << method->argTypes()[0].to_string() << " " << method->name() << std::endl;
                 class_vtable[method->name()] = generate_method_label(method);
-                auto& [iter, inserted] = super_vtable.insert(std::make_pair(method->name(), generate_method_label(method))); // super table holds the first method of the hierarchy
+                auto [iter, inserted] = super_vtable.insert(std::make_pair(method->name(), generate_method_label(method))); // super table holds the first method of the hierarchy
                 if (inserted)
                 {
                     (*method_id_mapping)[method->name()] = vtable_indices.size();
