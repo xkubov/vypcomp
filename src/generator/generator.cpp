@@ -523,8 +523,9 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
         if (auto superexp = dynamic_cast<ir::SuperExpression*>(context_object.get()))
         {
             auto child_class = superexp->getClass();
+            auto parent_class = child_class->getBase();
             // find the first occurence of the method
-            auto original_method = child_class->getOriginalMethod(method_exp->getFunction()->name());
+            auto original_method = parent_class->getMethod(method_exp->getFunction()->name());
             std::string label_name = generate_method_label(original_method);
             // in case it was accessed through super object, ignore vtables and get the first implementation
             out << "CALL [$SP], " << label_name << std::endl;
