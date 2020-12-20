@@ -5,8 +5,7 @@ class Shape : Object {
 	string toString(void) { return "instance of Shape " + (string)(this.id); }
 }
 class Rectangle : Shape {
-	int height;
-int	width;
+	int height, width;
 	string toString(void) { 
 		return super.toString()	+ " - rectangle " + (string)(this.area()); 
 	}
