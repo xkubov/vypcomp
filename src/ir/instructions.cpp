@@ -576,20 +576,21 @@ Function::Ptr Class::getOriginalMethod(const std::string& name, const Visibility
 
 AllocaInstruction::Ptr Class::getAttribute(const std::string& name, const Visibility& v) const
 {
-	if ((v == Visibility::Protected) || (v == Visibility::Private)) {
+	if (v == Visibility::Private) {
 		auto it = std::find_if(_privateAttrs.begin(), _privateAttrs.end(), [name](const auto& attr) {
 			return attr->name() == name;
 		});
 		if (it != _privateAttrs.end())
 			return *it;
+	}
 
+	if ((v == Visibility::Private) || (v == Visibility::Protected)) {
 		auto pit = std::find_if(_protectedAttrs.begin(), _protectedAttrs.end(), [name](const auto& attr) {
 			return attr->name() == name;
 		});
 		if (pit != _protectedAttrs.end()) {
 			return *pit;
 		}
-
 	}
 
 	auto it = std::find_if(_publicAttrs.begin(), _publicAttrs.end(), [name](const auto& attr) {
