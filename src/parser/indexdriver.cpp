@@ -94,6 +94,11 @@ ir::Expression::ValueType IndexParserDriver::superExpr() const
 	return std::make_shared<DummyExpression>();
 }
 
+ir::Expression::ValueType IndexParserDriver::newExpr(const std::string& class_name) const
+{
+	return std::make_shared<DummyExpression>();
+}
+
 ir::Expression::ValueType IndexParserDriver::addExpr(
 	const ir::Expression::ValueType& e1,
 	const ir::Expression::ValueType& e2) const

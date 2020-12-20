@@ -101,6 +101,7 @@ public:
 	virtual Expression::ValueType createCastExpr(const Datatype& dest_datatype, Expression::ValueType expr) const;
 	virtual ir::Expression::ValueType thisExpr() const;
 	virtual ir::Expression::ValueType superExpr() const;
+	virtual ir::Expression::ValueType newExpr(const std::string& clas_name) const;
 
 	virtual ir::Expression::ValueType addExpr(
 		const ir::Expression::ValueType& e1,

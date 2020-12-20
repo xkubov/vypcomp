@@ -417,12 +417,7 @@ expr
 	$$ = parser->superExpr();
 }
 | NEW IDENTIFIER {
-	const auto class_name = $2;
-	auto search_result = parser->searchTables(class_name);
-	if (!search_result) throw SemanticError("class " + class_name + " in constructor not found.");
-	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw SemanticError("Identifier " + class_name + " is not a class.");
-	auto class_ptr = std::get<Class::Ptr>(search_result.value());
-	$$ = std::make_shared<ConstructorExpression>(class_ptr);
+	$$ = parser->newExpr($2);
 };
 
 func_call_args 

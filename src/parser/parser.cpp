@@ -652,6 +652,15 @@ ir::Expression::ValueType ParserDriver::superExpr() const
 	}
 }
 
+ir::Expression::ValueType ParserDriver::newExpr(const std::string& class_name) const
+{
+	auto search_result = searchTables(class_name);
+	if (!search_result) throw SemanticError("class " + class_name + " in constructor not found.");
+	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw SemanticError("Identifier " + class_name + " is not a class.");
+	auto class_ptr = std::get<Class::Ptr>(search_result.value());
+	return std::make_shared<ConstructorExpression>(class_ptr);
+}
+
 ir::Expression::ValueType ParserDriver::addExpr(
 	const ir::Expression::ValueType& e1,
 	const ir::Expression::ValueType& e2) const
