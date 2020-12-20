@@ -542,7 +542,7 @@ decl : datatype IDENTIFIER { $$ = {$1, $2}; }
 
 class_definition : class_declaration LBRA class_body {
 	if (auto c = $1->constructor()) {
-		if (c->args().size())
+		if (c->args().size() > 1)
 			throw SemanticError(
 				"Cunstructor of class "+$1->name()+
 				" cannot have arguments."
