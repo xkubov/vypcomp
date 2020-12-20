@@ -483,13 +483,13 @@ Function::Ptr Class::getMethod(const std::string& name, const std::vector<Dataty
 			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name, argtypes](const auto& method) {
 				return method->name() == name && method->argTypes() == argtypes;
 			});
-			if (it != _publicMethods.end())
+			if (it != _privateMethods.end())
 				return *it;
 
 			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name, argtypes](const auto& method) {
 				return method->name() == name && method->argTypes() == argtypes;
 			});
-			if (pit != _publicMethods.end())
+			if (pit != _protectedMethods.end())
 				return *pit;
 		}
 		case Visibility::Public:
@@ -516,13 +516,13 @@ Function::Ptr Class::getMethod(const std::string& name, const Visibility& v) con
 			auto it = std::find_if(_privateMethods.begin(), _privateMethods.end(), [name](const auto& method) {
 				return method->name() == name;
 			});
-			if (it != _publicMethods.end())
+			if (it != _privateMethods.end())
 				return *it;
 
 			auto pit = std::find_if(_protectedMethods.begin(), _protectedMethods.end(), [name](const auto& method) {
 				return method->name() == name;
 			});
-			if (pit != _publicMethods.end())
+			if (pit != _protectedMethods.end())
 				return *pit;
 		}
 		case Visibility::Public:
