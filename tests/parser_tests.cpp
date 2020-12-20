@@ -813,11 +813,11 @@ TEST_F(ParserTests, supportVisibility2)
 TEST_F(ParserTests, supportVisibilityViolation)
 {
         std::stringstream input(R"(
-		class Test : Object {
+		class TesetFoo();
+			private int foo;
 			public void setFoo(void) {
 				foo = 10;
 			}
-			private int foo;
 		}
                 void main(void) {
 			Test test;
@@ -954,10 +954,10 @@ TEST_F(ParserTests, supportInstantiation)
 {
         std::stringstream input(R"(
 		class Class : Object {
+			int ok;
 			void foo(int ok) {
 				this.ok = ok;
 			}
-			int ok;
 		}
                 void main(void) {
 			Class a = new Class;
