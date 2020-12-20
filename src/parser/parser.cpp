@@ -400,8 +400,7 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 		return Return::Ptr(new Return());
 	}
 
-	if (val->type() != *_currFunction->type())
-		throw SemanticError("Return type mismatch.");
+	checkAssignmentTypes(*_currFunction->type(), val->type());
 
 	return Return::Ptr(new Return(val));
 }

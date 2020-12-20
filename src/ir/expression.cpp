@@ -140,7 +140,7 @@ FunctionExpression::ArgExpressions FunctionExpression::getArgs() const
 void FunctionExpression::setArgs(const ArgExpressions& args)
 {
 	_args = args;
-	_type = _value->type() ? _value->type().value() : Datatype(Datatype::FunctionType());
+	_type = _value->type() ? _value->type().value() : Datatype(Datatype::InvalidDatatype());
 }
 
 //

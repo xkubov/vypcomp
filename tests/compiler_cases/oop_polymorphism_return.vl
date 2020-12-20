@@ -1,6 +1,6 @@
 class Parent: Object {
 	int ok;
-	void foo(int ok) {
+	Parent foo(int ok) {
 		this.ok = 13+ok;
 	}
 }
