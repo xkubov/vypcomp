@@ -597,15 +597,9 @@ auto curr = parser->getCurrentClass();
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	bool first = true;
 	for (auto i: $1) {
 		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
-			if (first) {
-				curr->add(var, ir::Class::Visibility::Public);
-				first = false;
-			} else {
-				throw SyntaxError("Invalid syntax for attribute declaration.");
-			}
+			curr->add(var, ir::Class::Visibility::Public);
 		}
 		else {
 			//Initialization
@@ -617,15 +611,9 @@ auto curr = parser->getCurrentClass();
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	bool first = true;
 	for (auto i: $2) {
 		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
-			if (first) {
-				curr->add(var, ir::Class::Visibility::Public);
-				first = false;
-			} else {
-				throw SyntaxError("Invalid syntax for attribute declaration.");
-			}
+			curr->add(var, ir::Class::Visibility::Public);
 		}
 		else {
 			//Initialization
@@ -637,15 +625,9 @@ auto curr = parser->getCurrentClass();
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	bool first = true;
 	for (auto i: $2) {
 		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
-			if (first) {
-				curr->add(var, ir::Class::Visibility::Public);
-				first = false;
-			} else {
-				throw SyntaxError("Invalid syntax for attribute declaration.");
-			}
+			curr->add(var, ir::Class::Visibility::Private);
 		}
 		else {
 			//Initialization
@@ -657,15 +639,9 @@ auto curr = parser->getCurrentClass();
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	bool first = true;
 	for (auto i: $2) {
 		if (auto var = std::dynamic_pointer_cast<AllocaInstruction>(i)) {
-			if (first) {
-				curr->add(var, ir::Class::Visibility::Public);
-				first = false;
-			} else {
-				throw SyntaxError("Invalid syntax for attribute declaration.");
-			}
+			curr->add(var, ir::Class::Visibility::Protected);
 		}
 		else {
 			//Initialization
