@@ -198,6 +198,13 @@ Class::Ptr ParserDriver::newClass(const std::string &name, const std::string& ba
 		auto cl = std::get<Class::Ptr>(*symbol);
 		
 		cl->setBase(getClass(base));
+		auto parent = getClass(base);
+		while (parent->name() != "Object") {
+			if (parent->name() == name) {
+				throw SemanticError("cyclic derivation of class "+name);
+			}
+			parent = parent->getBase();
+		}
 		return cl;
         }
 
