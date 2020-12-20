@@ -28,7 +28,7 @@ public:
 	virtual Datatype customDatatype(const std::string& dt) const override;
 	virtual Instruction::Ptr assign(const std::string& ptr, const ir::Expression::ValueType& val) const override;
 	virtual Instruction::Ptr assign(ir::Expression::ValueType dest_expr, const ir::Expression::ValueType& val) const override;
-	virtual std::shared_ptr<CastExpression> createCastExpr(const Datatype& dt, Expression::ValueType expr) const override;
+	virtual Expression::ValueType createCastExpr(const Datatype& dt, Expression::ValueType expr) const override;
 
 
 // Expressions

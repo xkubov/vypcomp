@@ -406,7 +406,7 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 	return Return::Ptr(new Return(val));
 }
 
-std::shared_ptr<CastExpression> ParserDriver::createCastExpr(const Datatype& dest_datatype, Expression::ValueType expr) const
+Expression::ValueType ParserDriver::createCastExpr(const Datatype& dest_datatype, Expression::ValueType expr) const
 {
 	if ((!dest_datatype.is<Datatype::ClassName>() || !expr->type().is<Datatype::ClassName>()) && (dest_datatype != Datatype(PrimitiveDatatype::String) || expr->type() != Datatype(PrimitiveDatatype::Int)))
 		throw SemanticError("Cast of object to object type or int to string is allowed.");
@@ -418,11 +418,11 @@ std::shared_ptr<CastExpression> ParserDriver::createCastExpr(const Datatype& des
 		if (!target_search_result) throw SemanticError("Target class " + class_name + " does not exist for cast expression.");
 		if (!std::holds_alternative<Class::Ptr>(target_search_result.value())) throw SemanticError("Target class name " + class_name + " is not a class in cast expression.");
 		auto class_ptr = std::get<Class::Ptr>(target_search_result.value());
-		return std::make_shared<CastExpression>(class_ptr, expr);
+		return std::make_shared<ObjectCastExpression>(class_ptr, expr);
 	}
 	else
 	{
-		throw std::runtime_error("int to string cast expression is not supported yet."); // TODO: int to string conversion representation
+		return std::make_shared<StringCastExpression>(expr);
 	}
 }
 
@@ -747,8 +747,8 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 	{
 		throw SemanticError("left hand operand of . operator is not an object variable");
 	}
-	auto class_name = context_object->type().get<ir::Datatype::ClassName>();
-	std::optional<SymbolTable::Symbol> search_result = searchGlobal(class_name);
+	auto context_class_name = context_object->type().get<ir::Datatype::ClassName>();
+	std::optional<SymbolTable::Symbol> search_result = searchGlobal(context_class_name);
 	if (!search_result)
 	{
 		// Don't think this can happen since expression can only get a class type
@@ -762,42 +762,32 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 	else
 	{
 		Class::Ptr expr_class = std::get<Class::Ptr>(search_result.value());
-		// now determine whether identifier is a method or an attribute
-		// TODO - private extension: the decision to search private should be done depending
-		// on the current context (getClass()...). For now search only public.
-
-		// if (Class::Ptr current_class = parser->getCurrentClass(); 
-		// 	current_class && current_class->name() == expr_class->name())
-		// {
-		// 	// search for private as well
-		// }
-		// else
-		// we're in a method but expr is has a different type than the current class parsed
+		ir::Class::Visibility vis = ir::Class::Visibility::Public;
+		if (_currClass && _currClass->name() == context_class_name)
+			vis = ir::Class::Visibility::Private;
+		AllocaInstruction::Ptr attribute = expr_class->getAttribute(identifier, vis);
+		if (attribute)
 		{
-			AllocaInstruction::Ptr attribute = expr_class->getAttribute(identifier, ir::Class::Visibility::Public); 
-			if (attribute)
+			if (auto context_object_symexp = dynamic_cast<SymbolExpression*>(context_object.get()))
 			{
-				if (auto context_object_symexp = dynamic_cast<SymbolExpression*>(context_object.get()))
-				{
-					return std::make_shared<ObjectAttributeExpression>(context_object_symexp->getValue(), attribute, expr_class);
-				}
-				else
-				{
-					throw SemanticError("Object attribute access on a non-symbol expression: " + context_object->to_string());
-				}
+				return std::make_shared<ObjectAttributeExpression>(context_object_symexp->getValue(), attribute, expr_class);
 			}
 			else
 			{
-				// try method
-				Function::Ptr method = expr_class->getMethod(identifier, ir::Class::Visibility::Public);
-				if (method)
-				{
-					return std::make_shared<MethodExpression>(method, context_object);
-				}
-				else
-				{
-					throw SemanticError("given object has not member named as " + identifier);
-				}
+				throw SemanticError("Object attribute access on a non-symbol expression: " + context_object->to_string());
+			}
+		}
+		else
+		{
+			// try method
+			Function::Ptr method = expr_class->getMethod(identifier, vis);
+			if (method)
+			{
+				return std::make_shared<MethodExpression>(method, context_object);
+			}
+			else
+			{
+				throw SemanticError("given object has does not have a visible member called " + identifier);
 			}
 		}
 	}

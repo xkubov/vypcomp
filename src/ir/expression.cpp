@@ -63,25 +63,44 @@ Class::Ptr SuperExpression::getClass() const
 }
 
 //
-// Cast expression
+// Object Cast Expression
 //
-CastExpression::CastExpression(Class::Ptr target_class, ValueType operand) 
+ObjectCastExpression::ObjectCastExpression(Class::Ptr target_class, ValueType operand) 
 	: Expression(Datatype(target_class->name())), _target_class(target_class), _operand(operand)
 {
 	if (!operand->type().is<Datatype::ClassName>())
 		throw SemanticError("Cast expression allowed only from object type: " + operand->to_string());
 }
-CastExpression::ValueType CastExpression::getOperand() const
+ObjectCastExpression::ValueType ObjectCastExpression::getOperand() const
 {
 	return _operand;
 }
-Class::Ptr CastExpression::getTargetClass() const
+Class::Ptr ObjectCastExpression::getTargetClass() const
 {
 	return _target_class;
 }
-std::string CastExpression::to_string() const
+std::string ObjectCastExpression::to_string() const
 {
 	return "((" + _target_class->name() + ")" + _operand->to_string() + ")";
+}
+//
+// String Cast Expression
+//
+StringCastExpression::StringCastExpression(ValueType value)
+	: Expression(Datatype(PrimitiveDatatype::String)), _operand(value)
+{
+	if (!_operand->type().isPrimitive() || _operand->type().get<PrimitiveDatatype>() != PrimitiveDatatype::Int)
+	{
+		throw SemanticError("string cast attempted on non-int type: " + _operand->to_string());
+	}
+}
+StringCastExpression::ValueType StringCastExpression::getOperand() const
+{
+	return _operand;
+}
+std::string StringCastExpression::to_string() const
+{
+	return "((string)" + _operand->to_string() + ")";
 }
 
 //

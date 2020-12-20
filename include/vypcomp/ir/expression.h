@@ -52,15 +52,25 @@ private:
 };
 
 
-class CastExpression : public Expression
+class ObjectCastExpression : public Expression
 {
 public:
-	CastExpression(Class::Ptr target_class, ValueType operand);
+	ObjectCastExpression(Class::Ptr target_class, ValueType operand);
 	virtual std::string to_string() const override;
 	Class::Ptr getTargetClass() const;
 	ValueType getOperand() const;
 private:
 	Class::Ptr _target_class;
+	ValueType _operand;
+};
+
+class StringCastExpression : public Expression
+{
+public:
+	StringCastExpression(ValueType operand);
+	virtual std::string to_string() const override;
+	ValueType getOperand() const;
+private:
 	ValueType _operand;
 };
 

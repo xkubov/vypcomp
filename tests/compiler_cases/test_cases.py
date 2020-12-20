@@ -110,6 +110,12 @@ class StringConcateUlt(VYPaTestCase):
     test_stdout = b"super duper test of strings"
 
 
+class StringCast(VYPaTestCase):
+    input_file = "string_cast.vl"
+    test_stdin = b""
+    test_stdout = b"69"
+
+
 class ComparisonCase(VYPaTestCase):
     input_file = "comparison.vl"
     test_stdin = b""

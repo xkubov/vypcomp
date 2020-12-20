@@ -1,0 +1,7 @@
+void main(void)
+{
+	int i = 69;
+	string s = (string)i;
+	print(s);
+	return;
+}

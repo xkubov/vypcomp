@@ -83,11 +83,9 @@ void vypcomp::Generator::generate_vtables(const vypcomp::SymbolTable& symbol_tab
             VtableIndexLookupPtr method_id_mapping = std::make_shared<VtableIndexLookup>();
             class_method_vtable_mapping[class_symbol->name()] = method_id_mapping; // lookup used to do Class -> Method -> vtable offset lookup
             std::size_t index = 0;
-            std::cout << "iterating: " << class_symbol->name() << std::endl;
             for (auto i = class_symbol->methods_begin(), end = class_symbol->methods_end(); i != end; i += 1)
             {
                 auto method = *i;
-                std::cout << method->argTypes()[0].to_string() << " " << method->name() << std::endl;
                 class_vtable[method->name()] = generate_method_label(method);
                 auto [iter, inserted] = super_vtable.insert(std::make_pair(method->name(), generate_method_label(method))); // super table holds the first method of the hierarchy
                 if (inserted)
@@ -626,6 +624,23 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
         out << "GETWORD $0, [$SP-" << object_address.value() << "], " << attr_offset << std::endl;
         out << "SET " << result_destination << ", $0" << std::endl;
     }
+    else if (auto string_cast_expr = dynamic_cast<ir::StringCastExpression*>(input.get()))
+    {
+        auto operand = string_cast_expr->getOperand();
+        std::string operand_location;
+        if (operand->is_simple())
+        {
+            operand_location = "$1";
+        }
+        else
+        {
+            operand_location = get_expr_destination(operand.get(), temporary_variables_mapping, variable_offsets);
+        }
+        generate_expression(operand, operand_location, variable_offsets, temporary_variables_mapping, out);
+        auto expr_destination = get_expr_destination(string_cast_expr, temporary_variables_mapping, variable_offsets);
+        out << "INT2STRING $0, " << operand_location << "\n";
+        out << "SET " << expr_destination << ", $0" << std::endl;
+    }
     else
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
@@ -917,9 +932,7 @@ vypcomp::Generator::AllocaVector vypcomp::Generator::get_alloca_instructions(vyp
         {
             auto target = assignment->getTarget();
             auto expr = assignment->getExpr();
-            //auto target_allocas = get_temporary_allocas(target, exp_temporary_mapping);
             auto expr_allocas = get_temporary_allocas(expr, exp_temporary_mapping);
-            //result.insert(result.end(), target_allocas.begin(), target_allocas.end());
             result.insert(result.end(), expr_allocas.begin(), expr_allocas.end());
         }
         else if (auto ret_instr = std::dynamic_pointer_cast<ir::Return>(current))
@@ -989,6 +1002,15 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
     {
         auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(object_access_attr->type(), object_access_attr->to_string()));
         exp_temporary_mapping[object_access_attr] = new_temporary.get();
+        result.push_back(new_temporary);
+    }
+    else if (auto string_cast_expr = dynamic_cast<ir::StringCastExpression*>(expr.get()))
+    {
+        auto operand = string_cast_expr->getOperand();
+        auto op_temps = get_required_temporaries(operand, exp_temporary_mapping);
+        result.insert(result.end(), op_temps.begin(), op_temps.end());
+        auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(ir::Datatype(ir::PrimitiveDatatype::String), string_cast_expr->to_string()));
+        exp_temporary_mapping[string_cast_expr] = new_temporary.get();
         result.push_back(new_temporary);
     }
     else
