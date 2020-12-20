@@ -651,10 +651,30 @@ void vypcomp::Generator::generate_binaryop(ir::BinaryOpExpression::Ptr input, De
             out << "ADDF $0, " << op1_location << ", " << op2_location << "\n";
         else if (input->type() == ir::Datatype(ir::PrimitiveDatatype::String))
         {
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [](auto& ptr_offset_pair) { ptr_offset_pair.second += 3ll;  });
+            std::string op1_location_shifted;
+            if (op1->is_simple())
+            {
+                op1_location_shifted = op1_location;
+            }
+            else
+            {
+                op1_location_shifted = get_expr_destination(op1.get(), temporary_variables_mapping, variable_offsets);
+            }
+            std::string op2_location_shifted;
+            if (op2->is_simple())
+            {
+                op2_location_shifted = op2_location;
+            }
+            else
+            {
+                op2_location_shifted = get_expr_destination(op2.get(), temporary_variables_mapping, variable_offsets);
+            }
+            std::for_each(variable_offsets.begin(), variable_offsets.end(), [](auto& ptr_offset_pair) { ptr_offset_pair.second -= 3ll;  });
             // call addStr subroutine with the 2 operands
             out << "ADDI $SP, $SP, 3\n";
-            out << "SET [$SP-2], " << op1_location << "\n";
-            out << "SET [$SP-1], " << op2_location << "\n";
+            out << "SET [$SP-2], " << op1_location_shifted << "\n";
+            out << "SET [$SP-1], " << op2_location_shifted << "\n";
             out << "CALL [$SP], addStr" << std::endl;
         }
         else
