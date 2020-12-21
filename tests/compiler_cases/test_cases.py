@@ -328,6 +328,13 @@ class OopInitvarSupport(VYPaTestCase):
     test_stdout = b'A constructor\nA constructor\nB constructor\n0\nA\n69\n'
 
 
+class OopObjectCast(VYPaTestCase):
+    input_file = "oop_object_cast.vl"
+    test_stdin = b""
+    test_stdout = b'A constructor\nA constructor\nB constructor\nall good it seems\n'
+    test_int_retcode = 28
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

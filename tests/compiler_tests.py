@@ -9,7 +9,9 @@ class VYPaTestCase(unittest.TestCase):
     input_file = []
     test_stdin = b""
     test_stdout = b""
+    test_stderr = b""
     test_return = 0
+    test_int_retcode = 0
 
     output_file_path = "testout.vc"
 
@@ -19,6 +21,9 @@ class VYPaTestCase(unittest.TestCase):
     def __init__(self, methodname):
         super().__init__(methodname)
         self.real_stdout = b""
+        self.real_stderr = b""
+        self.real_return = 0
+        self.real_int_retcode = 0
 
     def run(self, result=None):
         input_file_path = os.path.join(os.path.abspath("."), "compiler_cases", self.input_file)
@@ -41,12 +46,17 @@ class VYPaTestCase(unittest.TestCase):
             return
 
         self.real_stdout = stdout
+        self.real_stderr = stderr
+        self.real_int_retcode = interpret_subproc.returncode
         super().run(result)
 
-    def test00_check_return_code(self):
+    def test00_check_comp_return_code(self):
         self.assertEqual(self.test_return, self.real_return)
 
-    def test01_check_output(self):
+    def test01_check_int_return_code(self):
+        self.assertEqual(self.real_int_retcode, self.test_int_retcode)
+
+    def test02_check_output(self):
         self.assertEqual(self.test_stdout, self.real_stdout)
 
     @classmethod

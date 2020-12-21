@@ -1,0 +1,20 @@
+class A : Object {
+	void A(void)
+	{ print("A constructor\n"); }
+}
+
+class B : A {
+	void B(void)
+	{ print("B constructor\n"); }
+	void good(void)
+	{ print("all good it seems\n"); }
+}
+
+void main(void) {
+	A a = new A;
+	A b = new B;
+	B breal = (B)b;
+	breal.good();
+	B bfake = (B)a;
+	bfake.good();
+}
