@@ -1,0 +1,19 @@
+class A : Object {
+	int x;
+	void A(void)
+	{ print("A constructor\n"); }
+}
+
+class B : A {
+	void B(void)
+	{ print("B constructor\n"); }
+	void good(void)
+	{ print("all good it seems\n"); }
+}
+
+void main(void) {
+	Object o;
+	if (!o) { print("true"); } else { print("falsch"); }
+	o = new Object;
+	if (!o) { print("true"); } else { print("falsch"); }
+}

@@ -335,6 +335,12 @@ class OopObjectCast(VYPaTestCase):
     test_int_retcode = 28
 
 
+class ZeroInitObject(VYPaTestCase):
+    input_file = "zero_init_obj.vl"
+    test_stdin = b""
+    test_stdout = b'truefalsch'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

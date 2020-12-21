@@ -30,6 +30,16 @@ private:
 	vypcomp::ir::Literal _value;
 };
 
+class NullObject : public LiteralExpression
+{
+public:
+	NullObject(Datatype::ClassName class_name) 
+		: LiteralExpression(Literal(0ull))
+	{
+		_type = Datatype(class_name);
+	}
+};
+
 class SymbolExpression : public Expression 
 {
 public:

@@ -497,6 +497,10 @@ declaration : named_data optional_assignment id2init {
 			auto literal = LiteralExpression::ValueType(new LiteralExpression(ir::Literal(decl->type())));
 			result.push_back(parser->assign(id, literal));
 		}
+		else if (decl->type().is<ir::Datatype::ClassName>()) {
+			auto literal = std::make_shared<ir::NullObject>(decl->type().get<ir::Datatype::ClassName>());
+			result.push_back(parser->assign(id, literal));
+		}
 	}
 
 	$$ = result;
