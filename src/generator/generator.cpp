@@ -674,6 +674,34 @@ void vypcomp::Generator::generate_expression(ir::Expression::ValueType input, De
         out << "NOT $0, " << operand_location << "\n";
         out << "SET " << expr_destination << ", $0" << std::endl;
     }
+    else if (auto obj_cast_expr = dynamic_cast<ir::ObjectCastExpression*>(input.get()))
+    {
+        static std::size_t dyncast_label_id = 0;
+        std::string label_name = "dynamic_cast_good_" + std::to_string(dyncast_label_id++);
+        auto operand = obj_cast_expr->getOperand();
+        std::string operand_location;
+        if (operand->is_simple())
+        {
+            operand_location = "$1";
+        }
+        else
+        {
+            operand_location = get_expr_destination(operand.get(), temporary_variables_mapping, variable_offsets);
+        }
+        auto target_class = obj_cast_expr->getTargetClass();
+
+        generate_expression(operand, operand_location, variable_offsets, temporary_variables_mapping, out);
+        if (!operand->is_simple())
+            out << "SET $1, " << operand_location << "\n";
+        // get the real type of target class, which is stored at object's chunk offset 1
+        out << "GETWORD $2, $1, 1\n"; // $2 is the string containing current class name
+        out << "EQS $0, $2, \"" << target_class->name() << "\"\n";
+        out << "JUMPNZ " << label_name << ", $0\n";
+            out << "SETWORD 0, 0, 0\n"; // cause run-time error 28 if the types are not equal
+        // otherwise assign the object id to 
+        out << "LABEL " << label_name << "\n";
+        out << "SET " << destination << ", $1" << std::endl;
+    }
     else
     {
         throw std::runtime_error("Generator encountered unsupported expression type: " + input->to_string());
@@ -1046,6 +1074,12 @@ std::vector<ir::AllocaInstruction::Ptr> vypcomp::Generator::get_required_tempora
         auto new_temporary = std::make_shared<ir::AllocaInstruction>(std::make_pair(ir::Datatype(ir::PrimitiveDatatype::String), string_cast_expr->to_string()));
         exp_temporary_mapping[string_cast_expr] = new_temporary.get();
         result.push_back(new_temporary);
+    }
+    else if (auto obj_cast_expr = dynamic_cast<ir::ObjectCastExpression*>(expr.get()))
+    {
+        auto operand = obj_cast_expr->getOperand();
+        auto op_temps = get_required_temporaries(operand, exp_temporary_mapping);
+        result.insert(result.end(), op_temps.begin(), op_temps.end());
     }
     else
     {
