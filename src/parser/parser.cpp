@@ -158,7 +158,31 @@ void ParserDriver::parseStart(ir::Function::Ptr fun)
 						Datatype(_currClass->name()), "this"}));
 			args.insert(args.begin(), thisArg);
 		}
+
+		if (auto orig = _currClass->getBase()->getOriginalMethod(fun->name(), ir::Class::Visibility::Private)) {
+			if (orig->type() != fun->type()) {
+				throw SemanticError("override on type is not supported");
+			}
+			if (orig->args().size() != fun->args().size()) {
+				throw SemanticError("override not supported size");
+			}
+			auto funTypes = fun->argTypes();
+			auto it = funTypes.begin();
+			bool first = true;
+			for (auto origType: orig->argTypes()) {
+				if (first) {
+					first = false;
+					it++;
+					continue;
+				}
+				if (origType != *it)
+					if (!origType.is<ir::Datatype::InvalidDatatype>() && !it->is<ir::Datatype::InvalidDatatype>())
+						throw SemanticError("override not supported, expected: "+origType.to_string()+" got: "+it->to_string());
+				it++;
+			}
+		}
 	}
+
 	_currFunction = fun;
 }
 
