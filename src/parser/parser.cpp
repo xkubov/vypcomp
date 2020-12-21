@@ -39,6 +39,8 @@ SymbolTable initSymbolTable()
 	// free built-in functions
 	// int readInt(void)
 	table.insert({ "readInt", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Int), "readInt", Arglist())) });
+	// int readFloat(void)
+	table.insert({ "readFloat", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::Float), "readFloat", Arglist())) });
 	// string readString(void)
 	table.insert({ "readString", std::make_shared<ir::Function>(std::make_tuple(Datatype(PrimitiveDatatype::String), "readString", Arglist())) });
 	// int length(string s)

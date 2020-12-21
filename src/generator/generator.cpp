@@ -1126,6 +1126,13 @@ void vypcomp::Generator::generate_builtin_functions(OutputStream& out)
     out << "SUBI $SP, $SP, 1\n"; // length has no parameters
     out << "RETURN $1\n" << std::endl;
 
+    // readFloat
+    out << "LABEL " << VYPLANG_PREFIX << "readFloat\n";
+    out << "READF $0\n";
+    out << "SET $1, [$SP]\n";
+    out << "SUBI $SP, $SP, 1\n"; // length has no parameters
+    out << "RETURN $1\n" << std::endl;
+
     // readString
     out << "LABEL " << VYPLANG_PREFIX << "readString\n";
     out << "READS $0\n";
@@ -1238,6 +1245,7 @@ bool vypcomp::Generator::is_builtin_func(std::string func_name) const
     if (
         func_name == "print" ||
         func_name == "readInt" ||
+        func_name == "readFloat" ||
         func_name == "readString" ||
         func_name == "length" ||
         func_name == "subStr"
