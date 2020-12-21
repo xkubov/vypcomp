@@ -568,112 +568,24 @@ class_body : function_definition class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	auto fun = $1;
-	if (auto orig = curr->getOriginalMethod(fun->name(), ir::Class::Visibility::Private)) {
-		if (orig->type() != fun->type()) {
-			throw SemanticError("override on type is not supported");
-		}
-		if (orig->args().size() != fun->args().size()) {
-			throw SemanticError("override not supported");
-		}
-		auto origTypes = orig->argTypes();
-		auto it = origTypes.begin();
-		bool first = true;
-		for (auto funType: fun->argTypes()) {
-			if (first) {
-				first = false;
-				it++;
-				continue;
-			}
-			if (funType != *it)
-				throw SemanticError("override not supported");
-			it++;
-		}
-	}
 	curr->add($1, ir::Class::Visibility::Public);
 }
 | PUBLIC function_definition class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	auto fun = $2;
-	if (auto orig = curr->getOriginalMethod(fun->name(), ir::Class::Visibility::Private)) {
-		if (orig->type() != fun->type()) {
-			throw SemanticError("override on type is not supported");
-		}
-		if (orig->args().size() != fun->args().size()) {
-			throw SemanticError("override not supported");
-		}
-		auto origTypes = orig->argTypes();
-		auto it = origTypes.begin();
-		bool first = true;
-		for (auto funType: fun->argTypes()) {
-			if (first) {
-				first = false;
-				it++;
-				continue;
-			}
-			if (funType != *it)
-				throw SemanticError("override not supported");
-			it++;
-		}
-	}
 	curr->add($2, ir::Class::Visibility::Public);
 }
 | PRIVATE function_definition class_body {
-	auto curr = parser->getCurrentClass();
+auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	auto fun = $2;
-	if (auto orig = curr->getOriginalMethod(fun->name(), ir::Class::Visibility::Private)) {
-		if (orig->type() != fun->type()) {
-			throw SemanticError("override on type is not supported");
-		}
-		if (orig->args().size() != fun->args().size()) {
-			throw SemanticError("override not supported");
-		}
-		auto origTypes = orig->argTypes();
-		auto it = origTypes.begin();
-		bool first = true;
-		for (auto funType: fun->argTypes()) {
-			if (first) {
-				first = false;
-				it++;
-				continue;
-			}
-			if (funType != *it)
-				throw SemanticError("override not supported");
-			it++;
-		}
-	}
 	curr->add($2, ir::Class::Visibility::Private);
 }
 | PROTECTED function_definition class_body {
 	auto curr = parser->getCurrentClass();
 	if (curr == nullptr)
 		throw std::runtime_error("expected class to be parsed! "+std::to_string(__LINE__));
-	auto fun = $2;
-	if (auto orig = curr->getOriginalMethod(fun->name(), ir::Class::Visibility::Private)) {
-		if (orig->type() != fun->type()) {
-			throw SemanticError("override on type is not supported");
-		}
-		if (orig->args().size() != fun->args().size()) {
-			throw SemanticError("override not supported");
-		}
-		auto origTypes = orig->argTypes();
-		auto it = origTypes.begin();
-		bool first = true;
-		for (auto funType: fun->argTypes()) {
-			if (first) {
-				first = false;
-				it++;
-				continue;
-			}
-			if (funType != *it)
-				throw SemanticError("override not supported");
-			it++;
-		}
-	}
 	curr->add($2, ir::Class::Visibility::Protected);
 }
 | declaration class_body {
