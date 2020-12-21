@@ -322,6 +322,12 @@ class ObjectComparisons(VYPaTestCase):
     test_stdout = b'false\ntrue\nfalse\ntrue\n'
 
 
+class OopInitvarSupport(VYPaTestCase):
+    input_file = "oop_initvar_support.vl"
+    test_stdin = b""
+    test_stdout = b'A constructor\nA constructor\nB constructor\n0\nA\n69\n'
+
+
 # TODO: compiler error tests:
 #   - non-int/object type in if
 #   - non-int/object type in while

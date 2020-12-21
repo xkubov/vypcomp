@@ -183,7 +183,6 @@ void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, Out
         out << std::endl;
     // set classname for dynamic casts
     out << "SETWORD [$SP], 1, \"" << input->name() << "\"\n";
-    // TODO: initialize attributes
 
     out << "SET $0, [$SP]\n";
     out << "SUBI $SP, $SP, 1\n"; // clean up 1 local var
@@ -200,7 +199,22 @@ void vypcomp::Generator::generate_constructor_chain_invocation(vypcomp::ir::Clas
 {
     if (!input) return;
     auto parent = input->getBase();
+    // first call parent constructor
     generate_constructor_chain_invocation(parent, out);
+    // then initialize values of this class
+    for (auto& implicit_instr : input->implicit())
+    {
+        auto implicit_assignment = dynamic_cast<ir::Assignment*>(implicit_instr.get());
+        if (!implicit_assignment) throw std::runtime_error("Implicit instruction was not an assignment:\n" + implicit_instr->str(""));
+        auto destination = implicit_assignment->getAlloca();
+        auto value_expr = implicit_assignment->getExpr();
+        auto attribute_offset = get_object_attribute_offset(input, destination->name());
+        if (verbose)
+            out << "# initialize value of " << destination->name() << std::endl;
+        generate_expression(value_expr, "$0", OffsetMap(), TempVarMap(), out);
+        out << "SETWORD [$SP], " << attribute_offset << ", $0" << std::endl;
+    }
+    // then jump into user-defined constructor body of current class
     if (input->constructor())
     {
         out << "ADDI $SP, $SP, 2\n";

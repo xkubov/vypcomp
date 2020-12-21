@@ -1,0 +1,19 @@
+class A : Object {
+	int x;
+	void A(void)
+	{ print("A constructor\n"); }
+}
+
+class B : A {
+	A y = new A;
+	int z = 69;
+	void B(void)
+	{ print("B constructor\n"); }
+}
+
+void main(void) {
+	B o = new B;
+	print(o.x, "\n");
+	print(o.y.getClass(), "\n");
+	print(o.z, "\n");
+}
