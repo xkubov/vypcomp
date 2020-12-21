@@ -41,7 +41,7 @@ public:
 	virtual ir::Expression::ValueType notExpr(const ir::Expression::ValueType& expr) const override;
 	virtual ir::Expression::ValueType thisExpr() const override;
 	virtual ir::Expression::ValueType superExpr() const override;
-	virtual ir::Expression::ValueType newExpr(const std::string& clas_name) const;
+	virtual ir::Expression::ValueType newExpr(const std::string& clas_name) const override;
 
 	virtual ir::Expression::ValueType addExpr(
 		const ir::Expression::ValueType& e1,
