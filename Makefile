@@ -10,11 +10,19 @@ PROJECT_FILES = CMakeLists.txt \
 
 DOCUMENTATION = documentation.pdf
 
+.PHONY: tests
+
 all:
 	@mkdir -p build
 	@cd build && cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release
 	@cd build && $(MAKE) install
 	@cp build/install/bin/vypcomp .
+
+tests:
+	@mkdir -p build
+	@cd build && cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=on
+	@cd build && $(MAKE) install
+	@build/install/bin/vypcomp-tests
 
 clean:
 	@rm -rf build vypcomp
