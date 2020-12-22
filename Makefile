@@ -1,4 +1,4 @@
-LOGIN = login
+LOGIN = xkubov06
 PROJECT_FILES = CMakeLists.txt \
 		src            \
 		include        \
