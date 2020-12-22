@@ -219,8 +219,10 @@ std::string BranchInstruction::str(const std::string& prefix) const
 	std::ostringstream out;
 	out << prefix << "condition: " << _expr->to_string() << std::endl;
 	out << _if->str(prefix+"  ");
-	out << prefix << "else: " << std::endl;
-	out << _else->str(prefix+"  ");
+	if (_else) {
+		out << prefix << "else: " << std::endl;
+		out << _else->str(prefix+"  ");
+	}
 
 	return out.str();
 }

@@ -379,6 +379,10 @@ statement : return {
 | IF LPAR expr RPAR if_body else {
 	$$ = {parser->createIf($3, $5, $6)};
 }
+| IF LPAR expr RPAR if_body {
+	ir::BasicBlock::Ptr else_block = nullptr;
+	$$ = {parser->createIf($3, $5, else_block)};
+}
 | WHILE LPAR expr RPAR LBRA basic_block {
 	$$ = {parser->createWhile($3, $6)};
 };

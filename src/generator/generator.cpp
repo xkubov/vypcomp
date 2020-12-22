@@ -329,6 +329,10 @@ void vypcomp::Generator::generate_function_body(vypcomp::ir::Function::Ptr input
 
 void vypcomp::Generator::generate_block(vypcomp::ir::BasicBlock::Ptr in_block, OffsetMap& variable_offsets, TempVarMap& temporary_variables_mapping, OutputStream& out)
 {
+    if (in_block == nullptr)
+    {
+	    return;
+    }
     for (auto instruction = in_block->first(); instruction != nullptr; instruction = instruction->next())
     {
         generate_instruction(instruction, variable_offsets, temporary_variables_mapping, out);
@@ -970,10 +974,14 @@ vypcomp::Generator::AllocaVector vypcomp::Generator::get_alloca_instructions(vyp
         {
             auto allocas_cond = get_temporary_allocas(branch_instr->getExpr(), exp_temporary_mapping);
             auto allocas_if = get_alloca_instructions(branch_instr->getIf()->first(), exp_temporary_mapping);
-            auto allocas_else = get_alloca_instructions(branch_instr->getElse()->first(), exp_temporary_mapping);
             result.insert(result.end(), allocas_cond.begin(), allocas_cond.end());
             result.insert(result.end(), allocas_if.begin(), allocas_if.end());
-            result.insert(result.end(), allocas_else.begin(), allocas_else.end());
+
+            if (branch_instr->getElse())
+            {
+                auto allocas_else = get_alloca_instructions(branch_instr->getElse()->first(), exp_temporary_mapping);
+                result.insert(result.end(), allocas_else.begin(), allocas_else.end());
+            }
         }
         else if (auto loop_instr = std::dynamic_pointer_cast<ir::LoopInstruction>(current))
         {
