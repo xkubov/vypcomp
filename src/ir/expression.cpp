@@ -69,7 +69,7 @@ ObjectCastExpression::ObjectCastExpression(Class::Ptr target_class, ValueType op
 	: Expression(Datatype(target_class->name())), _target_class(target_class), _operand(operand)
 {
 	if (!operand->type().is<Datatype::ClassName>())
-		throw SemanticError("Cast expression allowed only from object type: " + operand->to_string());
+		throw IncompabilityError("Cast expression allowed only from object type: " + operand->to_string());
 }
 ObjectCastExpression::ValueType ObjectCastExpression::getOperand() const
 {
@@ -91,7 +91,7 @@ StringCastExpression::StringCastExpression(ValueType value)
 {
 	if (!_operand->type().isPrimitive() || _operand->type().get<PrimitiveDatatype>() != PrimitiveDatatype::Int)
 	{
-		throw SemanticError("string cast attempted on non-int type: " + _operand->to_string());
+		throw IncompabilityError("string cast attempted on non-int type: " + _operand->to_string());
 	}
 }
 StringCastExpression::ValueType StringCastExpression::getOperand() const
@@ -180,7 +180,7 @@ std::string ConstructorExpression::to_string() const
 MethodExpression::MethodExpression(Function::Ptr function, ValueType context_object)
 	: FunctionExpression(function), _object(context_object)
 {
-	if (!context_object->type().is<Datatype::ClassName>()) throw SemanticError("Method call attempted at non-object type expression result.");
+	if (!context_object->type().is<Datatype::ClassName>()) throw IncompabilityError("Method call attempted at non-object type expression result.");
 }
 std::string MethodExpression::to_string() const
 {
@@ -234,7 +234,7 @@ AddExpression::AddExpression(ValueType op1, ValueType op2)
 		auto datatype2 = _op2->type().get<PrimitiveDatatype>();
 		if (datatype1 != datatype2)
 		{
-			throw SemanticError("types do not match in + operation");
+			throw IncompabilityError("types do not match in + operation");
 		}
 		else
 		{
@@ -243,7 +243,7 @@ AddExpression::AddExpression(ValueType op1, ValueType op2)
 	}
 	else
 	{
-		throw SemanticError("only primitive types are supported in + operation");
+		throw IncompabilityError("only primitive types are supported in + operation");
 	}
 }
 std::string AddExpression::to_string() const
@@ -268,12 +268,12 @@ SubtractExpression::SubtractExpression(ValueType op1, ValueType op2)
 		}
 		else
 		{
-			throw SemanticError("Unsupported type in - operation.");
+			throw IncompabilityError("Unsupported type in - operation.");
 		}
 	}
 	else
 	{
-		throw SemanticError("Unsupported type in - operation.");
+		throw IncompabilityError("Unsupported type in - operation.");
 	}
 }
 std::string SubtractExpression::to_string() const
@@ -298,12 +298,12 @@ MultiplyExpression::MultiplyExpression(ValueType op1, ValueType op2)
 		}
 		else
 		{
-			throw SemanticError("Unsupported type in * operation.");
+			throw IncompabilityError("Unsupported type in * operation.");
 		}
 	}
 	catch (const std::bad_variant_access& e)
 	{
-		throw SemanticError("only int or float types are supported in * operation");
+		throw IncompabilityError("only int or float types are supported in * operation");
 	}
 }
 std::string MultiplyExpression::to_string() const
@@ -328,12 +328,12 @@ DivideExpression::DivideExpression(ValueType op1, ValueType op2)
 		}
 		else
 		{
-			throw SemanticError("Unsupported type in / operation.");
+			throw IncompabilityError("Unsupported type in / operation.");
 		}
 	}
 	catch (const std::bad_variant_access& e)
 	{
-		throw SemanticError("only int or float types are supported in / operation");
+		throw IncompabilityError("only int or float types are supported in / operation");
 	}
 }
 std::string DivideExpression::to_string() const
@@ -346,14 +346,14 @@ ComparisonExpression::ComparisonExpression(Operation operation, ValueType op1, V
 {
 	if (_op1->type() != _op2->type())
 	{
-		throw SemanticError("types do not match in " + op_string() + " operation");
+		throw IncompabilityError("types do not match in " + op_string() + " operation");
 	}
 	if (_operation != EQUALS && _operation != NOTEQUALS)
 	{
 		// these two operations actually allow arbitrary identical datatypes
 		if (!_op1->type().is<PrimitiveDatatype>() || !_op2->type().is<PrimitiveDatatype>())
 		{
-			throw SemanticError("only primitive types are supported in " + op_string() + " operation");
+			throw IncompabilityError("only primitive types are supported in " + op_string() + " operation");
 		}
 	}
 }
@@ -391,11 +391,11 @@ AndExpression::AndExpression(ValueType op1, ValueType op2)
 {
 	if (_op1->type() != _op2->type())
 	{
-		throw SemanticError("types do not match in && operation");
+		throw IncompabilityError("types do not match in && operation");
 	}
 	if (_op1->type() == Datatype(PrimitiveDatatype::Float) || _op1->type() == Datatype(PrimitiveDatatype::String))
 	{
-		throw SemanticError("Only int and object types allowed in && operator.");
+		throw IncompabilityError("Only int and object types allowed in && operator.");
 	}
 }
 std::string AndExpression::to_string() const
@@ -408,11 +408,11 @@ OrExpression::OrExpression(ValueType op1, ValueType op2)
 {
 	if (_op1->type() != _op2->type())
 	{
-		throw SemanticError("types do not match in || operation");
+		throw IncompabilityError("types do not match in || operation");
 	}
 	if (_op1->type() == Datatype(PrimitiveDatatype::Float) || _op1->type() == Datatype(PrimitiveDatatype::String))
 	{
-		throw SemanticError("Only int and object types allowed in || operator.");
+		throw IncompabilityError("Only int and object types allowed in || operator.");
 	}
 }
 std::string OrExpression::to_string() const
@@ -427,7 +427,7 @@ NotExpression::NotExpression(ValueType operand)
 	: Expression(Datatype(PrimitiveDatatype::Int)), _operand(operand)
 {
 	if (operand->type() != Datatype(PrimitiveDatatype::Int) && !operand->type().is<Datatype::ClassName>())
-		throw SemanticError("Only int and object type allowed in ! operator: " + operand->to_string());
+		throw IncompabilityError("Only int and object type allowed in ! operator: " + operand->to_string());
 }
 NotExpression::ValueType NotExpression::getOperand() const
 {

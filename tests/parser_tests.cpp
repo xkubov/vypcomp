@@ -125,7 +125,7 @@ TEST_F(ParserTests, semanticErrorInAssignment)
         )");
 
         ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
+	ASSERT_THROW(parser.parse(input), IncompabilityError);
 }
 
 /**
@@ -265,7 +265,7 @@ TEST_F(ParserTests, semanticErrorParameters)
         )");
 
         ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
+	ASSERT_THROW(parser.parse(input), IncompabilityError);
 }
 
 TEST_F(ParserTests, semanticErrorRedefinitionParameter)
@@ -328,7 +328,7 @@ TEST_F(ParserTests, semanticErrorFunctionReturn)
         )");
 
         ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
+	ASSERT_THROW(parser.parse(input), IncompabilityError);
 }
 
 TEST_F(ParserTests, semanticErrorFunctionAssignment)
@@ -345,7 +345,7 @@ TEST_F(ParserTests, semanticErrorFunctionAssignment)
         )");
 
         ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
+	ASSERT_THROW(parser.parse(input), IncompabilityError);
 }
 
 TEST_F(ParserTests, supportComments)
@@ -612,7 +612,7 @@ TEST_F(ParserTests, invalidOperands)
         )");
 
         ParserDriver parser;
-	ASSERT_THROW(parser.parse(input), SemanticError);
+	ASSERT_THROW(parser.parse(input), IncompabilityError);
 }
 
 TEST_F(ParserTests, supportChaoticalExpressions)
@@ -983,6 +983,6 @@ TEST_F(ParserTests, invalidBinaryOpExpressions)
 	{
 		ParserDriver parser;
 		std::stringstream input(input_string);
-		ASSERT_THROW(parser.parseExpression(input, 0), SemanticError);
+		ASSERT_THROW(parser.parseExpression(input, 0), IncompabilityError);
 	}
 }

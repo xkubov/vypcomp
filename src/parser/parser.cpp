@@ -89,7 +89,7 @@ Class::Ptr ParserDriver::getClass(const std::string &name) const
 					"cannot derive from function" :
 					"invalid derivation of class";
 
-			throw SemanticError(msg);
+			throw IncompabilityError(msg);
 		}
 
 		return std::get<Class::Ptr>(*symbol);
@@ -266,11 +266,11 @@ Instruction::Ptr ParserDriver::assign(ir::Expression::ValueType dest_expr,
 		}
 		else
 		{
-			throw SemanticError("Only symbol expression or object attribute allowed as assignment target: " + dest_expr->to_string());
+			throw IncompabilityError("Only symbol expression or object attribute allowed as assignment target: " + dest_expr->to_string());
 		}
         if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
-			throw SemanticError("Cannot assign to function.");
+			throw IncompabilityError("Cannot assign to function.");
 
 		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
 		checkAssignmentTypes(var->type(), val->type());
@@ -291,7 +291,7 @@ Instruction::Ptr ParserDriver::assign(const std::string& name,
 {
 	if (auto symbol = searchTables(name)) {
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
-			throw SemanticError("Cannot assign to function.");
+			throw IncompabilityError("Cannot assign to function.");
 
 		auto var = std::get<AllocaInstruction::Ptr>(*symbol);
 		checkAssignmentTypes(var->type(), val->type());
@@ -327,7 +327,7 @@ void ParserDriver::checkAssignmentTypes(const Datatype& dest_type, const Datatyp
 			if (Class::canAssign(dest_class_ptr, val_class_ptr))
 				return;
 		}
-		throw SemanticError("Invalid type, can't assign " + value_type.to_string() + " to " + dest_type.to_string());
+		throw IncompabilityError("Invalid type, can't assign " + value_type.to_string() + " to " + dest_type.to_string());
 	}
 }
 
@@ -342,7 +342,7 @@ void ParserDriver::checkArgTypes(const Function::Ptr& function_ptr, const Functi
 			auto arg_type = argument->type();
 			if (!arg_type.isPrimitive())
 			{
-				throw SemanticError("print called with non-primitive datatype parameter.");
+				throw IncompabilityError("print called with non-primitive datatype parameter.");
 			}
 		}
 	}
@@ -383,7 +383,7 @@ std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType 
 			}
 			else
 			{
-				throw SemanticError("Identifier in function call is not a function.");
+				throw IncompabilityError("Identifier in function call is not a function.");
 			}
 		}
 		else
@@ -393,7 +393,7 @@ std::vector<Instruction::Ptr> ParserDriver::call_func(ir::Expression::ValueType 
 	}
 	else
 	{
-		throw SemanticError("Only function or assignment allowed on statement level, got: " + func_expr->to_string());
+		throw SyntaxError("Only function or assignment allowed on statement level, got: " + func_expr->to_string());
 	}
 	auto funcexp = std::dynamic_pointer_cast<FunctionExpression>(func_expr);
 	checkArgTypes(funcexp->getFunction(), args);
@@ -407,7 +407,7 @@ Instruction::Ptr ParserDriver::createIf(
 	const ir::BasicBlock::Ptr& else_block) const
 {
 	if (val->type() != Datatype(PrimitiveDatatype::Int) && !val->type().is<Datatype::ClassName>())
-		throw SemanticError("Expression in if statement has to be either int or object type.");
+		throw IncompabilityError("Expression in if statement has to be either int or object type.");
 	return BranchInstruction::Ptr(new BranchInstruction(val, if_block, else_block));
 }
 
@@ -416,7 +416,7 @@ Instruction::Ptr ParserDriver::createWhile(
 	const ir::BasicBlock::Ptr& block) const
 {
 	if (val->type() != Datatype(PrimitiveDatatype::Int) && !val->type().is<Datatype::ClassName>())
-		throw SemanticError("Expression in while statement has to be either int or object type.");
+		throw IncompabilityError("Expression in while statement has to be either int or object type.");
 	return LoopInstruction::Ptr(new LoopInstruction(val, block));
 }
 
@@ -424,12 +424,12 @@ Instruction::Ptr ParserDriver::createWhile(
 Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) const
 {
 	if (_currFunction == nullptr) {
-		throw SemanticError("Return statement out of a function");
+		throw SyntaxError("Return statement out of a function");
 	}
 
 	if (val == nullptr) {
 		if (!_currFunction->isVoid())
-			throw SemanticError("Invalid return for function "+_currFunction->name()+" with type: "+_currFunction->type()->to_string());
+			throw IncompabilityError("Invalid return for function "+_currFunction->name()+" with type: "+_currFunction->type()->to_string());
 		return Return::Ptr(new Return());
 	}
 
@@ -441,7 +441,7 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 Expression::ValueType ParserDriver::createCastExpr(const Datatype& dest_datatype, Expression::ValueType expr) const
 {
 	if ((!dest_datatype.is<Datatype::ClassName>() || !expr->type().is<Datatype::ClassName>()) && (dest_datatype != Datatype(PrimitiveDatatype::String) || expr->type() != Datatype(PrimitiveDatatype::Int)))
-		throw SemanticError("Cast of object to object type or int to string is allowed.");
+		throw IncompabilityError("Cast of object to object type or int to string is allowed.");
 
 	if (dest_datatype.is<Datatype::ClassName>())
 	{
@@ -622,7 +622,7 @@ ir::Expression::ValueType ParserDriver::functionCall(
 {
 	if (!function_expr->type().is<Datatype::FunctionType>())
 	{
-		throw SemanticError("Function call attempted on non-function expression.");
+		throw IncompabilityError("Function call attempted on non-function expression.");
 	}
 	else
 	{
@@ -681,7 +681,7 @@ ir::Expression::ValueType ParserDriver::newExpr(const std::string& class_name) c
 {
 	auto search_result = searchTables(class_name);
 	if (!search_result) throw SemanticError("class " + class_name + " in constructor not found.");
-	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw SemanticError("Identifier " + class_name + " is not a class.");
+	if (!std::holds_alternative<Class::Ptr>(search_result.value())) throw IncompabilityError("Identifier " + class_name + " is not a class.");
 	auto class_ptr = std::get<Class::Ptr>(search_result.value());
 	return std::make_shared<ConstructorExpression>(class_ptr);
 }
@@ -788,7 +788,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 {
 	if (!context_object->type().is<ir::Datatype::ClassName>())
 	{
-		throw SemanticError("left hand operand of . operator is not an object variable");
+		throw IncompabilityError("left hand operand of . operator is not an object variable");
 	}
 	auto context_class_name = context_object->type().get<ir::Datatype::ClassName>();
 	std::optional<SymbolTable::Symbol> search_result = searchGlobal(context_class_name);
@@ -800,7 +800,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 	}
 	else if (!std::holds_alternative<Class::Ptr>(*search_result))
 	{
-		throw SemanticError("left hand operand of . operator is not an object type");
+		throw IncompabilityError("left hand operand of . operator is not an object type");
 	}
 	else
 	{
@@ -817,7 +817,7 @@ ir::Expression::ValueType ParserDriver::dotExpr(
 			}
 			else
 			{
-				throw SemanticError("Object attribute access on a non-symbol expression: " + context_object->to_string());
+				throw IncompabilityError("Object attribute access on a non-symbol expression: " + context_object->to_string());
 			}
 		}
 		else
