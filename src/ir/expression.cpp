@@ -1,3 +1,8 @@
+/**
+ * VYPa compiler project.
+ * Authors: Peter Kubov (xkubov06), Richard Micka (xmicka11)
+ */
+
 #include <stdexcept>
 #include <sstream>
 
