@@ -46,6 +46,11 @@ endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-add_subdirectory(deps)
 add_subdirectory(src)
-add_subdirectory(tests)
+
+option(BUILD_TESTS "Enable tesst." OFF)
+
+if(BUILD_TESTS)
+	add_subdirectory(deps)
+	add_subdirectory(tests)
+endif()
