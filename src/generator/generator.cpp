@@ -163,8 +163,8 @@ void vypcomp::Generator::generate_class(vypcomp::ir::Class::Ptr input, OutputStr
 
 void vypcomp::Generator::generate_constructor(vypcomp::ir::Class::Ptr input, OutputStream& out)
 {
-    AllocaVector args();
-    AllocaVector local_vars();
+    AllocaVector args{};
+    AllocaVector local_vars{};
     auto object_size = get_object_size(input);
     out << "LABEL " << VYPLANG_PREFIX << input->name() << "_constructor\n";
     // reserver space for object ref
@@ -211,7 +211,9 @@ void vypcomp::Generator::generate_constructor_chain_invocation(vypcomp::ir::Clas
         auto attribute_offset = get_object_attribute_offset(input, destination->name());
         if (verbose)
             out << "# initialize value of " << destination->name() << std::endl;
-        generate_expression(value_expr, "$0", OffsetMap(), TempVarMap(), out);
+        auto om = OffsetMap();
+        auto tmp = TempVarMap();
+        generate_expression(value_expr, "$0", om, tmp, out);
         out << "SETWORD [$SP], " << attribute_offset << ", $0" << std::endl;
     }
     // then jump into user-defined constructor body of current class
