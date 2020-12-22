@@ -479,7 +479,7 @@ void ParserDriver::add(const AllocaInstruction::Ptr& decl)
 
 ir::AllocaInstruction::Ptr ParserDriver::newDeclaration(const Datatype& t, const std::string& id)
 {
-	if (auto symbol = searchTables(id)) {
+	if (auto symbol = searchCurrent(id)) {
 		if (!std::holds_alternative<AllocaInstruction::Ptr>(*symbol))
 			throw std::runtime_error("Invalid state of parser.");
 
