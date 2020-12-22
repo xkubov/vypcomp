@@ -2,6 +2,7 @@ LOGIN = login
 PROJECT_FILES = CMakeLists.txt \
 		src            \
 		include        \
+		deps           \
 		tests          \
 		Makefile       \
 		division       \
