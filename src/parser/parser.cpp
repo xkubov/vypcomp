@@ -432,6 +432,9 @@ Return::Ptr ParserDriver::createReturn(const ir::Expression::ValueType& val) con
 			throw IncompabilityError("Invalid return for function "+_currFunction->name()+" with type: "+_currFunction->type()->to_string());
 		return Return::Ptr(new Return());
 	}
+	else if (_currFunction->isVoid()) {
+		throw IncompabilityError("Returning non-void expression from function that is void.");
+	}
 
 	checkAssignmentTypes(*_currFunction->type(), val->type());
 
