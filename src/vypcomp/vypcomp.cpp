@@ -45,6 +45,9 @@ int main(int argc, char** argv)
 		indexRun.parse(args.inputFile);
 		ParserDriver parser(indexRun.table());
 		parser.parse(args.inputFile);
+
+		// Debug: print intermediet representation to the
+		// stdout.
 		if (args.verbose) {
 			for (auto [_, v]: parser.table().data()) {
 				std::visit([](auto&& arg) {

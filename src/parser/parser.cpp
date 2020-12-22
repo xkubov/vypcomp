@@ -129,20 +129,6 @@ void ParserDriver::parseExpression(std::istream& file, bool debug_on)
 	}
 }
 
-void ParserDriver::generateOutput(const std::string &filename) const
-{
-	std::ofstream output(filename);
-	if (!output.good())
-		throw std::runtime_error("invalid file: "+filename);
-
-	generateOutput(filename);
-}
-
-void ParserDriver::generateOutput(std::ostream &output) const
-{
-	throw std::runtime_error("Not implemented.");
-}
-
 void ParserDriver::parseStart(ir::Function::Ptr fun)
 {
 	_tables.back().insert({fun->name(), fun});

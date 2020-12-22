@@ -35,9 +35,6 @@ public:
 	void parse(std::istream &file);
 	void parseExpression(std::istream& file, bool debug_on = false);
 
-	void generateOutput(const std::string &output) const;
-	void generateOutput(std::ostream &output) const;
-
 	Class::Ptr getClass(const std::string& name) const;
 
 	void parseStart(ir::Function::Ptr fun);
